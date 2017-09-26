@@ -1,0 +1,104 @@
+{% extends "master.html" %}
+
+{% block title %}
+    Dart Hosts
+{% endblock %}
+
+{% block header %}
+    <link rel="stylesheet" href="{{ url_for('main.static', filename='third-party/bootstrap-table/1.11.1/bootstrap-table.min.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="col-xs-12">
+        <h1>Hosts</h1>
+
+        <p>
+            This is a list of all hosts that dart controls. This is intended to
+            show basic information to help control those hosts.
+        </p>
+
+        <table id="table"
+            data-url="{{ url_for('api.hosts.hosts') }}"
+            data-toggle="table"
+            data-striped="true"
+            data-classes="table table-hover table-condensed"
+            data-id-field="fqdn"
+            data-unique-id-field="fqdn"
+            data-sort-name="fqdn"
+            data-sort-order="asc"
+            data-search="true"
+            data-show-toggle="true"
+            data-show-columns="true"
+            data-show-refresh="true"
+            class="table table-hover table-condensed table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th data-field="fqdn"     data-sortable="true"  data-formatter="dart.format_fqdn">FQDN</th>
+                    <th data-field="total"    data-sortable="true"  data-searchable="false">Total</th>
+                    <th data-field="running"  data-sortable="true"  data-searchable="false">Running</th>
+                    <th data-field="stopped"  data-sortable="true"  data-searchable="false">Stopped</th>
+                    <th data-field="pending"  data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Pending</th>
+                    <th data-field="failed"   data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Failed</th>
+                    <th data-field="disabled" data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Disabled</th>
+                    <th data-field="warnings" data-sortable="false" data-formatter="dart.format_warnings">Warnings</th>
+                    <th data-formatter="dart.format_actions" data-events="dart.column_actions">Actions</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+{% endblock %}
+
+{% block footer %}
+    <!-- include moment like this so that it works with flask -->
+    {{ moment.include_moment(local_js=url_for('main.static', filename='third-party/moment.js/2.18.1/moment-with-locales.min.js')) }}
+    <script type="text/javascript" src="{{ url_for('main.static', filename='third-party/bootstrap-table/1.11.1/bootstrap-table.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('main.static', filename='common.js') }}"></script>
+    <script type="text/javascript">
+        // wrap host names in links to the page for the fqdn
+        dart.format_fqdn = function (data, row) {
+            var url = "{{ url_for('main.host', fqdn='###fqdn###') }}";
+            return "<div class='text-nowrap'><a href='" + url.replace('%23%23%23fqdn%23%23%23', row.fqdn) + "'>" + data + "</a></div>";
+        };
+
+        // fill in the warnings column
+        dart.format_warnings = function (data, row) {
+            var warnings = new Array();
+            if (!row.checked) {
+                warnings.push("<div class='alert-danger' style='background: transparent; font-weight: bold;'>There is no data for this host.</div>");
+            } else {
+                var last_checked = moment(row.checked);
+                if (last_checked.isBefore(moment().subtract(4, "hours"))) {
+                    warnings.push("<div class='alert-danger' style='background: transparent; font-weight: bold;'>Last responded " + last_checked.format("M/D/YYYY h:mma") + ".</div>");
+                }
+            }
+            if (warnings.length) {
+                return warnings.join("");
+            }
+            return "-";
+        };
+
+        dart.format_actions = function (data, row) {
+            var actions = [
+                "<div class='btn-group btn-group-s'>",
+                    "<button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>",
+                        "Action <span class='caret'></span>",
+                    "</button>",
+                    "<ul class='dropdown-menu'>",
+                        "<li><a href='#' class='reread'>Reread</a></li>",
+                        "<li><a href='#' class='rewrite'>Rewrite</a></li>",
+                    "</ul>",
+                "</div>",
+            ];
+            return "<div class='text-center text-nowrap'>" + actions.join("") + "</div>";
+        };
+
+        dart.column_actions = {
+            "click a.reread": function (e, value, row) {
+                dart.command_rewrite("{{ url_for('api.commands.reread') }}", row.fqdn);
+            },
+            "click a.rewrite": function (e, value, row) {
+                dart.command_rewrite("{{ url_for('api.commands.rewrite') }}", row.fqdn);
+            },
+        };
+    </script>
+{% endblock %}

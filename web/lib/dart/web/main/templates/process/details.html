@@ -1,0 +1,128 @@
+<br/>
+<div class="row">
+    <div class="col-sm-12">
+        These details are updated periodically by receiving updates from each
+        host about the processes that are running on it. Below are the
+        <a href="http://supervisord.org/">Supervisor</a> configurations for
+        this process. The 
+        <a href="http://supervisord.org/configuration.html#program-x-section-settings">documentation for Supervisor</a>
+        can explain what all of the available options are.
+    </div>
+</div>
+
+<br/>
+<div class="row">
+    <div class="col-sm-12">
+        <dl class="dl-horizontal">
+            <dt>Process</dt>
+            <dd>{{ process }}</dd>
+        </dl>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-10">
+        {% for environment, configuration in configurations.items() %}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <div class="container-fluid">
+                        <div class="row-fluid">
+                            <big><big><big><strong>{{ environment }}</strong></big></big></big>
+                            <div class="pull-right">
+                                <div class="btn-group" role="group" aria-label="Assign">
+                                      <button type="button" class="btn btn-default assign-process-host" data-process="{{ process }}" data-environment="{{ environment }}">Assign</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            {% if configuration.configuration %}
+                                <pre>{{ configuration.configuration }}</pre>
+                            {% else %}
+                                No configuration.
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <dl class="dl-horizontal">
+                                <dt>Schedule</dt>
+                                <dd>
+                                    {% if configuration.schedule %}
+                                        <tt>{{ configuration.schedule }}</tt>
+                                    {% else %}
+                                        No schedule defined.
+                                    {% endif %}
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <dl class="dl-horizontal">
+                                <dt>State Monitoring</dt>
+                                <dd>
+                                    {% if environment in state_monitoring %}
+                                        State monitoring is
+                                            <span class='alert-success' style='background: transparent; font-weight: bold;'>ENABLED</span>
+                                            at severity {{ state_monitoring[environment].severity }}
+                                            for configuration item '{{ state_monitoring[environment].ci or "DEFAULT" }}'.
+                                    {% else %}
+                                        <span class='alert-danger' style='background: transparent; font-weight: bold;'>
+                                            No state monitoring configuration exists for {{ process }} in {{ environment }}.
+                                        </span>
+                                    {% endif %}
+                                </dd>
+                                <dt>Daemon Monitoring</dt>
+                                <dd>
+                                    {% if environment in daemon_monitoring %}
+                                        Daemon monitoring is
+                                            <span class='alert-success' style='background: transparent; font-weight: bold;'>ENABLED</span>
+                                            at severity {{ state_monitoring[environment].severity }}
+                                            for configuration item '{{ state_monitoring[environment].ci or "DEFAULT" }}'.
+                                        </span>
+                                    {% else %}
+                                        <span class='alert-danger' style='background: transparent; font-weight: bold;'>
+                                            No daemon monitoring configuration exists for {{ process }} in {{ environment }}.
+                                        </span>
+                                    {% endif %}
+                                </dd>
+                                <dt>Log Monitoring</dt>
+                                <dd>
+                                    {% if environment in log_monitoring %}
+                                        <div>Log monitoring is matched in the order presented below.</div>
+                                        <dl class="dl-horizontal">
+                                            {% for monitor in log_monitoring[environment] %}
+                                                <dt>{{ monitor.id }}</dt>
+                                                <dd>
+                                                    <div>{{ monitor.stream }} matching '<tt>{{ monitor.regex }}</tt>'</div>
+                                                    <div>severity {{ monitor.severity }} for configuration item '{{ monitor.ci or "DEFAULT" }}'</div>
+                                                    {% if monitor.name %}<div>events will be created with the name '{{ monitor.name }}'</div>{% endif %}
+                                                    {% if monitor.stop %}<div>matches to this regex will <strong>stop</strong> anymore matches</div>{% endif %}
+                                                </dd>
+                                            {% endfor %}
+                                        </dl>
+                                    {% else %}
+                                        <span class='alert-danger' style='background: transparent; font-weight: bold;'>
+                                            No log monitoring configuration exists for {{ process }} in {{ environment }}.
+                                        </span>
+                                    {% endif %}
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="row">
+                <div class="col-sm-12">
+                    <p>No configurations have been defined for this process.</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="col-md-1"></div>
+</div>

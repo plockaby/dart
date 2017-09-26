@@ -1,0 +1,113 @@
+CREATE KEYSPACE dart WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1 };
+CREATE KEYSPACE dart WITH replication = {'class': 'NetworkTopologyStrategy', 'DC1': 1, 'DC2': 1, 'DC3': 1 };
+CREATE USER dart WITH password 'xxxx';
+GRANT SELECT ON KEYSPACE dart TO dart;
+
+
+-- NOTICE: this table is automatically populated
+CREATE TABLE dart.probe (
+    fqdn            text,
+    checked         timestamp,  -- corresponds with "now"
+    system_started  timestamp,  -- system boot time
+    kernel text,
+    PRIMARY KEY (fqdn)
+) WITH COMMENT = 'status about each host';
+
+-- NOTICE: this table is automatically populated
+CREATE TABLE dart.configured_active (
+    fqdn            text,
+    process         text,
+    checked         timestamp,  -- corresponds with "now"
+    status          text,  -- corresponds with "statename"
+    started         timestamp,  -- corresponds with "start"
+    stopped         timestamp,  -- corresponds with "stop"
+    stdout_logfile  text,
+    stderr_logfile  text,
+    pid             bigint,
+    exit_code       int,  -- corresponds with "exitstatus"
+    description     text,
+    error           text,  -- corresponds with "spawnerr"
+    PRIMARY KEY (fqdn, process)
+) WITH COMMENT = 'active supervisord configurations by host';
+
+-- so that select statements work
+CREATE INDEX ON dart.configured_active (process);
+
+-- NOTICE: this table is automatically populated
+CREATE TABLE dart.configured_pending (
+    fqdn     text,
+    process  text,
+    status   text,  -- status is either "added", "removed", or "changed"
+    PRIMARY KEY (fqdn, process)
+) WITH COMMENT = 'pending supervisord configuration changes by host';
+
+-- so that select statements work
+CREATE INDEX ON dart.configured_pending (process);
+
+-- NOTICE: this table is manually populated using dart-config register
+CREATE TABLE dart.configured (
+    process        text,
+    environment    text,
+    configuration  text,
+    PRIMARY KEY (process, environment)
+) WITH COMMENT = 'canonical configurations for supervisord';
+
+-- NOTICE: this table is manually populated using dart-config register
+CREATE TABLE dart.schedule (
+    process      text,
+    environment  text,
+    schedule     text,
+    PRIMARY KEY (process, environment)
+) WITH COMMENT = 'canonical schedules for supervisord';
+
+-- NOTICE: this table is manually populated using the dart tool
+CREATE TABLE dart.assignment (
+    fqdn         text,
+    process      text,
+    environment  text,
+    disabled     boolean,
+    PRIMARY KEY (fqdn, process)
+) WITH COMMENT = 'processes configured for supervisord by host';
+
+-- this makes it so that we can query for assignments by process name
+CREATE INDEX ON dart.assignment (process);
+
+-- NOTICE: this table is manually populated using the dart tool
+CREATE TABLE dart.host_tag (
+    fqdn  text,
+    tag   text,
+    PRIMARY KEY (fqdn, tag)
+) WITH COMMENT = 'arbitrary tags assigned to hosts';
+
+-- NOTICE: this table is manually populated using dart-config register
+CREATE TABLE dart.process_log_monitor (
+    process      text,
+    environment  text,
+    stream       text,
+    id           int,
+    regex        text,
+    name         text,
+    contact      text,
+    severity     int,
+    stop         boolean,
+    PRIMARY KEY ((process, environment, stream), id)
+) WITH CLUSTERING ORDER BY (id asc)
+   AND COMMENT = 'log monitoring configurations';
+
+-- NOTICE: this table is manually populated using dart-config register
+CREATE TABLE dart.process_state_monitor (
+    process      text,
+    environment  text,
+    contact      text,
+    severity     int,
+    PRIMARY KEY (process, environment)
+) WITH COMMENT = 'state monitoring configurations';
+
+-- NOTICE: this table is manually populated using dart-config register
+CREATE TABLE dart.process_daemon_monitor (
+    process      text,
+    environment  text,
+    contact      text,
+    severity     int,
+    PRIMARY KEY (process, environment)
+) WITH COMMENT = 'daemon monitoring';

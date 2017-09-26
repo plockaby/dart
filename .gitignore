@@ -1,0 +1,11 @@
+lib/dart/configuration/settings.yaml
+.*.swp
+*~
+.DS_Store
+.idea
+.push
+.eggs
+*.egg-info
+__pycache__
+*.pyc
+venv

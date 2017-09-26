@@ -1,0 +1,73 @@
+# vi:syntax=yaml
+
+# about severities:
+# 1 - "critical" creates an event with an escalating incident
+# 2 - "error" creates an event with a non-escalating incident
+# 3 - "warning" creates an event with no incident
+# 4 - "information" creates an event with no incident
+# 5 - "ok" creates an event with no incident
+# 6 - "clear" clears an existing event
+
+processes:
+      # the name must be unique across all hosts
+    - name: dart-auditor
+      environment: production
+
+      # this will be passed directly, verbatim to supervisor
+      supervisor: |
+          command = /srv/data/bin/dart-auditor
+          user = www
+          autostart = false
+          autorestart = false
+          startsecs = 0
+          stdout_logfile = /srv/logs/supervisor/dart-auditor.log
+          stdout_logfile_maxbytes = 10MB
+          stdout_logfile_backups = 4
+          stderr_logfile = /srv/logs/supervisor/dart-auditor.err
+          stderr_logfile_maxbytes = 10MB
+          stderr_logfile_backups = 4
+          stdout_events_enabled = true
+          stderr_events_enabled = true
+
+      # there can only be one schedule. schedules must be in quotes to avoid
+      # confusing yaml parsers.
+      schedule: "0 1 * * *"
+
+      monitoring:
+          daemon:
+              # see above for information about severity
+              severity: 3
+              # not required, will default to something reasonable
+              contact: me@example.com
+          state:
+              # see above for information about severity
+              severity: 3
+              # not required, will default to something reasonable
+              contact: me@example.com
+          logs:
+              # note: log monitors are processed in the order that they are
+              # seen here. if a rule says to stop processing then subsequent
+              # monitors will not be processed.
+              stdout:
+                  - regex: .*ERROR.*
+                    # name can be given to a rule so that if this specific rule
+                    # is matched then an additional name will be put into the
+                    # event component. otherwise this is not required and the
+                    # component will default to the name of the program.
+                    name: foobar
+                    # see above for information about severity. however, for
+                    # log monitoring note that if the severity is not present
+                    # then no event will be raised. this can be used with the
+                    # "stop" keyword to have a monitoring entry that completely
+                    # stops processing but doesn't do anything else.
+                    severity: 4
+                    # if set to true then if this regex matches then no further
+                    # regexes will be compared against this log line. the
+                    # default is "false" meaning that all regexes will be
+                    # compared.
+                    stop: true
+                    # not required, will default to something reasonable
+                    contact: me@example.com
+              stderr:
+                  - regex: .*
+                    severity: 4

@@ -1,0 +1,121 @@
+#!/bin/bash
+
+function verbose {
+    printf "%b%b\n" "$vindent" "$1"
+}
+
+# output
+function report {
+    printf "%b%s: %b\n" "$vindent" `pwd` "$1"
+    echo $linebreak
+    if [[ $2 != "" ]]; then
+        printf "%b\n" "$2"
+        echo $linebreak
+    fi
+    echo ""
+    continue
+}
+
+# determines if the git repository is clean, else report
+function clean_wc {
+    status=`git status -s 2>&1`
+    if [[ $status != "" ]]; then
+        report "ERROR: working copy is unclean $1" "$status"
+    else
+        verbose "working copy is clean $1"
+    fi
+}
+
+# run a command, report if there is returned content
+function command_run {
+    verbose "$1"
+    command_output=`$1 2>&1`
+    if [[ $command_output != "" ]]; then
+        report "$2" "$command_output"
+    fi
+}
+
+# used by the report function
+linebreak="--------------------------------------------------------"
+
+# get the path to backups
+basepath="$1"
+
+# validate that we got a path
+if [[ $basepath == "" ]]; then
+    verbose "no path to backups given"
+    exit 1
+fi
+
+# change directory to root of local git repos
+if [[ -d $basepath ]]; then
+    cd $basepath
+else
+    verbose "base path $basepath does not exist"
+    exit 1
+fi
+
+# where are we backing up to
+verbose "backing up to $basepath"
+
+# get current branchname
+branch=`git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'`
+
+# if no branch then not a git repo
+if [[ $branch == "" ]]; then
+    echo "$basepath is not a git repository, exiting"
+    exit 1
+fi
+
+# if unclean continue
+clean_wc "at start"
+
+# fetch from origin to ensure we are up to date
+command_run "git fetch -q origin" "failed to fetch"
+
+# rebase onto master
+command_run "git rebase -q origin/$branch" "errors in rebase"
+
+# ensure clean
+clean_wc "after rebase"
+
+# extract schema
+runs=1
+extract_out=""
+while [[ $runs -lt 3 ]]; do
+    verbose "extracting schema run #$runs"
+    command_output=`/netops/bin/dart-backup backup 1> /data/backups/dart/dart-configuration.json`
+    verbose $command_output
+    if [[ $command_output != "" ]]; then
+        extract_out="$extract_out\nRun $runs\n$command_output"
+        sleep 10
+        ((runs=runs+1))
+    else
+        extract_out=""
+        break
+    fi
+done
+if [[ $extract_out != "" ]]; then
+    git reset --hard HEAD
+    report "ERROR: errors in extraction" $extract_out
+fi
+
+# if clean exit
+if [[ `git status -s 2>&1` == "" ]]; then
+    verbose "no changes, done"
+    exit 0
+fi
+
+command_run "git add -A" "errors updating index"
+
+command_output=`git commit -q -m "SYNC: daily sync from database"`
+if [[ $command_output != "" ]]; then
+    report "ERROR: errors in commit" "$command_output"
+fi
+
+command_output=`git push -q origin $branch 2>&1 | egrep -v "Auto packing the repository|^remote:"`
+if [[ $command_output != "" ]]; then
+    report "ERROR: error in push to origin" "$command_output"
+fi
+
+verbose "done"

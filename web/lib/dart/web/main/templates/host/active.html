@@ -1,0 +1,25 @@
+<table id="active-table"
+    data-url="{{ url_for('api.hosts.active', fqdn=fqdn) }}"
+    data-toggle="table"
+    data-striped="true"
+    data-classes="table table-hover table-condensed"
+    data-id-field="process"
+    data-unique-id-field="process"
+    data-sort-name="process"
+    data-sort-order="asc"
+    data-search="true"
+    data-show-toggle="true"
+    data-show-columns="true"
+    data-show-refresh="true"
+    class="table table-hover table-condensed table-striped table-bordered">
+    <thead>
+        <tr>
+            <th                  data-field="process"     data-sortable="true" data-formatter="dart.format_process">Process</th>
+            <th                  data-field="status"      data-sortable="true" data-formatter="dart.format_active_status">Status</th>
+            <th                  data-field="description" data-sortable="true" data-formatter="dart.format_active_description">Description</th>
+            <th class="col-xs-3" data-field="schedule"    data-sortable="true" data-formatter="dart.format_active_schedule">Schedule</th>
+            <th class="col-xs-1" data-field="disabled"    data-sortable="true" data-formatter="dart.format_disabled">Enabled</th>
+            <th class="col-xs-1" data-formatter="dart.format_active_actions" data-events="dart.column_active_actions">Actions</th>
+        </tr>
+    </thead>
+</table>

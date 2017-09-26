@@ -1,0 +1,151 @@
+# vi:syntax=yaml
+
+processes:
+    - name: dart-backup-clone
+      environment: production
+
+      supervisor: |
+          command = /usr/bin/git pull
+          directory = /srv/backups/dart
+          user = www
+          autostart = false
+          autorestart = false
+          startsecs = 0
+          stdout_logfile = /srv/logs/supervisor/dart-backup-clone.log
+          stdout_logfile_maxbytes = 10MB
+          stdout_logfile_backups = 4
+          stdout_events_enabled = true
+          stderr_logfile = /srv/logs/supervisor/dart-backup-clone.err
+          stderr_logfile_maxbytes = 10MB
+          stderr_logfile_backups = 4
+          stderr_events_enabled = true
+
+      schedule: "2-59/10 * * * *"
+
+      monitoring:
+          state:
+              severity: 3
+
+    - name: dart-processor-probe
+      environment: production
+
+      supervisor: |
+          command = /srv/data/bin/dart-processor probe
+          user = www
+          autostart = true
+          autorestart = true
+          stopwaitsecs = 60
+          stdout_logfile = /srv/logs/supervisor/dart-processor-probe.log
+          stdout_logfile_maxbytes = 10MB
+          stdout_logfile_backups = 4
+          stdout_events_enabled = true
+          stderr_logfile = /srv/logs/supervisor/dart-processor-probe.err
+          stderr_logfile_maxbytes = 10MB
+          stderr_logfile_backups = 4
+          stderr_events_enabled = true
+
+      monitoring:
+          daemon:
+              severity: 3
+          state:
+              severity: 3
+          logs:
+              stdout:
+                  - regex: .*ERROR.*
+                    severity: 4
+              stderr:
+                  - regex: .*
+                    severity: 4
+
+    - name: dart-processor-active
+      environment: production
+
+      supervisor: |
+          command = /srv/data/bin/dart-processor active
+          user = www
+          autostart = true
+          autorestart = true
+          stopwaitsecs = 60
+          stdout_logfile = /srv/logs/supervisor/dart-processor-active.log
+          stdout_logfile_maxbytes = 10MB
+          stdout_logfile_backups = 4
+          stdout_events_enabled = true
+          stderr_logfile = /srv/logs/supervisor/dart-processor-active.err
+          stderr_logfile_maxbytes = 10MB
+          stderr_logfile_backups = 4
+          stderr_events_enabled = true
+
+      monitoring:
+          daemon:
+              severity: 3
+          state:
+              severity: 3
+          logs:
+              stdout:
+                  - regex: .*ERROR.*
+                    severity: 4
+              stderr:
+                  - regex: .*
+                    severity: 4
+
+    - name: dart-processor-pending
+      environment: production
+
+      supervisor: |
+          command = /srv/data/bin/dart-processor pending
+          user = www
+          autostart = true
+          autorestart = true
+          stopwaitsecs = 60
+          stdout_logfile = /srv/logs/supervisor/dart-processor-pending.log
+          stdout_logfile_maxbytes = 10MB
+          stdout_logfile_backups = 4
+          stdout_events_enabled = true
+          stderr_logfile = /srv/logs/supervisor/dart-processor-pending.err
+          stderr_logfile_maxbytes = 10MB
+          stderr_logfile_backups = 4
+          stderr_events_enabled = true
+
+      monitoring:
+          daemon:
+              severity: 3
+          state:
+              severity: 3
+          logs:
+              stdout:
+                  - regex: .*ERROR.*
+                    severity: 4
+              stderr:
+                  - regex: .*
+                    severity: 4
+
+    - name: dart-processor-state
+      environment: production
+
+      supervisor: |
+          command = /srv/data/bin/dart-processor state
+          user = www
+          autostart = true
+          autorestart = true
+          stopwaitsecs = 60
+          stdout_logfile = /srv/logs/supervisor/dart-processor-state.log
+          stdout_logfile_maxbytes = 10MB
+          stdout_logfile_backups = 4
+          stdout_events_enabled = true
+          stderr_logfile = /srv/logs/supervisor/dart-processor-state.err
+          stderr_logfile_maxbytes = 10MB
+          stderr_logfile_backups = 4
+          stderr_events_enabled = true
+
+      monitoring:
+          daemon:
+              severity: 3
+          state:
+              severity: 3
+          logs:
+              stdout:
+                  - regex: .*ERROR.*
+                    severity: 4
+              stderr:
+                  - regex: .*
+                    severity: 4

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %}Dart{% endblock %}</title>
+
+        <!-- Bootstrap -->
+        <link href="{{ url_for('main.static', filename='third-party/bootstrap/3.3.7/css/bootstrap.min.css') }}" rel="stylesheet">
+        <link href="{{ url_for('main.static', filename='third-party/bootstrap/bootstrap-theme.min.css') }}" rel="stylesheet">
+
+        <!-- this app's css -->
+        <link rel="stylesheet" type="text/css" href="{{ url_for('main.static', filename='master.css') }}" />
+        {% block header %}{% endblock %}
+    </head>
+    <body>
+        <!-- Fixed navbar -->
+        <nav class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="{{ url_for('main.index') }}">Dart</a>
+                </div>
+                <div id="navbar" class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li {% if request.endpoint == "main.index" %}class="active"{% endif %}><a href="{{ url_for('main.index') }}">Home</a></li>
+                        <li {% if request.endpoint == "main.hosts" %}class="active"{% endif %}><a href="{{ url_for('main.hosts') }}">Hosts</a></li>
+                        <li {% if request.endpoint == "main.processes" %}class="active"{% endif %}><a href="{{ url_for('main.processes') }}">Processes</a></li>
+                    </ul>
+                </div><!--/.nav-collapse -->
+            </div>
+        </nav>
+
+        <!-- content container -->
+        <div class="main" role="main">
+            <div class="container">
+
+                {% block content %}{% endblock %}
+
+            </div> <!--/ #core-content-container -->
+        </div>
+
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script type="text/javascript" src="{{ url_for('main.static', filename='third-party/jquery/3.2.1/jquery.min.js') }}"></script>
+
+        <!-- Bootstrap (Include all compiled plugins (below), or include individual files as needed) -->
+        <script type="text/javascript" src="{{ url_for('main.static', filename='third-party/bootstrap/3.3.7/js/bootstrap.min.js') }}"></script>
+
+        <!-- user javascript goes here -->
+        <script type="text/javascript" src="{{ url_for('main.static', filename='master.js') }}"></script>
+        {% block footer %}{% endblock %}
+    </body>
+</html>

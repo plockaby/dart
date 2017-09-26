@@ -1,0 +1,3 @@
+recursive-include lib/dart/web/configurations *
+recursive-include lib/dart/web/main/templates *
+recursive-include lib/dart/web/main/static *

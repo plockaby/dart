@@ -1,0 +1,42 @@
+#!/usr/bin/env python2.7
+from fabric.api import env, local
+from pushlib.python3 import *
+from pushlib.wrappers import *
+env.nocref_path = "push/common"
+env.force_clean_remote = True
+
+
+class CustomBuildTask(PythonBuildTask):
+    __doc__ = pushlib.BuildTask.__doc__
+
+    def after(self):
+        super(CustomBuildTask, self).after()
+        execute(WrapperTask())
+
+
+class CustomArchiveTask(PythonArchiveTask):
+    __doc__ = pushlib.ArchiveTask.__doc__
+
+    def before(self, **kwargs):
+        super(CustomArchiveTask, self).before(**kwargs)
+
+        # need to remove one specific file so that we don't end up with
+        # with conflicts in nocref.
+        local("{} -f {}/lib/python/dart/__init__.py".format(env.tools['rm'], env.release_dir))
+
+
+class CustomDeployTask(PythonDeployTask):
+    __doc__ = pushlib.DeployTask.__doc__
+
+    def before(self, **kwargs):
+        super(CustomDeployTask, self).before(**kwargs)
+
+        # remove the web directory on the remote host before deploying
+        remote_user = kwargs.get('remote_user')
+        remote_path = kwargs.get('remote_path')
+        execute(CleanUpTask(), "{}/{}/dart/tool".format(remote_path, env.python_release_lib_dir), remote_user)
+
+
+buildTask = CustomBuildTask()
+archiveTask = CustomArchiveTask()
+deployTask = CustomDeployTask()

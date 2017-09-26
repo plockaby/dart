@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# don't create .pyc files
+export PYTHONDONTWRITEBYTECODE=1
+
+exec python3 -m dart.backup.cli "$@"
