@@ -85,6 +85,7 @@ class RestoreCommand(BaseCommand):
             VALUES (%(process)s, %(environment)s, %(configuration)s)
         """)
         for datum in data:
+            self.logger.debug(datum)
             self.session.execute(query, datum)
 
     def _import_schedule(self, data, truncate=False):
@@ -99,6 +100,7 @@ class RestoreCommand(BaseCommand):
             VALUES (%(process)s, %(environment)s, %(schedule)s)
         """)
         for datum in data:
+            self.logger.debug(datum)
             self.session.execute(query, datum)
 
     def _import_process_log_monitor(self, data, truncate=False):
@@ -113,6 +115,7 @@ class RestoreCommand(BaseCommand):
             VALUES (%(process)s, %(environment)s, %(stream)s, %(id)s, %(contact)s, %(name)s, %(regex)s, %(severity)s, %(stop)s)
         """)
         for datum in data:
+            self.logger.debug(datum)
             self.session.execute(query, datum)
 
     def _import_process_daemon_monitor(self, data, truncate=False):
@@ -127,6 +130,7 @@ class RestoreCommand(BaseCommand):
             VALUES (%(process)s, %(environment)s, %(contact)s, %(severity)s)
         """)
         for datum in data:
+            self.logger.debug(datum)
             self.session.execute(query, datum)
 
     def _import_process_state_monitor(self, data, truncate=False):
@@ -141,6 +145,7 @@ class RestoreCommand(BaseCommand):
             VALUES (%(process)s, %(environment)s, %(contact)s, %(severity)s)
         """)
         for datum in data:
+            self.logger.debug(datum)
             self.session.execute(query, datum)
 
     def _import_assignment(self, data, truncate=False):
@@ -155,6 +160,7 @@ class RestoreCommand(BaseCommand):
             VALUES (%(fqdn)s, %(process)s, %(environment)s, %(disabled)s)
         """)
         for datum in data:
+            self.logger.debug(datum)
             self.session.execute(query, datum)
 
     def _import_host_tag(self, data, truncate=False):
@@ -169,6 +175,7 @@ class RestoreCommand(BaseCommand):
             VALUES (%(fqdn)s, %(tag)s)
         """)
         for datum in data:
+            self.logger.debug(datum)
             self.session.execute(query, datum)
 
     def _import_probe(self, data, truncate=False):
@@ -183,6 +190,7 @@ class RestoreCommand(BaseCommand):
             VALUES (%(fqdn)s, %(checked)s, %(kernel)s, %(system_started)s)
         """)
         for datum in data:
+            self.logger.debug(datum)
             self.session.execute(query, datum)
 
     def _import_configured_active(self, data, truncate=False):
@@ -197,6 +205,7 @@ class RestoreCommand(BaseCommand):
             VALUES (%(fqdn)s, %(process)s, %(checked)s, %(description)s, %(error)s, %(exit_code)s, %(pid)s, %(started)s, %(status)s, %(stderr_logfile)s, %(stdout_logfile)s, %(stopped)s)
         """)
         for datum in data:
+            self.logger.debug(datum)
             self.session.execute(query, datum)
 
     def _import_configured_pending(self, data, truncate=False):
@@ -211,4 +220,5 @@ class RestoreCommand(BaseCommand):
             VALUES (%(fqdn)s, %(process)s, %(status)s)
         """)
         for datum in data:
+            self.logger.debug(datum)
             self.session.execute(query, datum)
