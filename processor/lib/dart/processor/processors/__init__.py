@@ -46,7 +46,6 @@ class BaseProcessor(object):
         # draining system entropy we won't check more often than every minute.
         self.last_checked = int(time.time())
 
-    def run(self):
         # get the connection to cassandra. if we can't get a connection then
         # this will return None and our whole program will not run and that is
         # ok. this is NOT in a for loop like the rabbitmq connection because
@@ -56,6 +55,7 @@ class BaseProcessor(object):
         if (self.session is None):
             raise RuntimeError("could not get connection to cassandra")
 
+    def run(self):
         finished = False
         while (not finished):
             self.logger.info("starting processing loop")
