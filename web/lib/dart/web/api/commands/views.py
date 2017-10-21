@@ -18,6 +18,9 @@ def start():
     if (not process):
         return make_response(jsonify(dict(error="missing process name")), 400)
 
+    if (process == "dart-agent"):
+        return make_response(jsonify(dict(error="no changes allowed to dart-agent")), 400)
+
     logger.info("starting {} on {}".format(process, fqdn))
     try:
         dart.common.remote.command(fqdn, "start", process)
@@ -38,6 +41,9 @@ def stop():
     process = request.args.get("process")
     if (not process):
         return make_response(jsonify(dict(error="missing process name")), 400)
+
+    if (process == "dart-agent"):
+        return make_response(jsonify(dict(error="no changes allowed to dart-agent")), 400)
 
     logger.info("stopping {} on {}".format(process, fqdn))
     try:
@@ -60,6 +66,9 @@ def restart():
     if (not process):
         return make_response(jsonify(dict(error="missing process name")), 400)
 
+    if (process == "dart-agent"):
+        return make_response(jsonify(dict(error="no changes allowed to dart-agent")), 400)
+
     logger.info("restarting {} on {}".format(process, fqdn))
     try:
         dart.common.remote.command(fqdn, "restart", process)
@@ -80,6 +89,9 @@ def add():
     process = request.args.get("process")
     if (not process):
         return make_response(jsonify(dict(error="missing process name")), 400)
+
+    if (process == "dart-agent"):
+        return make_response(jsonify(dict(error="no changes allowed to dart-agent")), 400)
 
     logger.info("adding {} on {}".format(process, fqdn))
     try:
@@ -102,6 +114,9 @@ def remove():
     if (not process):
         return make_response(jsonify(dict(error="missing process name")), 400)
 
+    if (process == "dart-agent"):
+        return make_response(jsonify(dict(error="no changes allowed to dart-agent")), 400)
+
     logger.info("removing {} on {}".format(process, fqdn))
     try:
         dart.common.remote.command(fqdn, "remove", process)
@@ -122,6 +137,9 @@ def update():
     process = request.args.get("process")
     if (not process):
         return make_response(jsonify(dict(error="missing process name")), 400)
+
+    if (process == "dart-agent"):
+        return make_response(jsonify(dict(error="no changes allowed to dart-agent")), 400)
 
     logger.info("updating {} on {}".format(process, fqdn))
     try:

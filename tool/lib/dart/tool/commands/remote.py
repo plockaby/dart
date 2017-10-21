@@ -7,6 +7,11 @@ import traceback
 
 class RemoteCommand(DataCommand):
     def send(self, fqdn, action, process=None):
+        # we aren't going to let anyone do anything to the dart agent
+        if (process is not None and process == "dart-agent"):
+            print("{} No changes may be made to dart-agent using this tool. Please use the host's supervisorctl command.".format(colored("FAILURE!", "red", attrs=["bold"])))
+            return 1
+
         # validate that the host exists
         if (not dart.common.query.is_valid_host(fqdn)):
             print("{} No host named {} is currently configured.".format(colored("FAILURE!", "red", attrs=["bold"]), fqdn))

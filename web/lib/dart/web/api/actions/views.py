@@ -20,6 +20,9 @@ def assign():
     if (not environment):
         return make_response(jsonify(dict(error="missing environment")), 400)
 
+    if (process == "dart-agent"):
+        return make_response(jsonify(dict(error="no changes allowed to dart-agent")), 400)
+
     logger.info("assigning {} {} to {}".format(process, environment, fqdn))
     try:
         q.assign(process, environment, fqdn)
@@ -48,6 +51,9 @@ def unassign():
     process = request.args.get("process")
     if (not process):
         return make_response(jsonify(dict(error="missing process name")), 400)
+
+    if (process == "dart-agent"):
+        return make_response(jsonify(dict(error="no changes allowed to dart-agent")), 400)
 
     logger.info("unassigning {} from {}".format(process, fqdn))
     try:
@@ -78,6 +84,9 @@ def enable():
     if (not process):
         return make_response(jsonify(dict(error="missing process name")), 400)
 
+    if (process == "dart-agent"):
+        return make_response(jsonify(dict(error="no changes allowed to dart-agent")), 400)
+
     logger.info("enabling {} on {}".format(process, fqdn))
     try:
         q.enable(process, fqdn)
@@ -106,6 +115,9 @@ def disable():
     process = request.args.get("process")
     if (not process):
         return make_response(jsonify(dict(error="missing process name")), 400)
+
+    if (process == "dart-agent"):
+        return make_response(jsonify(dict(error="no changes allowed to dart-agent")), 400)
 
     logger.info("disabling {} on {}".format(process, fqdn))
     try:
