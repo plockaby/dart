@@ -591,6 +591,7 @@ def processes():
                 active_hosts=set(),
                 pending_hosts=set(),
                 assigned_hosts=set(),
+                disabled_hosts=set(),
                 configured=0,
                 assigned=0,
                 disabled=0,
@@ -623,6 +624,7 @@ def processes():
                 active_hosts=set(),
                 pending_hosts=set(),
                 assigned_hosts=set(),
+                disabled_hosts=set(),
                 configured=0,
                 assigned=0,
                 disabled=0,
@@ -657,6 +659,7 @@ def processes():
                 active_hosts=set(),
                 pending_hosts=set(),
                 assigned_hosts=set(),
+                disabled_hosts=set(),
                 configured=0,
                 assigned=0,
                 disabled=0,
@@ -665,9 +668,14 @@ def processes():
                 pending=0,
             )
 
+        # record how many hosts this is assigned to and which ones
         processes[row["process"]]["assigned"] += 1
+        processes[row["process"]]["assigned_hosts"].add(row["fqdn"])
+
         if (row["disabled"]):
+            # record all hosts that this is disabled and which ones
             processes[row["process"]]["disabled"] += 1
+            processes[row["process"]]["disabled_hosts"].add(row["fqdn"])
 
         # record all of the hosts that this is assigned to
         processes[row["process"]]["assigned_hosts"].add(row["fqdn"])
@@ -685,6 +693,7 @@ def processes():
                 active_hosts=set(),
                 pending_hosts=set(),
                 assigned_hosts=set(),
+                disabled_hosts=set(),
                 configured=0,
                 assigned=0,
                 disabled=0,

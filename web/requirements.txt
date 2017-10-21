@@ -3,7 +3,7 @@ cassandra-driver==3.11.0
 click==6.7
 crontab==0.21.3
 Flask==0.12.2
-Flask-Moment==0.5.1
+Flask-Moment==0.5.2
 gevent==1.2.2
 greenlet==0.4.12
 gunicorn==19.7.1

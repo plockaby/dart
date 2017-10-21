@@ -15,6 +15,7 @@ def processes():
             processes[process]["active_hosts"] = list(processes[process]["active_hosts"])
             processes[process]["pending_hosts"] = list(processes[process]["pending_hosts"])
             processes[process]["assigned_hosts"] = list(processes[process]["assigned_hosts"])
+            processes[process]["disabled_hosts"] = list(processes[process]["disabled_hosts"])
 
         return make_response(jsonify(list(processes.values())), 200)
     except Exception as e:
