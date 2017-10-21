@@ -1,5 +1,6 @@
 import logging
 import dart.common.configuration
+import dart.common.monkey
 import threading
 import cassandra
 import cassandra.auth
@@ -22,6 +23,7 @@ sessions = dict()
 
 
 def session(killer=None):
+    # the session id is used to determine if we need a new connection
     session_id = _get_session_id()
     if (session_id not in sessions):
         sessions[session_id] = None
@@ -83,10 +85,13 @@ def session(killer=None):
 
 
 def _get_session_id():
-    # yes, thread ids "may be recyled when a thread exits and another thread is
-    # created" but since this value is never getting communicated to other
-    # threads then it is ok to use it here to identify ourselves.
-    return "{}-{}".format(os.getpid(), threading.current_thread().ident)
+    if (dart.common.monkey.is_patched()):
+        return os.getpid()
+    else:
+        # yes, thread ids "may be recyled when a thread exits and another
+        # thread is created" but since this value is never getting communicated
+        # to other threads then it is ok to use it here to identify ourselves.
+        return "{0}-{1}".format(os.getpid(), threading.current_thread().ident)
 
 
 # used by cassandra to look up the password again when necessary

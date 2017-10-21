@@ -15,16 +15,26 @@ def patch():
     return False
 
 
+def is_patched():
+    return is_eventlet_patched() or is_gevent_patched()
+
+
 def eventlet_patch():
-    if "eventlet" in sys.modules:
+    try:
         import eventlet
+    except ImportError:
+        pass
+    else:
         eventlet.monkey_patch()
 
 
 def gevent_patch():
-    if "gevent" in sys.modules:
-        from gevent import monkey
-        monkey.patch_all()
+    try:
+        import gevent.monkey
+    except ImportError:
+        pass
+    else:
+        gevent.monkey.patch_all()
 
 
 def is_eventlet_patched():

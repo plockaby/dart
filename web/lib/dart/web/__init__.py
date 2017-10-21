@@ -1,3 +1,8 @@
+# monkey patch immediately
+import dart.common.monkey
+dart.common.monkey.patch()  # noqa
+
+
 import os
 import sys
 import logging

@@ -2,6 +2,7 @@ from dart.common.database import DartAuthProvider
 import dart.common.configuration
 import dart.common.query
 import dart.common.monkey
+import logging
 import cassandra
 import cassandra.cluster
 import cassandra.policies
@@ -9,6 +10,9 @@ import cassandra.query
 import threading
 import os
 
+
+# we need a logger
+logger = logging.getLogger(__name__)
 
 # this keeps track of all of the sessions
 sessions = dict()
@@ -48,7 +52,8 @@ class CassandraClient(object):
         dart.common.query.session = self.session
 
     def _serialize_dsn(self, servers, client_id):
-        if (dart.common.monkey.is_eventlet_patched() or dart.common.monkey.is_gevent_patched()):
+        if (dart.common.monkey.is_patched()):
+            logger.info("using a monkey patched cassandra connection")
             return "cassandra_db_{}-{}-{}".format(os.getpid(), ",".join(servers), client_id)
         else:
             return "cassandra_db_{}-{}-{}-{}".format(os.getpid(), threading.current_thread().ident, ",".join(servers), client_id)
@@ -77,4 +82,5 @@ class CassandraClient(object):
                 session.default_consistency_level = cassandra.ConsistencyLevel.ONE
 
                 sessions[self._dsn_id] = session
+
             return sessions.get(self._dsn_id)
