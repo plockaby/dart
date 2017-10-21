@@ -2,3 +2,9 @@ body {
   padding-top: 70px;
   padding-bottom: 30px;
 }
+
+/* this makes typeahead dropdowns not overflow stupidly when menu items are
+   excessively long like this comment. */
+.dropdown-menu {
+    overflow: none;
+}
