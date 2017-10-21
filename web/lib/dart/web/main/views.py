@@ -89,6 +89,10 @@ def autocomplete_process():
     search = request.args.get("q")
     results = []
 
+    # make the search case insensitive
+    if (search):
+        search = search.lower()
+
     # process names, sorted
     processes = sorted(list(q.processes().keys()))
 
@@ -107,6 +111,10 @@ def autocomplete_environment():
     process = request.args.get("process")
     results = []
 
+    # make the search case insensitive
+    if (search):
+        search = search.lower()
+
     # if we don't have a process name then we can't do anything
     if (process):
         # environment names, sorted
@@ -115,8 +123,11 @@ def autocomplete_environment():
         # filter on a search field, if there is one
         # either way, only return 10 results
         for environment in environments:
-            if (len(results) < 10 and (not search or environment.startswith(search))):
-                results.append(environment)
+            if (len(results) < 10):
+                if (not search or environment.startswith(search)):
+                    results.append(environment)
+            else:
+                break
 
     return jsonify(dict(results=results))
 
@@ -126,13 +137,20 @@ def autocomplete_fqdn():
     search = request.args.get("q")
     results = []
 
+    # make the search case insensitive
+    if (search):
+        search = search.lower()
+
     # host names, sorted, filtered to only those that are dart managed
     fqdns = sorted([key for key, value in q.hosts().items() if value["checked"] is not None])
 
     # filter on a saerch field, if there is one
     # either way, only return 10 results
     for fqdn in fqdns:
-        if (len(results) < 10 and (not search or fqdn.startswith(search))):
-            results.append(fqdn)
+        if (len(results) < 10):
+            if (not search or fqdn.startswith(search)):
+                results.append(fqdn)
+        else:
+            break
 
     return jsonify(dict(results=results))
