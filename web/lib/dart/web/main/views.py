@@ -19,7 +19,12 @@ def index():
     # remove hosts that are not managed by dart
     hosts = {key: value for key, value in hosts.items() if value["checked"] is not None}
 
-    return render_template("index.html", hosts=hosts, processes=processes, now=now)
+    return render_template(
+        "index.html",
+        hosts=hosts,
+        processes=processes,
+        now=now
+    )
 
 
 @main.route("/hosts")
@@ -30,24 +35,24 @@ def hosts():
 
 @main.route("/host/<fqdn>")
 def host(fqdn):
-    try:
-        # shows information about one host, similar to "dart host" command
-        host = q.host(fqdn)
-        tags = q.host_tags(fqdn)
-
-        return render_template(
-            "host.html",
-            fqdn=fqdn,
-            host=host,
-            tags=tags,
-            ignore=dart.common.PROCESSES_TO_IGNORE
-        )
-    except dart.common.exceptions.DartHostDoesNotExistException as e:
+    if (not q.is_valid_host(fqdn)):
         return render_template(
             "host.html",
             fqdn=fqdn,
             error="No host named {} is managed by dart.".format(fqdn),
         )
+
+    # shows information about one host, similar to "dart host" command
+    host = q.host(fqdn)
+    tags = q.host_tags(fqdn)
+
+    return render_template(
+        "host.html",
+        fqdn=fqdn,
+        host=host,
+        tags=tags,
+        ignore=dart.common.PROCESSES_TO_IGNORE
+    )
 
 
 @main.route("/processes")
@@ -58,30 +63,30 @@ def processes():
 
 @main.route("/process/<process>")
 def process(process):
-    try:
-        # shows information about one process, similar to "dart process" command
-        configurations = q.process(process)
-
-        # get monitoring information from cassandra
-        daemon_monitoring = q.process_daemon_monitoring_configuration(process)
-        state_monitoring = q.process_state_monitoring_configuration(process)
-        log_monitoring = q.process_log_monitoring_configurations(process)
-
-        return render_template(
-            "process.html",
-            process=process,
-            configurations=configurations,
-            daemon_monitoring=daemon_monitoring,
-            state_monitoring=state_monitoring,
-            log_monitoring=log_monitoring,
-            ignore=dart.common.PROCESSES_TO_IGNORE
-        )
-    except dart.common.exceptions.DartProcessDoesNotExistException as e:
+    if (not q.is_valid_process(process)):
         return render_template(
             "process.html",
             process=process,
             error="No process named {} is configured in dart.".format(process),
         )
+
+    # shows information about one process, similar to "dart process" command
+    configurations = q.process(process)
+
+    # get monitoring information from cassandra
+    daemon_monitoring = q.process_daemon_monitoring_configuration(process)
+    state_monitoring = q.process_state_monitoring_configuration(process)
+    log_monitoring = q.process_log_monitoring_configurations(process)
+
+    return render_template(
+        "process.html",
+        process=process,
+        configurations=configurations,
+        daemon_monitoring=daemon_monitoring,
+        state_monitoring=state_monitoring,
+        log_monitoring=log_monitoring,
+        ignore=dart.common.PROCESSES_TO_IGNORE
+    )
 
 
 @main.route("/autocomplete/process")
