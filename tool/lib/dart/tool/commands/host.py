@@ -17,7 +17,7 @@ class HostsCommand(DataCommand):
         hosts = dart.common.query.hosts()
 
         # remove hosts that are not managed by dart
-        hosts = {key: value for key, value in hosts.items() if value["checked"] is not None and value["total"] > 0}
+        hosts = {key: value for key, value in hosts.items()}
 
         # get the max host name size
         width = 0
@@ -105,8 +105,8 @@ class HostCommand(DataCommand):
             for process, details in active.items():
                 if (len(process) > process_width):
                     process_width = len(process)
-                if (len(details["description"]) > description_width):
-                    description_width = len(details["description"])
+                if (len(details["description"] or "") > description_width):
+                    description_width = len(details["description"] or "")
 
             for process, details in sorted(active.items()):
                 # the name of the process
@@ -120,10 +120,10 @@ class HostCommand(DataCommand):
                     status = colored(status, "yellow")
                 if (status in ["BACKOFF", "FATAL", "UNKNOWN"]):
                     status = colored(status, "red", attrs=["bold"])
-                print("{}{}".format(status, " " * (10 - len(details["status"]))), end="")
+                print("{}{}".format(status, " " * (10 - len(details["status"] or ""))), end="")
 
                 # the description that supervisord gives it
-                print("{{:<{}}}   ".format(description_width).format(details["description"]), end="")
+                print("{{:<{}}}   ".format(description_width).format(details["description"] or ""), end="")
 
                 # this is the trailing notes
                 notes = []

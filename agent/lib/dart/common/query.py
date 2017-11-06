@@ -169,12 +169,16 @@ def hosts():
     rows = s.execute(query)
     for row in rows:
         hosts[row["fqdn"]]["total"] += 1
-        if (row["status"] == "RUNNING"):
+        if (row["status"] is not None):
+            if (row["status"] == "RUNNING"):
+                hosts[row["fqdn"]]["running"] += 1
+            if (row["status"] in ["STARTING", "STOPPED", "STOPPING", "EXITED"]):
+                hosts[row["fqdn"]]["stopped"] += 1
+            if (row["status"] in ["BACKOFF", "FATAL", "UNKNOWN"]):
+                hosts[row["fqdn"]]["failed"] += 1
+        else:
+            # special case for a host that is still bootstrapping
             hosts[row["fqdn"]]["running"] += 1
-        if (row["status"] in ["STARTING", "STOPPED", "STOPPING", "EXITED"]):
-            hosts[row["fqdn"]]["stopped"] += 1
-        if (row["status"] in ["BACKOFF", "FATAL", "UNKNOWN"]):
-            hosts[row["fqdn"]]["failed"] += 1
 
     # find how many are pending on each host. every row represents one pending
     # change to a process. we don't care what the change is as we just want to

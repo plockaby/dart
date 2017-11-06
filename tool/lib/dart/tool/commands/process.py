@@ -258,19 +258,19 @@ class ProcessCommand(DataCommand):
                 print(" {}".format(colored(environment, "cyan", attrs=["bold"])))
 
                 if (environment in daemon_monitoring):
-                    print("   Daemon monitoring is {} at severity {} for CI '{}'.".format(
+                    print("   Daemon monitoring is {} at severity {} for contact '{}'.".format(
                         colored("enabled", "green", attrs=["bold"]),
                         daemon_monitoring[environment]["severity"],
-                        daemon_monitoring[environment]["ci"] or "DEFAULT",
+                        daemon_monitoring[environment]["contact"] or "DEFAULT",
                     ))
                 else:
                     print("   Daemon monitoring is {} for '{}' in {}.".format(colored("DISABLED", "red", attrs=["bold"]), process, environment))
 
                 if (environment in state_monitoring):
-                    print("   State monitoring is {} at severity {} for CI '{}'.".format(
+                    print("   State monitoring is {} at severity {} for contact '{}'.".format(
                         colored("enabled", "green", attrs=["bold"]),
                         state_monitoring[environment]["severity"],
-                        state_monitoring[environment]["ci"] or "DEFAULT"
+                        state_monitoring[environment]["contact"] or "DEFAULT"
                     ))
                 else:
                     print("   State monitoring is {} for '{}' in {}.".format(colored("DISABLED", "red", attrs=["bold"]), process, environment))
@@ -280,7 +280,7 @@ class ProcessCommand(DataCommand):
                     print("   Logs are matched in the order presented.")
                     for monitor in log_monitoring[environment]:
                         print("   {}: {} matching '{}'".format(monitor["id"], monitor["stream"], monitor["regex"]))
-                        print("      severity {} for CI '{}'.".format(monitor["severity"], monitor["ci"] or "DEFAULT"))
+                        print("      severity {} for contact '{}'.".format(monitor["severity"], monitor["contact"] or "DEFAULT"))
                         if (monitor["name"]):
                             print("      events created with name '{}'".format(monitor["name"]))
                         if (monitor["stop"]):

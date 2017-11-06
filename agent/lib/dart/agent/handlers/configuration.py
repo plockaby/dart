@@ -73,6 +73,9 @@ class ConfigurationHandler(BaseHandler):
             # make our session usable by the other parts of our handler
             self.session = session
 
+            # bootstrap ourselves on start
+            self._bootstrap_dart()
+
             # if we haven't received a kill signal, wait for a trigger telling
             # us to rewrite our configurations. that trigger is set every sixty
             # seconds by TICK events or when we receive a message from the
@@ -183,6 +186,17 @@ class ConfigurationHandler(BaseHandler):
 
         # tell everything that we're done
         self.logger.info("{} handler exiting".format(self.name))
+
+    def _bootstrap_dart(self):
+        query = cassandra.query.SimpleStatement("""
+            INSERT INTO dart.probe (fqdn) VALUES (%s)
+        """)
+        self.session.execute_async(query, (self.fqdn,))
+
+        query = cassandra.query.SimpleStatement("""
+            INSERT INTO dart.configured_active (fqdn, process) VALUES (%s, %s)
+        """)
+        self.session.execute_async(query, (self.fqdn, "dart-agent"))
 
     def _get_assignments(self):
         assignments = {}
