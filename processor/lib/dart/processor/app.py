@@ -199,8 +199,11 @@ class DartProcessor(object):
             return
 
         try:
-            self.statsd.incr("{}.messages".format(exchange))
-            with self.statsd.timer("{}.process.task".format(exchange)):
+            if (self.statsd):
+                self.statsd.incr("{}.messages".format(exchange))
+                with self.statsd.timer("{}.process.task".format(exchange)):
+                    self.processors[exchange].process_task(body, message)
+            else:
                 self.processors[exchange].process_task(body, message)
         except cassandra.cluster.NoHostAvailable as e:
             self.logger.warning("{} processor: no cassandra hosts available: {}".format(exchange, repr(e)))
