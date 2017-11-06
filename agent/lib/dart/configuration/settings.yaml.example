@@ -24,3 +24,9 @@ rabbitmq:
     urls:
         # a list of amqp servers to connect to (amqps is preferred)
         - amqp://dart:xxxx@127.0.0.1:5671/dart
+
+# for talking to statsd
+statsd:
+    disabled: false
+    host: localhost
+    port: 8125

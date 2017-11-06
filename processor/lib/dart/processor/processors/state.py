@@ -26,7 +26,7 @@ class StateProcessor(BaseProcessor):
     #        'logfile': '/data/logs/supervisor/netflow-counts-processor.log'
     #    },
     # }
-    def _process_task(self, body, message):
+    def process_task(self, body, message):
         # send a keepalive right off the bat
         self._send_keepalive()
 

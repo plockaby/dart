@@ -8,6 +8,7 @@ import random
 import traceback
 import cassandra
 import cassandra.cluster
+from statsd import StatsClient
 from dart.common.killer import GracefulSignalKiller
 import dart.common.database
 import importlib
@@ -51,6 +52,18 @@ class DartProcessor(object):
         session = dart.common.database.session(killer=self.killer)
         if (session is None):
             raise RuntimeError("could not get connection to cassandra")
+
+        # keep track of how long various things take
+        configuration = dart.common.configuration.load()
+        if (not configuration.get("statsd", {}).get("disabled", True)):
+            self.statsd = StatsClient(
+                host=configuration.get("statsd", {}).get("host", "localhost"),
+                port=configuration.get("statsd", {}).get("port", 8125),
+                prefix="dart.processor",
+                maxudpsize=1500,
+            )
+        else:
+            self.statsd = None
 
         # these are the processors that we support
         processors = [
@@ -186,18 +199,20 @@ class DartProcessor(object):
             return
 
         try:
-            self.processors[exchange].process_task(body, message)
+            self.statsd.incr("{}.messages".format(exchange))
+            with self.statsd.timer("{}.process.task".format(exchange)):
+                self.processors[exchange].process_task(body, message)
         except cassandra.cluster.NoHostAvailable as e:
-            self.logger.warning("{} processor: no cassandra hosts available: {}".format(self.name, repr(e)))
+            self.logger.warning("{} processor: no cassandra hosts available: {}".format(exchange, repr(e)))
             self.logger.debug(traceback.format_exc())
         except (cassandra.OperationTimedOut, cassandra.RequestExecutionException, cassandra.InvalidRequest) as e:
-            self.logger.warning("{} processor: could not execute query on cassandra: {}".format(self.name, repr(e)))
+            self.logger.warning("{} processor: could not execute query on cassandra: {}".format(exchange, repr(e)))
             self.logger.debug(traceback.format_exc())
         except ValueError as e:
-            self.logger.warning("{} processor: received unparseable message: {}".format(self.name, body))
+            self.logger.warning("{} processor: received unparseable message: {}".format(exchange, body))
             self.logger.debug(traceback.format_exc())
         except Exception as e:
-            self.logger.error("{} processor: unexpected error: {}".format(self.name, repr(e)))
+            self.logger.error("{} processor: unexpected error: {}".format(exchange, repr(e)))
             self.logger.error(traceback.format_exc())
         finally:
             # always ack the message, even if we can't process it. that way we
