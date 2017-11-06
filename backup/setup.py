@@ -6,7 +6,7 @@ sys.dont_write_bytecode = True
 
 setup(
     name='dart-backup',
-    scripts=['bin/dart-backup', 'bin/dart-backup-export-wrapper'],
+    scripts=['bin/dart-backup'],
     package_dir={'': 'lib'},
     packages=find_packages(where='lib', exclude=('tests', 'tests.*')),
     include_package_data=True,
