@@ -35,9 +35,9 @@ any and all data into the dart system.
 
 ## processor
 
-This program is a set of daemons that listen for messages from each agent and
-update the dart system with things like active processes, pending changes, and
-other configuration details from each host.
+This program is a daemon that listens for messages from the agents and updates
+the dart system with things like active processes, pending changes, and other
+configuration details from each host.
 
 ## web
 
