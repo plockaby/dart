@@ -24,7 +24,6 @@ def command(fqdn, action, process=None):
     configuration = dart.common.configuration.load()
     urls = configuration["rabbitmq"]["urls"]
     connection = kombu.Connection(";".join(random.sample(urls, len(urls))))
-    connection.connect()
 
     # send the command to the coordinator exchange
     exchange = kombu.Exchange("coordinator", type="direct")
@@ -47,5 +46,3 @@ def command(fqdn, action, process=None):
                 exchange=exchange,
                 declare=[exchange],
             )
-
-    connection.release()
