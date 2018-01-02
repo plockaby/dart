@@ -184,6 +184,26 @@ class ProbeHandler(BaseHandler):
                             subject="{} is in state {} when it is supposed to be in state RUNNING".format(process, state["statename"]),
                         )
 
+            # clear any error events
+            dart.common.event.send(
+                component="dart:agent:{}:active".format(self.name),
+                severity=6,
+                subject="clear",
+            )
+        except xmlrpc.client.Fault as e:
+            # don't want to raise any alarms about this one
+            subject = "{} handler could not probe supervisor: {}".format(self.name, e.faultString)
+            message = traceback.format_exc()
+            self.logger.warning(subject)
+            self.logger.warning(message)
+
+            # clear any error events
+            dart.common.event.send(
+                component="dart:agent:{}:active".format(self.name),
+                severity=2,
+                subject=subject,
+                message=message
+            )
         except Exception as e:
             subject = "{} handler unexpected error: {}".format(self.name, repr(e))
             message = traceback.format_exc()
@@ -193,7 +213,7 @@ class ProbeHandler(BaseHandler):
             # this is an unexpected error so raise a different event for it.
             # this event will not automatically clear.
             dart.common.event.send(
-                component="dart:agent:{}:supervisor:error".format(self.name),
+                component="dart:agent:{}:active:error".format(self.name),
                 severity=2,
                 subject=subject,
                 message=message,
@@ -252,6 +272,27 @@ class ProbeHandler(BaseHandler):
                     severity=6,
                     subject="clear",
                 )
+
+            # clear any error events
+            dart.common.event.send(
+                component="dart:agent:{}:pending".format(self.name),
+                severity=6,
+                subject="clear",
+            )
+        except xmlrpc.client.Fault as e:
+            # don't want to raise any alarms about this one
+            subject = "{} handler could not probe supervisor: {}".format(self.name, e.faultString)
+            message = traceback.format_exc()
+            self.logger.warning(subject)
+            self.logger.warning(message)
+
+            # clear any error events
+            dart.common.event.send(
+                component="dart:agent:{}:pending".format(self.name),
+                severity=2,
+                subject=subject,
+                message=message
+            )
         except Exception as e:
             subject = "{} handler unexpected error: {}".format(self.name, repr(e))
             message = traceback.format_exc()
@@ -261,7 +302,7 @@ class ProbeHandler(BaseHandler):
             # this is an unexpected error so raise a different event for it.
             # this event will not automatically clear.
             dart.common.event.send(
-                component="dart:agent:{}:supervisor:error".format(self.name),
+                component="dart:agent:{}:pending:error".format(self.name),
                 severity=2,
                 subject=subject,
                 message=message,
@@ -286,13 +327,6 @@ class ProbeHandler(BaseHandler):
                     )
                 )
             ))
-
-            # clear any error events
-            dart.common.event.send(
-                component="dart:agent:{}:configuration".format(self.name),
-                severity=6,
-                subject="clear",
-            )
         except Exception as e:
             subject = "{} handler unexpected error: {}".format(self.name, repr(e))
             message = traceback.format_exc()
