@@ -681,9 +681,6 @@ def processes():
             processes[row["process"]]["disabled"] += 1
             processes[row["process"]]["disabled_hosts"].add(row["fqdn"])
 
-        # record all of the hosts that this is assigned to
-        processes[row["process"]]["assigned_hosts"].add(row["fqdn"])
-
     # get how many configurations this process has
     query = cassandra.query.SimpleStatement("""
         SELECT process
