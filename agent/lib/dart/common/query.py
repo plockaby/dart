@@ -390,6 +390,7 @@ def host_assigned(fqdn):
             process=row["process"],
             environment=row["environment"],
             disabled=row["disabled"],
+            type=None,
             configuration=None,
             schedule=None,
             daemon=False,
@@ -403,6 +404,7 @@ def host_assigned(fqdn):
     future_query = cassandra.query.SimpleStatement("""
         SELECT
             process,
+            type,
             configuration
         FROM dart.configured
         WHERE process = %s
@@ -414,6 +416,7 @@ def host_assigned(fqdn):
     for future in futures:
         rows = future.result()
         for row in rows:
+            details[row["process"]]["type"] = row["type"]
             details[row["process"]]["configuration"] = row["configuration"]
 
     # get any schedules for these processes. only one environment can be
@@ -723,6 +726,7 @@ def process(process):
     query = cassandra.query.SimpleStatement("""
         SELECT
             environment,
+            type,
             configuration
         FROM dart.configured
         WHERE process = %s
@@ -730,7 +734,8 @@ def process(process):
     rows = s.execute(query, (process,))
     for row in rows:
         if (row["environment"] not in details):
-            details[row["environment"]] = dict(configuration=None, schedule=None)
+            details[row["environment"]] = dict(type=None, configuration=None, schedule=None)
+        details[row["environment"]]["type"] = row["type"]
         details[row["environment"]]["configuration"] = row["configuration"]
 
     query = cassandra.query.SimpleStatement("""
@@ -743,7 +748,7 @@ def process(process):
     rows = s.execute(query, (process,))
     for row in rows:
         if (row["environment"] not in details):
-            details[row["environment"]] = dict(configuration=None, schedule=None)
+            details[row["environment"]] = dict(type=None, configuration=None, schedule=None)
         details[row["environment"]]["schedule"] = row["schedule"]
 
     return details
@@ -991,6 +996,7 @@ def process_assigned(process):
             fqdn=row["fqdn"],
             environment=row["environment"],
             disabled=row["disabled"],
+            type=None,
             configuration=None,
             schedule=None,
             daemon=False
@@ -1004,6 +1010,7 @@ def process_assigned(process):
         SELECT
             process,
             environment,
+            type,
             configuration
         FROM dart.configured
         WHERE process = %s
@@ -1017,6 +1024,7 @@ def process_assigned(process):
         for row in rows:
             for fqdn, value in details.items():
                 if (value["environment"] == row["environment"]):
+                    details[fqdn]["type"] = row["type"]
                     details[fqdn]["configuration"] = row["configuration"]
 
     # get any schedules for these processes. since a process can have multiple

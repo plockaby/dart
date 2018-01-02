@@ -95,17 +95,24 @@ class RegisterCommand(DataCommand):
             name = process.get("name")
             environment = process.get("environment")
 
+            # the type can be either "program" or "eventlistener" but the
+            # default is "program".
+            type = process.get("type", "program")
+
+            if (type not in ("program", "eventlistener")):
+                raise RuntimeError("invalid dartrc file: process type for '{}' in '{}' must be either 'program' or 'eventlistener' and not '{}'".format(name, environment, type))
+
             # the process values that we're going to update
-            supervisor = process.get("supervisor")
-            schedule = process.get("schedule")
+            supervisor = process.get("supervisor", "").strip()
+            schedule = process.get("schedule", "").strip()
             monitors = process.get("monitoring", dict())
             daemon_monitor = monitors.get("daemon")
             state_monitor = monitors.get("state")
             log_monitor = monitors.get("logs")
 
             if (supervisor):
-                self.logger.info("adding supervisor configuration for '{}' in '{}'".format(name, environment))
-                self._insert_supervisor_environment(name, environment, supervisor)
+                self.logger.info("adding supervisor configuration for {} '{}' in '{}'".format(type, name, environment))
+                self._insert_supervisor_environment(type, name, environment, supervisor)
             else:
                 self.logger.info("removing supervisor configuration for '{}' in '{}'".format(name, environment))
                 self._remove_supervisor_environment(name, environment)
@@ -306,12 +313,12 @@ class RegisterCommand(DataCommand):
             """)
             self.session.execute(query, (process, environment, stream))
 
-    def _insert_supervisor_environment(self, process, environment, configuration):
+    def _insert_supervisor_environment(self, type, process, environment, configuration):
         query = cassandra.query.SimpleStatement("""
-            INSERT INTO dart.configured (process, environment, configuration)
-            VALUES (%s, %s, %s)
+            INSERT INTO dart.configured (process, environment, type, configuration)
+            VALUES (%s, %s, %s, %s)
         """)
-        self.session.execute(query, (process, environment, configuration))
+        self.session.execute(query, (process, environment, type, configuration))
 
     def _insert_schedule_environment(self, process, environment, configuration):
         # validate the schedule first

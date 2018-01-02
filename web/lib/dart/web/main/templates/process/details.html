@@ -49,6 +49,10 @@
                     <div class="row">
                         <div class="col-sm-12">
                             <dl class="dl-horizontal">
+                                <dt>Type</dt>
+                                <dd>
+                                    {{ configuration.type or "program" }}
+                                </dd>
                                 <dt>Schedule</dt>
                                 <dd>
                                     {% if configuration.schedule %}

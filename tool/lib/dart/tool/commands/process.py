@@ -93,16 +93,25 @@ class ProcessCommand(DataCommand):
         if (len(configurations)):
             for environment in sorted(configurations):
                 print(" {}".format(colored(environment, "cyan", attrs=["bold"])))
+                type = configurations[environment]["type"]
                 configuration = configurations[environment]["configuration"]
+
+                print("   Type:")
+                if (type is not None):
+                    print("      {}".format(type))
+                else:
+                    print("      No type defined.")
+                print("")
+
                 print("   Configuration:")
                 if (configuration is not None):
-                    for line in configuration.split("\n"):
-                        print("     {}".format(line))
+                    for line in configuration.strip().split("\n"):
+                        print("      {}".format(line))
                 else:
                     print("      No configuration defined.")
 
                 schedule = configurations[environment]["schedule"]
-                print("    Schedule:")
+                print("   Schedule:")
                 if (schedule is not None):
                     print("      {}".format(schedule))
                 else:
@@ -119,11 +128,14 @@ class ProcessCommand(DataCommand):
             # the maximum width of the fqdn and environment
             fqdn_width = 0
             environment_width = 0
+            type_width = 0
             for fqdn, details in assigned.items():
                 if (len(fqdn) > fqdn_width):
                     fqdn_width = len(fqdn)
                 if (len(details["environment"]) > environment_width):
                     environment_width = len(details["environment"])
+                if (len(details["type"]) > type_width):
+                    type_width = len(details["type"])
 
             for fqdn, details in sorted(assigned.items()):
                 # the name of the host
@@ -131,6 +143,9 @@ class ProcessCommand(DataCommand):
 
                 # the host's environment
                 print("{{:<{}}}   ".format(environment_width).format(details["environment"]), end="")
+
+                # the host's program type
+                print("{{:<{}}}   ".format(type_width).format(details["type"]), end="")
 
                 # is the process disabled on this host?
                 if (details["disabled"]):

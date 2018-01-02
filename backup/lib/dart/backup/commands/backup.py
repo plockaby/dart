@@ -34,6 +34,7 @@ class BackupCommand(BaseCommand):
             SELECT
                 process,
                 environment,
+                type,
                 configuration
             FROM dart.configured
         """)

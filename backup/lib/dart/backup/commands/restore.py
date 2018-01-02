@@ -99,8 +99,8 @@ class RestoreCommand(BaseCommand):
             self.session.execute(query)
 
         query = cassandra.query.SimpleStatement("""
-            INSERT INTO dart.configured (process, environment, configuration)
-            VALUES (%(process)s, %(environment)s, %(configuration)s)
+            INSERT INTO dart.configured (process, environment, type, configuration)
+            VALUES (%(process)s, %(environment)s, %(type)s, %(configuration)s)
         """)
         for datum in data:
             self.logger.debug(datum)

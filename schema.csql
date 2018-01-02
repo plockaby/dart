@@ -49,6 +49,7 @@ CREATE TABLE dart.configured (
     process        text,
     environment    text,
     configuration  text,
+    test           text,
     PRIMARY KEY (process, environment)
 ) WITH COMMENT = 'canonical configurations for supervisord';
 

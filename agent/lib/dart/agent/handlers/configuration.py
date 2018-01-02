@@ -245,7 +245,8 @@ class ConfigurationHandler(BaseHandler):
             self.queries["configurations"] = self.session.prepare("""
                 SELECT
                     process,
-                    configuration
+                    configuration,
+                    type
                 FROM dart.configured
                 WHERE process = ?
                   AND environment = ?
@@ -259,8 +260,8 @@ class ConfigurationHandler(BaseHandler):
             rows = future.result()
             for row in rows:
                 # ignore empty configurations
-                if (row["configuration"]):
-                    configurations[row["process"]] = row["configuration"]
+                if (row["configuration"] and row["type"]):
+                    configurations[row["process"]] = (row["type"], row["configuration"])
 
         return configurations
 
@@ -394,10 +395,10 @@ class ConfigurationHandler(BaseHandler):
         temporary_path = "{}/.{}.tmp".format(path_name, file_name)
         self.logger.info("{} handler writing new supervisor configuration file: {}".format(self.name, temporary_path))
         with open(temporary_path, "w") as f:
-            for key in sorted(configurations):
-                value = configurations[key]
-                print("[program:{}]".format(key), file=f)
-                print(value, file=f)
+            for name in sorted(configurations):
+                (type, configuration) = configurations[name]
+                print("[{}:{}]".format(type, name), file=f)
+                print(configuration, file=f)
 
         # move temp file into place. the os.replace function is atomic so
         # we can be sure that nothing will read an empty file while we move

@@ -199,11 +199,14 @@ class HostCommand(DataCommand):
             # the maximum width of the process name and environment
             process_width = 0
             environment_width = 0
+            type_width = 0
             for process, details in assigned.items():
                 if (len(process) > process_width):
                     process_width = len(process)
                 if (len(details["environment"]) > environment_width):
                     environment_width = len(details["environment"])
+                if (len(details["type"])):
+                    type_width = len(details["type"])
 
             for process, details in sorted(assigned.items()):
                 # the name of the process
@@ -211,6 +214,9 @@ class HostCommand(DataCommand):
 
                 # the process's environment
                 print("{{:<{}}}   ".format(environment_width).format(details["environment"]), end="")
+
+                # the type of program
+                print("{{:<{}}}   ".format(type_width).format(details["type"]), end="")
 
                 # is the process disabled?
                 if (details["disabled"]):
