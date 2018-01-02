@@ -40,10 +40,6 @@ class DartProcessor(object):
         # this keeps track of whether we've been told to die or not
         self.killer = GracefulSignalKiller()
 
-        # this is when we last checked whether we should die or not. to avoid
-        # draining system entropy we won't check more often than every minute.
-        self.last_checked = int(time.time())
-
         # get the connection to cassandra. if we can't get a connection then
         # this will return None and our whole program will not run and that is
         # ok. this is NOT in a for loop like the rabbitmq connection because
@@ -231,13 +227,6 @@ class DartProcessor(object):
         if (self._has_version_changed()):
             self.logger.info("exiting because of version change")
             return True
-
-        if (self.last_checked + 60 < int(time.time())):
-            if (random.randint(1, 60 * 24 * 3) == 1):
-                self.logger.info("randomly exiting")
-                return True
-            else:
-                self.last_checked = int(time.time())
 
         return False
 

@@ -5,7 +5,7 @@ import select
 import importlib
 import socket
 import time
-import random
+from datetime import datetime
 from queue import Queue
 from threading import Event
 import dart.common.event
@@ -329,11 +329,10 @@ class DartAgent(object):
             if (handler.can_handle(event_type)):
                 handler.handle(event_type, event, data)
 
-        # because we want to re-establish ourselves and reset everything, we
-        # are going to exit at random once every three days. this method runs
-        # every minute so every minute has a chance to make us exit.
-        if (random.randint(1, 60 * 24 * 3) == 1):
-            self.logger.info("exiting at random")
+        # restart every monday at midnight
+        event_datetime = datetime.fromtimestamp(event_timestamp)
+        if (event_datetime.hour == 0 and event_datetime.minute == 0 and event_datetime.weekday() == 0):
+            self.logger.info("exiting for the weekly restart")
             return False
 
         # finally, we periodically check to see if we need to restart ourselves
