@@ -91,7 +91,7 @@ def _get_session_id():
         # yes, thread ids "may be recyled when a thread exits and another
         # thread is created" but since this value is never getting communicated
         # to other threads then it is ok to use it here to identify ourselves.
-        return "{0}-{1}".format(os.getpid(), threading.current_thread().ident)
+        return "{}-{}".format(os.getpid(), threading.current_thread().ident)
 
 
 # used by cassandra to look up the password again when necessary

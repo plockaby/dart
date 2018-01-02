@@ -52,13 +52,13 @@
 
                     <h2>Failed Host Heartbeats</h2>
                     <p>
-                        The following hosts have not been checked in a while
-                        and may no longer exist:
+                        The following hosts have not sent a heartbeart in a
+                        while and may no longer be online:
                         <ul>
-                            {% for host in hosts.values()|sort(attribute="fqdn") if host.checked and host.checked.timestamp() < (now.timestamp() - (60 * 60 * 4)) %}
+                            {% for host in hosts.values()|sort(attribute="fqdn") if (host.checked and host.checked.timestamp() < (now.timestamp() - (60 * 60 * 4))) %}
                                 <li><a href="{{ url_for('main.host', fqdn=host.fqdn) }}">{{ host.fqdn }}</a> last checked {{ moment(host.checked).format('MMMM Do YYYY, h:mm:ssa') }}</a></li>
                             {% else %}
-                                <li>All hosts have checked in within the last four hours.</li>
+                                <li>All hosts have:sent a heartbeat within the last four hours.</li>
                             {% endfor %}
                         </ul>
                     </p>

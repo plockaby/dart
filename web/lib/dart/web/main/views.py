@@ -104,8 +104,11 @@ def autocomplete_process():
     # filter on a search field, if there is one
     # either way, only return 10 results
     for process in processes:
-        if (len(results) < 10 and (not search or process.startswith(search))):
-            results.append(process)
+        if (len(results) < 10):
+            if (not search or process.startswith(search)):
+                results.append(process)
+        else:
+            break
 
     return jsonify(dict(results=results))
 
