@@ -33,7 +33,7 @@ class RemoteCommand(DataCommand):
             return 0
         except Exception as e:
             if (process):
-                print("{} Could not send message to {} to {} {}: {}".format(colored("FAILURE!", "red", attrs=["bold"]), fqdn,  action, process, e))
+                print("{} Could not send message to {} to {} {}: {}".format(colored("FAILURE!", "red", attrs=["bold"]), fqdn, action, process, e))
             else:
                 print("{} Could not send message to {} to {}: {}".format(colored("FAILURE!", "red", attrs=["bold"]), fqdn, action, e))
             self.logger.debug(traceback.format_exc())

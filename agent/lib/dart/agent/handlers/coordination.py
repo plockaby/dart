@@ -15,13 +15,13 @@ import random
 import time
 
 
-# disable the verbose logging in kombu
-logging.getLogger("kombu").setLevel(logging.INFO)
-
 
 class CoordinationHandler(BaseHandler):
     def __init__(self, supervisor_server_url, reread_trigger, rewrite_trigger, **kwargs):
         super().__init__(**kwargs)
+
+        # disable the verbose logging in kombu
+        logging.getLogger("kombu").setLevel(logging.INFO)
 
         # this is how we connect to supervisor
         self.supervisor_server_url = supervisor_server_url

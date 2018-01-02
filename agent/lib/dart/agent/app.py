@@ -35,7 +35,7 @@ class DartAgent(object):
         self.killer = GracefulSignalKiller()
 
         # make sure we are an event listener
-        supervisor_server_url = os.environ.get('SUPERVISOR_SERVER_URL', None)
+        supervisor_server_url = os.environ.get("SUPERVISOR_SERVER_URL", None)
         if (supervisor_server_url is None):
             raise RuntimeError("cannot run from outside supervisor eventlistener")
         self.logger.info("connecting to supervisor over {}".format(supervisor_server_url))
@@ -49,6 +49,7 @@ class DartAgent(object):
         # can't be created. that's ok, let it bubble up to the caller.
         configuration = dart.common.configuration.load()
         configuration_path = configuration["configuration"]["path"]
+        self.logger.info("writing configuration files to {}".format(configuration_path))
         os.makedirs(configuration_path, mode=0o755, exist_ok=True)
 
         # these are the actual configuration files for the handlers. these
@@ -163,7 +164,7 @@ class DartAgent(object):
 
         while (not finished):
             # transition from ACKNOWLEDGED to READY
-            print("READY", flush=True)
+            print("READY\n", flush=True, end="")
 
             # this flag will be set if we were processing something when we
             # decided to exit. if we were in the middle of processing something
@@ -225,8 +226,7 @@ class DartAgent(object):
             if (needs_acknowledgement):
                 # transition from READY to ACKNOWLEDGED
                 # this prints to stdout where we communicate with supervisor
-                print("RESULT 2", flush=True)
-                print("OK", flush=True, end='')
+                print("RESULT 2\nOK", flush=True, end="")
         else:
             self.logger.info("finished supervisor listener loop")
 
@@ -240,7 +240,7 @@ class DartAgent(object):
 
     def _read_message(self, handle):
         # wait ten seconds for a message before exiting with nothing
-        while handle in select.select([handle], [], [], 10)[0]:
+        while handle in select.select([handle], [], [], 1)[0]:
             # if the next line returns a false-like value then we received an
             # eof. if we have received an eof then we're going to get out
             # because something went horribly wrong.
@@ -252,7 +252,7 @@ class DartAgent(object):
             line = line.decode("utf-8", "backslashreplace")
 
             # let's assume that we got a real message
-            header = dict([x.split(':') for x in line.split()])
+            header = dict([x.split(":") for x in line.split()])
             data_length = int(header.get("len", 0))  # this will raise a value error on bad data
             if (data_length == 0):
                 return (header, None, None)
@@ -268,10 +268,10 @@ class DartAgent(object):
             if ('\n' in data):
                 # this message has additional data so extract it out
                 event, data = data.split('\n', 1)
-                event = dict([x.split(':') for x in event.split()])
+                event = dict([x.split(":") for x in event.split()])
                 return (header, event, data)
             else:
-                event = dict([x.split(':') for x in data.split()])
+                event = dict([x.split(":") for x in data.split()])
                 return (header, event, None)
         else:
             return

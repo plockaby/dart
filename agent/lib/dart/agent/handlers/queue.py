@@ -11,13 +11,13 @@ import random
 import time
 
 
-# disable the verbose logging in kombu
-logging.getLogger("kombu").setLevel(logging.INFO)
-
 
 class QueueHandler(BaseHandler):
     def __init__(self, queue, **kwargs):
         super().__init__(**kwargs)
+
+        # disable the verbose logging in kombu
+        logging.getLogger("kombu").setLevel(logging.INFO)
 
         # this is the queue that we should read off of
         self.queue = queue
