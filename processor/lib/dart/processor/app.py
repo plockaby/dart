@@ -143,10 +143,7 @@ class DartProcessor(object):
 
                     # check to see if we should exit
                     finished = self._should_finish()
-            except amqp.exceptions.AccessRefused as e:
-                self.logger.warning("queue is already in use: {}".format(repr(e)))
-                self.logger.debug(traceback.format_exc())
-            except (socket.gaierror, socket.timeout, OSError, TimeoutError, ConnectionError, amqp.exceptions.ConnectionForced) as e:
+            except (socket.gaierror, socket.timeout, OSError, TimeoutError, ConnectionError, amqp.exceptions.ConnectionForced, amqp.exceptions.AccessRefused, amqp.exceptions.NotAllowed) as e:
                 self.logger.warning("connection error: {}".format(repr(e)))
                 self.logger.debug(traceback.format_exc())
             except Exception as e:

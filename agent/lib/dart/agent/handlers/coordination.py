@@ -59,124 +59,120 @@ class CoordinationHandler(BaseHandler):
         self.thread.join()
 
     def _run(self):
-        try:
-            finished = False
-            clear_error = True
-            while (not finished and not self.killer.killed()):
-                try:
-                    # get a url but randomize it somewhat so that every server
-                    # isn't connecting to the same instance of rabbitmq.
-                    configuration = dart.common.configuration.load()
-                    urls = configuration["rabbitmq"]["urls"]
-                    connection = kombu.Connection(";".join(random.sample(urls, len(urls))))
+        clear_error = True
+        while (not self.killer.killed()):
+            try:
+                # get a url but randomize it somewhat so that every server
+                # isn't connecting to the same instance of rabbitmq.
+                configuration = dart.common.configuration.load()
+                urls = configuration["rabbitmq"]["urls"]
+                connection = kombu.Connection(";".join(random.sample(urls, len(urls))))
 
-                    # this is a "direct" exchange which has a routing key. the
-                    # routing key should be our fully qualified domain name soi
-                    # that we only try to run things over which we have control.
-                    task_exchange = kombu.Exchange("coordinator", type="direct")
+                # this is a "direct" exchange which has a routing key. the
+                # routing key should be our fully qualified domain name so that
+                # we only try to run things over which we have control.
+                task_exchange = kombu.Exchange("coordinator", type="direct")
 
-                    # a queue that only listens for things directed toward us.
-                    task_queue = kombu.Queue(
-                        # using an empty name for the queue gets us a unique name.
-                        # this prevents ResourceLocked exceptions. the exchange is
-                        # built such that all queues get all messages so we should
-                        # always be getting the messages regardless of any phantom
-                        # queues that may stick around on connection problems.
-                        "",
+                # a queue that only listens for things directed toward us.
+                task_queue = kombu.Queue(
+                    # using an empty name for the queue gets us a unique name.
+                    # this prevents ResourceLocked exceptions. the exchange is
+                    # built such that all queues get all messages so we should
+                    # always be getting the messages regardless of any phantom
+                    # queues that may stick around on connection problems.
+                    "",
 
-                        # but this is where our messages come from and they are
-                        # addressed to us with the routing key.
-                        task_exchange,
-                        routing_key=self.fqdn,
+                    # but this is where our messages come from and they are
+                    # addressed to us with the routing key.
+                    task_exchange,
+                    routing_key=self.fqdn,
 
-                        # we want the queue to go away when we're done with it.
-                        auto_delete=True,
+                    # we want the queue to go away when we're done with it.
+                    auto_delete=True,
 
-                        # this queue should only allow one consumer at a time.
-                        # because the queue is named at random by the message bus
-                        # we no longer run into errors regarding locked resources so
-                        # this is a safe action.
-                        exclusive=True,
+                    # this queue should only allow one consumer at a time.
+                    # because the queue is named at random by the message bus
+                    # we no longer run into errors regarding locked resources so
+                    # this is a safe action.
+                    exclusive=True,
 
-                        # we don't want stale messages to start things long after
-                        # it is relevant. this will clear things out if they stick
-                        # around for more than 90 seconds unprocessed.
-                        message_ttl=90,
-                    )
+                    # we don't want stale messages to start things long after
+                    # it is relevant. this will clear things out if they stick
+                    # around for more than 90 seconds unprocessed.
+                    message_ttl=90,
+                )
 
-                    # create the consumer
-                    consumer = kombu.Consumer(connection, queues=task_queue, callbacks=[self._process_task])
-                    consumer.consume()
+                # create the consumer
+                consumer = kombu.Consumer(connection, queues=task_queue, callbacks=[self._process_task])
+                consumer.consume()
 
-                    # keep trying to drain events until we are told to exit
-                    while (not self.killer.killed()):
-                        try:
-                            # wait one second for data before going back to see
-                            # if we are supposed to exit.
-                            connection.drain_events(timeout=1)
-                        except socket.timeout:
-                            self.logger.debug("{} handler timed out waiting for messages from the message bus".format(self.name))
-
-                        # now clear any error events if necessary. because the
-                        # volume of this event handler could be high, we only want
-                        # to clear events when we have something to clear.
-                        if (clear_error):
-                            dart.common.event.send(
-                                component="dart:agent:{}".format(self.name),
-                                severity=6,
-                                subject="clear",
-                            )
-                            clear_error = False
-                    else:
-                        finished = True
-                except (socket.gaierror, socket.timeout, OSError, TimeoutError, ConnectionError, amqp.exceptions.ConnectionForced) as e:
-                    subject = "{} handler connection error: {}".format(self.name, repr(e))
-                    message = traceback.format_exc()
-                    self.logger.warning(subject)
-                    self.logger.warning(message)
-
-                    # this is a connection error that we want to know about but we
-                    # don't want an incident for it. this error will clear
-                    # automatically the next time we successfully listen to the
-                    # queue.
-                    dart.common.event.send(
-                        component="dart:agent:{}".format(self.name),
-                        severity=3,
-                        subject=subject,
-                        message=message,
-                    )
-
-                    # mark that we have an event to clear otherwise the clear event
-                    # won't be sent.
-                    clear_error = True
-                except Exception as e:
-                    subject = "{} handler unexpected error: {}".format(self.name, repr(e))
-                    message = traceback.format_exc()
-                    self.logger.error(subject)
-                    self.logger.error(message)
-
-                    # problems that we didn't expect should create non-escalating
-                    # incidents. this event will not automatically clear.
-                    dart.common.event.send(
-                        component="dart:agent:{}:error".format(self.name),
-                        severity=2,
-                        subject=subject,
-                        message=message,
-                    )
-                finally:
+                # keep trying to drain events until we are told to exit
+                while (not self.killer.killed()):
                     try:
-                        # release the connection if possible
-                        connection.release()
-                    except Exception:
-                        pass
+                        # wait one second for data before going back to see
+                        # if we are supposed to exit.
+                        connection.drain_events(timeout=1)
+                    except socket.timeout:
+                        self.logger.debug("{} handler timed out waiting for messages from the message bus".format(self.name))
 
-                    # we might not be able to check that we were killed in the
-                    # loop above if we hit an exception while connecting to
-                    # rabbitmq so we'll check again here.
-                    if (not finished and not self.killer.killed()):
-                        interval = 10
-                        self.logger.warn("{} handler sleeping for {} seconds before trying again".format(self.name, interval))
-                        time.sleep(interval)
+                    # now clear any error events if necessary. because the
+                    # volume of this event handler could be high, we only want
+                    # to clear events when we have something to clear.
+                    if (clear_error):
+                        dart.common.event.send(
+                            component="dart:agent:{}".format(self.name),
+                            severity=6,
+                            subject="clear",
+                        )
+                        clear_error = False
+            except (socket.gaierror, socket.timeout, OSError, TimeoutError, ConnectionError, amqp.exceptions.ConnectionForced, amqp.exceptions.AccessRefused, amqp.exceptions.NotAllowed) as e:
+                subject = "{} handler connection error: {}".format(self.name, repr(e))
+                message = traceback.format_exc()
+                self.logger.warning(subject)
+                self.logger.warning(message)
+
+                # this is a connection error that we want to know about but we
+                # don't want an incident for it. this error will clear
+                # automatically the next time we successfully listen to the
+                # queue.
+                dart.common.event.send(
+                    component="dart:agent:{}".format(self.name),
+                    severity=3,
+                    subject=subject,
+                    message=message,
+                )
+
+                # mark that we have an event to clear otherwise the clear event
+                # won't be sent.
+                clear_error = True
+            except Exception as e:
+                subject = "{} handler unexpected error: {}".format(self.name, repr(e))
+                message = traceback.format_exc()
+                self.logger.error(subject)
+                self.logger.error(message)
+
+                # problems that we didn't expect should create non-escalating
+                # incidents. this event will not automatically clear.
+                dart.common.event.send(
+                    component="dart:agent:{}:error".format(self.name),
+                    severity=2,
+                    subject=subject,
+                    message=message,
+                )
+            finally:
+                try:
+                    # release the connection if possible
+                    connection.release()
+                except Exception:
+                    pass
+
+                # we might not be able to check that we were killed in the
+                # loop above if we hit an exception while connecting to
+                # rabbitmq so we'll check again here.
+                if (not self.killer.killed()):
+                    interval = 10
+                    self.logger.warn("{} handler sleeping for {} seconds before trying again".format(self.name, interval))
+                    time.sleep(interval)
         except Exception as e:
             subject = "{} handler unexpected error launching agent: {}".format(self.name, repr(e))
             message = traceback.format_exc()

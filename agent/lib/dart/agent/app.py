@@ -317,7 +317,7 @@ class DartAgent(object):
             component="dart:agent",
             severity=1,
             message="dart agent not responding",
-            timeout=10,
+            timeout=10,  # minutes
         )
 
         # now that we've collapsed the tick events, issue a rewrite command

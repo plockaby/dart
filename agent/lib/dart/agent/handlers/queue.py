@@ -125,7 +125,7 @@ class QueueHandler(BaseHandler):
                         # try again in that event.
                         self.queue.put(item)
                         raise e
-            except (socket.gaierror, socket.timeout, TimeoutError, ConnectionError, amqp.exceptions.ConnectionForced) as e:
+            except (socket.gaierror, socket.timeout, TimeoutError, ConnectionError, amqp.exceptions.ConnectionForced, amqp.exceptions.AccessRefused, amqp.exceptions.NotAllowed) as e:
                 subject = "queue listener connection error: {}".format(repr(e))
                 message = traceback.format_exc()
                 self.logger.warning(subject)
