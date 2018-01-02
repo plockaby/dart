@@ -11,6 +11,9 @@ class BaseCommand(object):
         # get configuration from options
         self.verbose = kwargs.get("verbose", False)
 
+    def run(self, **kwargs):
+        raise NotImplementedError("must be implemented in base class")
+
 
 class DataCommand(BaseCommand):
     def __init__(self, **kwargs):
