@@ -29,7 +29,16 @@ class RestoreCommand(BaseCommand):
             self.logger.error("found no valid configurations in {}".format(file))
             raise RuntimeError("invalid backup file")
 
+        # are we cleaning out the tables before we begin?
         truncate = kwargs.get("truncate", False)
+
+        if (not kwargs.get("do_not_ask", False)):
+            if (not self._ask("You are restoring the database. Are you sure that you want to continue?")):
+                return
+            if (truncate):
+                if (not self._ask("You have asked to truncate all tables before beginning. Are you sure that you want to REMOVE ALL DATA?")):
+                    return
+
         if (truncate):
             self.logger.warning("truncating tables before loading new data")
 
@@ -72,6 +81,15 @@ class RestoreCommand(BaseCommand):
         if ("configured_pending" in data):
             self.logger.info("importing configured pending data")
             self._import_(data.get("configured_pending"), truncate=truncate)
+
+    def _ask(self, question):
+        answer = None
+        while (not answer):
+            answer = input("{} [y/n] ".format(question)).strip().lower()
+            if (answer not in ["y", "n"]):
+                answer = None
+            else:
+                return (answer == "y")
 
     def _import_configured(self, data, truncate=False):
         if (truncate):
