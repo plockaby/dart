@@ -1,6 +1,5 @@
 import logging
 import dart.common.database
-import dart.common.query
 
 
 class BaseCommand(object):
@@ -27,9 +26,6 @@ class DataCommand(BaseCommand):
         self.session = dart.common.database.session()
         if (self.session is None):
             raise RuntimeError("could not get connection to cassandra")
-
-        # now assign the session to the dart query handler
-        dart.common.database.session = self.session
 
     def __del__(self):
         try:
