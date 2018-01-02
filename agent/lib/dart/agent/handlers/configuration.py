@@ -73,6 +73,22 @@ class ConfigurationHandler(BaseHandler):
             # make our session usable by the other parts of our handler
             self.session = session
 
+            # this will hold prepared queries
+            self.queries = {
+                "bootstrap": {
+                    "probe": None,
+                    "active": None,
+                },
+                "assignments": None,
+                "configurations": None,
+                "schedules": None,
+                "monitors": {
+                    "daemon": None,
+                    "state": None,
+                    "log": None,
+                },
+            }
+
             # bootstrap ourselves on start
             self._bootstrap_dart()
 
@@ -188,27 +204,32 @@ class ConfigurationHandler(BaseHandler):
         self.logger.info("{} handler exiting".format(self.name))
 
     def _bootstrap_dart(self):
-        query = cassandra.query.SimpleStatement("""
-            INSERT INTO dart.probe (fqdn) VALUES (%s)
-        """)
-        self.session.execute_async(query, (self.fqdn,))
+        if (self.queries["bootstrap"]["probe"] is None):
+            self.queries["bootstrap"]["probe"] = self.session.prepare("""
+                INSERT INTO dart.probe (fqdn) VALUES (?)
+            """)
+        self.session.execute_async(self.queries["bootstrap"]["probe"], (self.fqdn,))
 
-        query = cassandra.query.SimpleStatement("""
-            INSERT INTO dart.configured_active (fqdn, process) VALUES (%s, %s)
-        """)
-        self.session.execute_async(query, (self.fqdn, "dart-agent"))
+        if (self.queries["bootstrap"]["active"] is None):
+            self.queries["bootstrap"]["active"] = self.session.prepare("""
+                INSERT INTO dart.configured_active (fqdn, process) VALUES (?, ?)
+            """)
+        self.session.execute_async(self.queries["bootstrap"]["active"], (self.fqdn, "dart-agent"))
 
     def _get_assignments(self):
         assignments = {}
-        query = cassandra.query.SimpleStatement("""
-            SELECT
-                process,
-                environment,
-                disabled
-            FROM dart.assignment
-            WHERE fqdn = %s
-        """)
-        rows = self.session.execute(query, (self.fqdn,))
+
+        if (self.queries["assignments"] is None):
+            self.queries["assignments"] = self.session.prepare("""
+                SELECT
+                    process,
+                    environment,
+                    disabled
+                FROM dart.assignment
+                WHERE fqdn = ?
+            """)
+
+        rows = self.session.execute(self.queries["assignments"], (self.fqdn,))
         for row in rows:
             assignments[row["process"]] = {
                 "process": row["process"],
@@ -221,17 +242,19 @@ class ConfigurationHandler(BaseHandler):
     def _get_configurations(self, assignments):
         configurations = {}
 
+        if (self.queries["configurations"] is None):
+            self.queries["configurations"] = self.session.prepare("""
+                SELECT
+                    process,
+                    configuration
+                FROM dart.configured
+                WHERE process = ?
+                  AND environment = ?
+            """)
+
         futures = []
-        future_query = cassandra.query.SimpleStatement("""
-            SELECT
-                process,
-                configuration
-            FROM dart.configured
-            WHERE process = %s
-              AND environment = %s
-        """)
         for process in assignments:
-            futures.append(self.session.execute_async(future_query, [process, assignments[process]["environment"]]))
+            futures.append(self.session.execute_async(self.queries["configurations"], (process, assignments[process]["environment"])))
 
         for future in futures:
             rows = future.result()
@@ -245,19 +268,21 @@ class ConfigurationHandler(BaseHandler):
     def _get_schedules(self, assignments):
         schedules = {}
 
+        if (self.queries["schedules"] is None):
+            self.queries["schedules"] = self.session.prepare("""
+                SELECT
+                    process,
+                    schedule
+                FROM dart.schedule
+                WHERE process = ?
+                  AND environment = ?
+            """)
+
         futures = []
-        future_query = cassandra.query.SimpleStatement("""
-            SELECT
-                process,
-                schedule
-            FROM dart.schedule
-            WHERE process = %s
-              AND environment = %s
-        """)
         for process in assignments:
             # don't schedule processes that are disabled
             if (not assignments[process]["disabled"]):
-                futures.append(self.session.execute_async(future_query, [process, assignments[process]["environment"]]))
+                futures.append(self.session.execute_async(self.queries["schedules"], (process, assignments[process]["environment"])))
 
         for future in futures:
             rows = future.result()
@@ -271,43 +296,23 @@ class ConfigurationHandler(BaseHandler):
     def _get_monitors(self, assignments):
         monitors = {}
 
-        # get state monitors
-        futures = []
-        future_query = cassandra.query.SimpleStatement("""
-            SELECT
-                process,
-                contact,
-                severity
-            FROM dart.process_state_monitor
-            WHERE process = %s
-              AND environment = %s
-        """)
-        for process in assignments:
-            # don't monitor processes that are disabled
-            if (not assignments[process]["disabled"]):
-                futures.append(self.session.execute_async(future_query, [process, assignments[process]["environment"]]))
-
-        monitors["state"] = {}
-        for future in futures:
-            rows = future.result()
-            for row in rows:
-                monitors["state"][row["process"]] = row
-
         # get daemon monitors
+        if (self.queries["monitors"]["daemon"] is None):
+            self.queries["monitors"]["daemon"] = self.session.prepare("""
+                SELECT
+                    process,
+                    contact,
+                    severity
+                FROM dart.process_daemon_monitor
+                WHERE process = ?
+                  AND environment = ?
+            """)
+
         futures = []
-        future_query = cassandra.query.SimpleStatement("""
-            SELECT
-                process,
-                contact,
-                severity
-            FROM dart.process_daemon_monitor
-            WHERE process = %s
-              AND environment = %s
-        """)
         for process in assignments:
             # don't monitor processes that are disabled
             if (not assignments[process]["disabled"]):
-                futures.append(self.session.execute_async(future_query, [process, assignments[process]["environment"]]))
+                futures.append(self.session.execute_async(self.queries["monitors"]["daemon"], (process, assignments[process]["environment"])))
 
         monitors["daemon"] = {}
         for future in futures:
@@ -315,29 +320,55 @@ class ConfigurationHandler(BaseHandler):
             for row in rows:
                 monitors["daemon"][row["process"]] = row
 
-        # get log monitors
+        # get state monitors
+        if (self.queries["monitors"]["state"] is None):
+            self.queries["monitors"]["state"] = self.session.prepare("""
+                SELECT
+                    process,
+                    contact,
+                    severity
+                FROM dart.process_state_monitor
+                WHERE process = ?
+                  AND environment = ?
+            """)
+
         futures = []
-        future_query = cassandra.query.SimpleStatement("""
-            SELECT
-                process,
-                id,
-                stream,
-                regex,
-                name,
-                stop,
-                contact,
-                severity
-            FROM dart.process_log_monitor
-            WHERE process = %s
-              AND environment = %s
-              AND stream = %s
-            ORDER BY id
-        """)
+        for process in assignments:
+            # don't monitor processes that are disabled
+            if (not assignments[process]["disabled"]):
+                futures.append(self.session.execute_async(self.queries["monitors"]["state"], (process, assignments[process]["environment"])))
+
+        monitors["state"] = {}
+        for future in futures:
+            rows = future.result()
+            for row in rows:
+                monitors["state"][row["process"]] = row
+
+        # get log monitors
+        if (self.queries["monitors"]["log"] is None):
+            self.queries["monitors"]["log"] = self.session.prepare("""
+                SELECT
+                    process,
+                    id,
+                    stream,
+                    regex,
+                    name,
+                    stop,
+                    contact,
+                    severity
+                FROM dart.process_log_monitor
+                WHERE process = ?
+                  AND environment = ?
+                  AND stream = ?
+                ORDER BY id
+            """)
+
+        futures = []
         for process in assignments:
             # don't monitor processes that are disabled
             if (not assignments[process]["disabled"]):
                 for stream in ["stderr", "stdout"]:
-                    futures.append(self.session.execute_async(future_query, [process, assignments[process]["environment"], stream]))
+                    futures.append(self.session.execute_async(self.queries["monitors"]["log"], (process, assignments[process]["environment"], stream)))
 
         # the log monitor has stdout and stderr monitors
         monitors["log"] = {"stdout": {}, "stderr": {}}
