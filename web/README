@@ -25,7 +25,7 @@ To start a development instance of your application, you can run this command:
 
 If you need to test the gunicorn instance, you can start it like this:
 
-    PYTHONPATH=lib:$PYTHONPATH FLASK_CONFIG=configurations/prod.cfg venv/bin/python3 venv/bin/gunicorn dart.web:app --preload -b 127.0.0.1:3000 --worker-class=gevent
+    PYTHONPATH=lib:$PYTHONPATH FLASK_CONFIG=configurations/prod.cfg venv/bin/python3 venv/bin/gunicorn dart.web:app -b 127.0.0.1:3000 --worker-class=gevent
 
 When you're done, you can deactivate it:
 
