@@ -1,8 +1,26 @@
 from . import BaseProcessor
-import cassandra.query
 
 
 class StateProcessor(BaseProcessor):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        # prepare queries on start
+        self.queries = {
+            "insert": self.session.prepare("""
+                INSERT INTO dart.configured_active (
+                    fqdn, process, status, checked,
+                    started, stopped, pid, exit_code, error,
+                    stdout_logfile, stderr_logfile, description
+                ) VALUES (
+                    :fqdn, :process, :status, :checked,
+                    :started, :stopped, :pid, :exit_code, :error,
+                    :stdout_logfile, :stderr_logfile, :description
+                )
+                USING TIMESTAMP :timestamp
+            """),
+        }
+
     @property
     def name(self):
         return "state"
@@ -35,30 +53,18 @@ class StateProcessor(BaseProcessor):
         self.logger.info("processing state change for {} on {}".format(state["name"], body["fqdn"]))
 
         # update cassandra with the latest state information for this process
-        insert = cassandra.query.SimpleStatement("""
-            INSERT INTO dart.configured_active (
-                fqdn, process, status, checked,
-                started, stopped, pid, exit_code, error,
-                stdout_logfile, stderr_logfile, description
-            ) VALUES (
-                %(fqdn)s, %(process)s, %(status)s, %(checked)s,
-                %(started)s, %(stopped)s, %(pid)s, %(exit_code)s, %(error)s,
-                %(stdout_logfile)s, %(stderr_logfile)s, %(description)s
-            )
-            USING TIMESTAMP %(timestamp)s
-        """)
-        self.session.execute_async(insert, dict(
-            fqdn=body["fqdn"],
-            process=state["name"],
-            status=state["statename"],
-            checked=int(state["now"] * 1000),
-            started=int(state["start"] * 1000) if state["start"] != 0 else None,
-            stopped=int(state["stop"] * 1000) if state["stop"] != 0 else None,
-            pid=state["pid"],
-            exit_code=state["exitstatus"],
-            error=state["spawnerr"],
-            stdout_logfile=state["stdout_logfile"],
-            stderr_logfile=state["stderr_logfile"],
-            description=state["description"],
-            timestamp=int(state["now"] * 1000000),
-        ))
+        self.session.execute(self.queries["insert"], {
+            "fqdn": body["fqdn"],
+            "process": state["name"],
+            "status": state["statename"],
+            "checked": int(state["now"] * 1000),
+            "started": int(state["start"] * 1000) if state["start"] != 0 else None,
+            "stopped": int(state["stop"] * 1000) if state["stop"] != 0 else None,
+            "pid": state["pid"],
+            "exit_code": state["exitstatus"],
+            "error": state["spawnerr"],
+            "stdout_logfile": state["stdout_logfile"],
+            "stderr_logfile": state["stderr_logfile"],
+            "description": state["description"],
+            "timestamp": int(state["now"] * 1000000),
+        })

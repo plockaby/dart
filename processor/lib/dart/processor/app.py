@@ -89,6 +89,10 @@ class DartProcessor(object):
         for processor in processors:
             self.processors[processor.name] = processor
 
+    def __del__(self):
+        # this will wait for all async queries to finish
+        self.session.shutdown()
+
     def run(self):
         finished = False
         while (not finished):

@@ -1,8 +1,24 @@
 from . import BaseProcessor
-import cassandra.query
 
 
 class ProbeProcessor(BaseProcessor):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        # prepare queries on start
+        self.queries = {
+            "insert": self.session.prepare("""
+                INSERT INTO dart.probe (
+                    fqdn, checked, system_started,
+                    kernel, cpu_count, total_memory, total_swap
+                ) VALUES (
+                    :fqdn, :checked, :system_started,
+                    :kernel, :cpu_count, :total_memory, :total_swap
+                )
+                USING TIMESTAMP :timestamp
+            """),
+        }
+
     @property
     def name(self):
         return "probe"
@@ -22,18 +38,10 @@ class ProbeProcessor(BaseProcessor):
 
     def _process_task_configuration(self, fqdn, timestamp, probed):
         # insert the basics. one row per host.
-        insert = cassandra.query.SimpleStatement("""
-            INSERT INTO dart.probe (
-                fqdn, checked, system_started, kernel
-            ) VALUES (
-                %(fqdn)s, %(checked)s, %(system_started)s, %(kernel)s
-            )
-            USING TIMESTAMP %(timestamp)s
-        """)
-        self.session.execute_async(insert, dict(
-            fqdn=fqdn,
-            checked=int(timestamp * 1000),
-            system_started=(probed.get("boot_time") * 1000),
-            kernel=probed.get("kernel"),
-            timestamp=int(timestamp * 1000000),
-        ))
+        self.session.execute_async(self.queries["insert"], {
+            "fqdn": fqdn,
+            "checked": int(timestamp * 1000),
+            "system_started": (probed.get("boot_time") * 1000),
+            "kernel": probed.get("kernel"),
+            "timestamp": int(timestamp * 1000000),
+        })

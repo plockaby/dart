@@ -7,7 +7,6 @@ import traceback
 from threading import Thread
 import cassandra
 import cassandra.cluster
-import cassandra.query
 import json
 import os
 
