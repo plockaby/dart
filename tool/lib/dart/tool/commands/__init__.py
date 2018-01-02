@@ -29,7 +29,7 @@ class DataCommand(BaseCommand):
             raise RuntimeError("could not get connection to cassandra")
 
         # now assign the session function to the dart query handler
-        dart.common.query.session = dart.common.database.session
+        dart.common.query.session = self.session
 
     def __del__(self):
         try:
