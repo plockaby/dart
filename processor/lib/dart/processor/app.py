@@ -45,8 +45,8 @@ class DartProcessor(object):
         # ok. this is NOT in a for loop like the rabbitmq connection because
         # once cassandra gets a connection it keeps the connection line by
         # itself.
-        session = dart.common.database.session(killer=self.killer)
-        if (session is None):
+        self.session = dart.common.database.session(killer=self.killer)
+        if (self.session is None):
             raise RuntimeError("could not get connection to cassandra")
 
         # keep track of how long various things take
@@ -65,22 +65,22 @@ class DartProcessor(object):
         processors = [
             # this handles all active configurations in supervisor
             ActiveConfigurationProcessor(
-                session=session,
+                session=self.session,
             ),
 
             # this handles all pending configurations in supervisor
             PendingConfigurationProcessor(
-                session=session,
+                session=self.session,
             ),
 
             # this handles system information that we've probed
             ProbeProcessor(
-                session=session,
+                session=self.session,
             ),
 
             # this processors state changes from supervisor
             StateProcessor(
-                session=session,
+                session=self.session,
             ),
         ]
 
@@ -109,29 +109,23 @@ class DartProcessor(object):
                 task_queues = []
 
                 for processor_name in self.processors.keys():
-                    # create an exchange to pull things off of. this is a "direct"
-                    # exchange which has a routing key.
-                    task_exchange = kombu.Exchange(processor_name, type="fanout")
-
-                    # sometimes we want a queue that can only have one consumer at
-                    # a time. this is not currently supported by kombu so we have
-                    # an override that handles it for us.
-                    task_queue_args = [
+                    task_queues.append(kombu.Queue(
+                        # connect to a queue that is named after what it is
+                        # processing. this will create the queue if it does
+                        # not exist.
                         "processor-{}".format(processor_name),
-                        task_exchange,
-                    ]
-                    task_queue_kwargs = {
-                        # we don't want stale messages to start things long after
-                        # it is relevant. this will clear things out if they stick
-                        # around for more than 3600 seconds (1 hour) unprocessed.
-                        "message_ttl": 3600,
-                    }
 
-                    # create the queue based on what our processor is doing
-                    task_queue = kombu.Queue(*task_queue_args, **task_queue_kwargs)
+                        # connect the queue to the exchange that is named after
+                        # what we are processing. this will create the exchange
+                        # if it does not exist.
+                        kombu.Exchange(processor_name, type="fanout"),
 
-                    # add to the list
-                    task_queues.append(task_queue)
+                        # we don't want stale messages to start things long
+                        # after it is relevant. this will clear things out if
+                        # they stick around for more than 3600 seconds (1 hour)
+                        # unprocessed.
+                        message_ttl=3600,
+                    ))
 
                 # create the consumer
                 consumer = kombu.Consumer(
@@ -185,20 +179,20 @@ class DartProcessor(object):
         self.logger.info("exiting")
 
     def process_task(self, body, message):
-        # make sure we got a valid exchange. we are virtually guaranteed that
-        # delivery_info is a dict but we aren't guaranteed that it contains
-        # anything. thus this should not throw any exceptions.
-        exchange = message.delivery_info.get("exchange")
-        if (exchange not in self.processors):
-            self.logger.error("received message with invalid exchange: {}".format(exchange))
-            return
-
-        # make sure it is json that we got
-        if (message.content_type != "application/json"):
-            self.logger.error("message from '{}' is type '{}' and not application/json".format(exchange, message.content_type))
-            return
-
         try:
+            # make sure we got a valid exchange. we are virtually guaranteed that
+            # delivery_info is a dict but we aren't guaranteed that it contains
+            # anything. thus this should not throw any exceptions.
+            exchange = message.delivery_info.get("exchange")
+            if (exchange not in self.processors):
+                self.logger.error("received message with invalid exchange: {}".format(exchange))
+                return
+
+            # make sure it is json that we got
+            if (message.content_type != "application/json"):
+                self.logger.error("message from '{}' is type '{}' and not application/json".format(exchange, message.content_type))
+                return
+
             if (self.statsd):
                 self.statsd.incr("{}.messages".format(exchange))
                 with self.statsd.timer("{}.process.task".format(exchange)):
