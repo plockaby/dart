@@ -8,13 +8,8 @@ class ProbeProcessor(BaseProcessor):
         # prepare queries on start
         self.queries = {
             "insert": self.session.prepare("""
-                INSERT INTO dart.probe (
-                    fqdn, checked, system_started,
-                    kernel, cpu_count, total_memory, total_swap
-                ) VALUES (
-                    :fqdn, :checked, :system_started,
-                    :kernel, :cpu_count, :total_memory, :total_swap
-                )
+                INSERT INTO dart.probe (fqdn, checked, system_started, kernel)
+                VALUES (:fqdn, :checked, :system_started, :kernel)
                 USING TIMESTAMP :timestamp
             """),
         }
