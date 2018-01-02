@@ -30,7 +30,7 @@ def assign():
         # send a rewrite command to the host to get results faster but we don't
         # care tooooo much if this fails right now
         try:
-            dart.common.remote.command(fqdn, "rewrite")
+            dart.common.remote.command(fqdn, "rewrite", retries=10)
         except Exception as e:
             pass
 
@@ -62,7 +62,7 @@ def unassign():
         # send a rewrite command to the host to get results faster but we don't
         # care tooooo much if this fails right now
         try:
-            dart.common.remote.command(fqdn, "rewrite")
+            dart.common.remote.command(fqdn, "rewrite", retries=10)
         except Exception as e:
             pass
 
@@ -94,7 +94,7 @@ def enable():
         # send a rewrite command to the host to get results faster but we don't
         # care tooooo much if this fails right now
         try:
-            dart.common.remote.command(fqdn, "rewrite")
+            dart.common.remote.command(fqdn, "rewrite", retries=10)
         except Exception as e:
             pass
 
@@ -126,7 +126,7 @@ def disable():
         # send a rewrite command to the host to get results faster but we don't
         # care tooooo much if this fails right now
         try:
-            dart.common.remote.command(fqdn, "rewrite")
+            dart.common.remote.command(fqdn, "rewrite", retries=10)
         except Exception as e:
             pass
 

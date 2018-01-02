@@ -11,7 +11,6 @@ import random
 import time
 
 
-
 class QueueHandler(BaseHandler):
     def __init__(self, queue, **kwargs):
         super().__init__(**kwargs)
@@ -53,15 +52,27 @@ class QueueHandler(BaseHandler):
     # main program thread. this method should also not call out to any other
     # methods that aren't thread safe.
     def _run(self):
+        # generate the url out here so that it is randomized in the same way.
+        # we randomize it so that all clients aren't connecting to the same
+        # instance every time. but we want to randomize it once so that we
+        # don't create a new pool on every connection failure.
+        configuration = dart.common.configuration.load()
+        urls = configuration["rabbitmq"]["urls"]
+        url = ";".join(random.sample(urls, len(urls)))
+
         finished = False
         clear_error = True
         while (not finished):
             try:
-                # get a url but randomize it somewhat so that every server
-                # isn't connecting to the same instance of rabbitmq.
+                # reload the configuration to get the most recent username and
+                # password before connecting to the message bus. the url itself
+                # is randomized once at the top of this method.
                 configuration = dart.common.configuration.load()
-                urls = configuration["rabbitmq"]["urls"]
-                connection = kombu.Connection(";".join(random.sample(urls, len(urls))))
+                username = configuration["rabbitmq"]["username"]
+                password = configuration["rabbitmq"]["password"]
+
+                # get a connection object to the message bus
+                connection = kombu.Connection(url.format(username=username, password=password))
 
                 # loop forever -- after getting a message off of the queue on
                 # which we are listening, we transfer it to the message bus.
@@ -102,7 +113,12 @@ class QueueHandler(BaseHandler):
 
                         # now send it to the message bus
                         with kombu.pools.producers[connection].acquire(block=True) as producer:
-                            producer.publish(payload, exchange=exchange, declare=[exchange])
+                            producer.publish(
+                                payload,
+                                exchange=exchange,
+                                declare=[exchange],
+                                retry=True,
+                            )
 
                         # now clear any error events, if necessary. because the
                         # volume of this queue is high, we only want to clear
@@ -159,11 +175,6 @@ class QueueHandler(BaseHandler):
                     message=message,
                 )
             finally:
-                try:
-                    connection.release()
-                except Exception:
-                    pass
-
                 if (not finished):
                     interval = 10
                     self.logger.warn("{} handler sleeping for {} seconds before trying again".format(self.name, interval))

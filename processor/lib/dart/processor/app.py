@@ -94,16 +94,27 @@ class DartProcessor(object):
         self.session.shutdown()
 
     def run(self):
+        # generate the url out here so that it is randomized in the same way.
+        # we randomize it so that all clients aren't connecting to the same
+        # instance every time. but we want to randomize it once so that we
+        # don't create a new pool on every connection failure.
+        configuration = dart.common.configuration.load()
+        urls = configuration["rabbitmq"]["urls"]
+        url = ";".join(random.sample(urls, len(urls)))
+
         finished = False
         while (not finished):
             self.logger.info("starting processing loop")
             try:
-                # get a url but randomize it somewhat so that every server
-                # isn't connecting to the same instance of rabbitmq.
+                # reload the configuration to get the most recent username and
+                # password before connecting to the message bus. the url itself
+                # is randomized once at the top of this method.
                 configuration = dart.common.configuration.load()
-                urls = configuration["rabbitmq"]["urls"]
-                connection = kombu.Connection(";".join(random.sample(urls, len(urls))))
-                connection.connect()  # force the creation of the connection
+                username = configuration["rabbitmq"]["username"]
+                password = configuration["rabbitmq"]["password"]
+
+                # get a connection object to the message bus
+                connection = kombu.Connection(url.format(username=username, password=password))
 
                 # we listen to several queues
                 task_queues = []

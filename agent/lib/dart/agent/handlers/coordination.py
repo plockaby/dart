@@ -15,7 +15,6 @@ import random
 import time
 
 
-
 class CoordinationHandler(BaseHandler):
     def __init__(self, supervisor_server_url, reread_trigger, rewrite_trigger, **kwargs):
         super().__init__(**kwargs)
@@ -59,19 +58,26 @@ class CoordinationHandler(BaseHandler):
         self.thread.join()
 
     def _run(self):
+        # generate the url out here so that it is randomized in the same way.
+        # we randomize it so that all clients aren't connecting to the same
+        # instance every time. but we want to randomize it once so that we
+        # don't create a new pool on every connection failure.
+        configuration = dart.common.configuration.load()
+        urls = configuration["rabbitmq"]["urls"]
+        url = ";".join(random.sample(urls, len(urls)))
+
         clear_error = True
         while (not self.killer.killed()):
             try:
-                # get a url but randomize it somewhat so that every server
-                # isn't connecting to the same instance of rabbitmq.
+                # reload the configuration to get the most recent username and
+                # password before connecting to the message bus. the url itself
+                # is randomized once at the top of this method.
                 configuration = dart.common.configuration.load()
-                urls = configuration["rabbitmq"]["urls"]
-                connection = kombu.Connection(";".join(random.sample(urls, len(urls))))
+                username = configuration["rabbitmq"]["username"]
+                password = configuration["rabbitmq"]["password"]
 
-                # this is a "direct" exchange which has a routing key. the
-                # routing key should be our fully qualified domain name so that
-                # we only try to run things over which we have control.
-                task_exchange = kombu.Exchange("coordinator", type="direct")
+                # get a connection object to the message bus
+                connection = kombu.Connection(url.format(username=username, password=password))
 
                 # a queue that only listens for things directed toward us.
                 task_queue = kombu.Queue(
@@ -83,23 +89,14 @@ class CoordinationHandler(BaseHandler):
                     "",
 
                     # but this is where our messages come from and they are
-                    # addressed to us with the routing key.
-                    task_exchange,
+                    # addressed to us with the routing key. the routing key
+                    # should be our fully qualified domain name so that we
+                    # only process things directed toward us.
+                    kombu.Exchange("coordinator", type="direct"),
                     routing_key=self.fqdn,
 
                     # we want the queue to go away when we're done with it.
                     auto_delete=True,
-
-                    # this queue should only allow one consumer at a time.
-                    # because the queue is named at random by the message bus
-                    # we no longer run into errors regarding locked resources so
-                    # this is a safe action.
-                    exclusive=True,
-
-                    # we don't want stale messages to start things long after
-                    # it is relevant. this will clear things out if they stick
-                    # around for more than 90 seconds unprocessed.
-                    message_ttl=90,
                 )
 
                 # create the consumer
@@ -173,21 +170,6 @@ class CoordinationHandler(BaseHandler):
                     interval = 10
                     self.logger.warn("{} handler sleeping for {} seconds before trying again".format(self.name, interval))
                     time.sleep(interval)
-        except Exception as e:
-            subject = "{} handler unexpected error launching agent: {}".format(self.name, repr(e))
-            message = traceback.format_exc()
-            self.logger.error(subject)
-            self.logger.error(message)
-
-            # we should only end up in here if something went really terribly
-            # wrong setting up the handler. we should raise a high severity to
-            # get dart restarted.
-            dart.common.event.send(
-                component="dart:agent:{}:error".format(self.name),
-                severity=1,
-                subject=subject,
-                message=message,
-            )
 
         # tell everything that we're done
         self.logger.info("{} handler exiting".format(self.name))
@@ -209,7 +191,6 @@ class CoordinationHandler(BaseHandler):
         #     process="name",                                 <- the process against which to run the command
         # }
 
-        # convert the body into json
         try:
             self.logger.debug("{} handler received: {}".format(self.name, body))
 

@@ -21,9 +21,11 @@ cassandra:
 # any url that is supported by kombu is accepted in this array. they will be
 # joined together using a semicolon and passed to kombu.
 rabbitmq:
+    username: dart
+    password: xxx
     urls:
         # a list of amqp servers to connect to (amqps is preferred)
-        - amqp://dart:xxxx@127.0.0.1:5671/dart
+        - amqp://{username}:{password}@127.0.0.1:5671/dart
 
 # for talking to statsd
 statsd:

@@ -23,7 +23,7 @@ def start():
 
     logger.info("starting {} on {}".format(process, fqdn))
     try:
-        dart.common.remote.command(fqdn, "start", process)
+        dart.common.remote.command(fqdn, "start", process, retries=10)
         return make_response(jsonify(dict()), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
@@ -47,7 +47,7 @@ def stop():
 
     logger.info("stopping {} on {}".format(process, fqdn))
     try:
-        dart.common.remote.command(fqdn, "stop", process)
+        dart.common.remote.command(fqdn, "stop", process, retries=10)
         return make_response(jsonify(dict()), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
@@ -71,7 +71,7 @@ def restart():
 
     logger.info("restarting {} on {}".format(process, fqdn))
     try:
-        dart.common.remote.command(fqdn, "restart", process)
+        dart.common.remote.command(fqdn, "restart", process, retries=10)
         return make_response(jsonify(dict()), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
@@ -95,7 +95,7 @@ def add():
 
     logger.info("adding {} on {}".format(process, fqdn))
     try:
-        dart.common.remote.command(fqdn, "add", process)
+        dart.common.remote.command(fqdn, "add", process, retries=10)
         return make_response(jsonify(dict()), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
@@ -119,7 +119,7 @@ def remove():
 
     logger.info("removing {} on {}".format(process, fqdn))
     try:
-        dart.common.remote.command(fqdn, "remove", process)
+        dart.common.remote.command(fqdn, "remove", process, retries=10)
         return make_response(jsonify(dict()), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
@@ -143,7 +143,7 @@ def update():
 
     logger.info("updating {} on {}".format(process, fqdn))
     try:
-        dart.common.remote.command(fqdn, "update", process)
+        dart.common.remote.command(fqdn, "update", process, retries=10)
         return make_response(jsonify(dict()), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
@@ -160,7 +160,7 @@ def reread():
 
     logger.info("rereading {}".format(fqdn))
     try:
-        dart.common.remote.command(fqdn, "reread")
+        dart.common.remote.command(fqdn, "reread", retries=10)
         return make_response(jsonify(dict()), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
@@ -177,7 +177,7 @@ def rewrite():
 
     logger.info("rewriting {}".format(fqdn))
     try:
-        dart.common.remote.command(fqdn, "rewrite")
+        dart.common.remote.command(fqdn, "rewrite", retries=10)
         return make_response(jsonify(dict()), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
