@@ -25,7 +25,7 @@ class BackupCommand(BaseCommand):
 
     def _fix_timestamp(self, timestamp):
         if (timestamp is not None):
-            return "{} UTF".format(timestamp.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3])
+            return "{} UTC".format(timestamp.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3])
 
     def _export_configured(self):
         data = []

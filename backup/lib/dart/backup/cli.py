@@ -40,7 +40,7 @@ def main():
     # options for the "restore" command
     subparser = subparsers.add_parser("restore", help="import a backup configuration")
     subparser.add_argument("-v", "--verbose", dest="verbose", action="store_true", default=False, help="send verbose output to the console")
-    subparser.add_argument("--truncate", dest="truncate", action="store_true", default=False, help="empty tables before loading new data")
+    subparser.add_argument("-t", "--truncate", dest="truncate", action="store_true", default=False, help="empty tables before loading new data")
     subparser.add_argument("file", help="path to file to import (use - to read from stdin)")
 
     args = parser.parse_args()
