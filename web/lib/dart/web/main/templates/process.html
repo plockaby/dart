@@ -9,37 +9,35 @@
 {% endblock %}
 
 {% block content %}
-    <div class="col-xs-12">
-        <h1>{{ process }}</h1>
+    <h1>{{ process }}</h1>
 
-        {% if error %}
-            <div class="alert alert-danger" role="alert">{{ error }}</div>
-        {% else %}
-            <ul id="tabs" class="nav nav-tabs">
-                <li role="details" class="active"><a href="#detail">Process Details</a></li>
-                <li role="details"><a href="#active">Active (<span id="active-count">...</span>)</a></li>
-                <li role="details"><a href="#pending">Pending (<span id="pending-count">...</span>)</a></li>
-                <li role="details"><a href="#assigned">Assigned (<span id="assigned-count">...</span>)</a></li>
-            </ul>
+    {% if error %}
+        <div class="alert alert-danger" role="alert">{{ error }}</div>
+    {% else %}
+        <ul id="tabs" class="nav nav-tabs">
+            <li role="details" class="active"><a href="#detail">Process Details</a></li>
+            <li role="details"><a href="#active">Active (<span id="active-count">...</span>)</a></li>
+            <li role="details"><a href="#pending">Pending (<span id="pending-count">...</span>)</a></li>
+            <li role="details"><a href="#assigned">Assigned (<span id="assigned-count">...</span>)</a></li>
+        </ul>
 
-            <div class="tab-content">
-                <div role="tabpanel" class="tab-pane active" id="detail">
-                    <div class="container">
-                        {% include "process/details.html" %}
-                    </div>
-                </div>
-                <div role="tabpanel" class="tab-pane" id="active">
-                    {% include "process/active.html" %}
-                </div>
-                <div role="tabpanel" class="tab-pane" id="pending">
-                    {% include "process/pending.html" %}
-                </div>
-                <div role="tabpanel" class="tab-pane" id="assigned">
-                    {% include "process/assigned.html" %}
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="detail">
+                <div class="container">
+                    {% include "process/details.html" %}
                 </div>
             </div>
-        {% endif %}
-    </div>
+            <div role="tabpanel" class="tab-pane" id="active">
+                {% include "process/active.html" %}
+            </div>
+            <div role="tabpanel" class="tab-pane" id="pending">
+                {% include "process/pending.html" %}
+            </div>
+            <div role="tabpanel" class="tab-pane" id="assigned">
+                {% include "process/assigned.html" %}
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}
 
 {% block footer %}

@@ -9,37 +9,35 @@
 {% endblock %}
 
 {% block content %}
-    <div class="col-xs-12">
-        <h1>{{ fqdn }}</h1>
+    <h1>{{ fqdn }}</h1>
 
-        {% if error %}
-            <div class="alert alert-danger" role="alert">{{ error }}</div>
-        {% else %}
-            <ul id="tabs" class="nav nav-tabs">
-                <li role="details" class="active"><a href="#details">Host Details</a></li>
-                <li role="details"><a href="#active">Active (<span id="active-count">...</span>)</a></li>
-                <li role="details"><a href="#pending">Pending (<span id="pending-count">...</span>)</a></li>
-                <li role="details"><a href="#assigned">Assigned (<span id="assigned-count">...</span>)</a></li>
-            </ul>
+    {% if error %}
+        <div class="alert alert-danger" role="alert">{{ error }}</div>
+    {% else %}
+        <ul id="tabs" class="nav nav-tabs">
+            <li role="details" class="active"><a href="#details">Host Details</a></li>
+            <li role="details"><a href="#active">Active (<span id="active-count">...</span>)</a></li>
+            <li role="details"><a href="#pending">Pending (<span id="pending-count">...</span>)</a></li>
+            <li role="details"><a href="#assigned">Assigned (<span id="assigned-count">...</span>)</a></li>
+        </ul>
 
-            <div class="tab-content">
-                <div role="tabpanel" class="tab-pane active" id="details">
-                    <div class="container">
-                        {% include "host/details.html" %}
-                    </div>
-                </div>
-                <div role="tabpanel" class="tab-pane" id="active">
-                    {% include "host/active.html" %}
-                </div>
-                <div role="tabpanel" class="tab-pane" id="pending">
-                    {% include "host/pending.html" %}
-                </div>
-                <div role="tabpanel" class="tab-pane" id="assigned">
-                    {% include "host/assigned.html" %}
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="details">
+                <div class="container">
+                    {% include "host/details.html" %}
                 </div>
             </div>
-        {% endif %}
-    </div>
+            <div role="tabpanel" class="tab-pane" id="active">
+                {% include "host/active.html" %}
+            </div>
+            <div role="tabpanel" class="tab-pane" id="pending">
+                {% include "host/pending.html" %}
+            </div>
+            <div role="tabpanel" class="tab-pane" id="assigned">
+                {% include "host/assigned.html" %}
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}
 
 {% block footer %}

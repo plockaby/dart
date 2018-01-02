@@ -9,41 +9,39 @@
 {% endblock %}
 
 {% block content %}
-    <div class="col-xs-12">
-        <h1>Processes</h1>
+    <h1>Processes</h1>
 
-        <p>
-            This is a list of all processes configured with dart. This is
-            intended to show basic information to help control those processes.
-        </p>
+    <p>
+        This is a list of all processes configured with dart. This is
+        intended to show basic information to help control those processes.
+    </p>
 
-        <table id="table"
-            data-url="{{ url_for('api.processes.processes') }}"
-            data-toggle="table"
-            data-striped="true"
-            data-classes="table table-hover table-condensed"
-            data-id-field="process"
-            data-unique-id-field="process"
-            data-sort-name="process"
-            data-sort-order="asc"
-            data-search="true"
-            data-show-toggle="true"
-            data-show-columns="true"
-            data-show-refresh="true"
-            class="table table-hover table-condensed table-striped">
-            <thead>
-                <tr>
-                    <th data-field="process"  data-sortable="true"  data-formatter="dart.format_process">Process</th>
-                    <th data-field="assigned" data-sortable="true"  data-searchable="false">Assigned</th>
-                    <th data-field="active"   data-sortable="true"  data-searchable="false">Active</th>
-                    <th data-field="pending"  data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Pending</th>
-                    <th data-field="failed"   data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Failed</th>
-                    <th data-field="disabled" data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Disabled</th>
-                    <th data-field="warnings" data-sortable="false" data-formatter="dart.format_warnings">Warnings</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
+    <table id="table"
+        data-url="{{ url_for('api.processes.processes') }}"
+        data-toggle="table"
+        data-striped="true"
+        data-classes="table table-hover table-condensed"
+        data-id-field="process"
+        data-unique-id-field="process"
+        data-sort-name="process"
+        data-sort-order="asc"
+        data-search="true"
+        data-show-toggle="true"
+        data-show-columns="true"
+        data-show-refresh="true"
+        class="table table-hover table-condensed table-striped">
+        <thead>
+            <tr>
+                <th data-field="process"  data-sortable="true"  data-formatter="dart.format_process">Process</th>
+                <th data-field="assigned" data-sortable="true"  data-searchable="false">Assigned</th>
+                <th data-field="active"   data-sortable="true"  data-searchable="false">Active</th>
+                <th data-field="pending"  data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Pending</th>
+                <th data-field="failed"   data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Failed</th>
+                <th data-field="disabled" data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Disabled</th>
+                <th data-field="warnings" data-sortable="false" data-formatter="dart.format_warnings">Warnings</th>
+            </tr>
+        </thead>
+    </table>
 {% endblock %}
 
 {% block footer %}

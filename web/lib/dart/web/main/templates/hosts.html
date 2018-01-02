@@ -9,43 +9,41 @@
 {% endblock %}
 
 {% block content %}
-    <div class="col-xs-12">
-        <h1>Hosts</h1>
+    <h1>Hosts</h1>
 
-        <p>
-            This is a list of all hosts that dart controls. This is intended to
-            show basic information to help control those hosts.
-        </p>
+    <p>
+        This is a list of all hosts that dart controls. This is intended to
+        show basic information to help control those hosts.
+    </p>
 
-        <table id="table"
-            data-url="{{ url_for('api.hosts.hosts') }}"
-            data-toggle="table"
-            data-striped="true"
-            data-classes="table table-hover table-condensed"
-            data-id-field="fqdn"
-            data-unique-id-field="fqdn"
-            data-sort-name="fqdn"
-            data-sort-order="asc"
-            data-search="true"
-            data-show-toggle="true"
-            data-show-columns="true"
-            data-show-refresh="true"
-            class="table table-hover table-condensed table-striped">
-            <thead>
-                <tr>
-                    <th data-field="fqdn"     data-sortable="true"  data-formatter="dart.format_fqdn">FQDN</th>
-                    <th data-field="total"    data-sortable="true"  data-searchable="false">Total</th>
-                    <th data-field="running"  data-sortable="true"  data-searchable="false">Running</th>
-                    <th data-field="stopped"  data-sortable="true"  data-searchable="false">Stopped</th>
-                    <th data-field="pending"  data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Pending</th>
-                    <th data-field="failed"   data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Failed</th>
-                    <th data-field="disabled" data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Disabled</th>
-                    <th data-field="warnings" data-sortable="false" data-formatter="dart.format_warnings">Warnings</th>
-                    <th data-formatter="dart.format_actions" data-events="dart.column_actions">Actions</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
+    <table id="table"
+        data-url="{{ url_for('api.hosts.hosts') }}"
+        data-toggle="table"
+        data-striped="true"
+        data-classes="table table-hover table-condensed"
+        data-id-field="fqdn"
+        data-unique-id-field="fqdn"
+        data-sort-name="fqdn"
+        data-sort-order="asc"
+        data-search="true"
+        data-show-toggle="true"
+        data-show-columns="true"
+        data-show-refresh="true"
+        class="table table-hover table-condensed table-striped">
+        <thead>
+            <tr>
+                <th data-field="fqdn"     data-sortable="true"  data-formatter="dart.format_fqdn">FQDN</th>
+                <th data-field="total"    data-sortable="true"  data-searchable="false">Total</th>
+                <th data-field="running"  data-sortable="true"  data-searchable="false">Running</th>
+                <th data-field="stopped"  data-sortable="true"  data-searchable="false">Stopped</th>
+                <th data-field="pending"  data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Pending</th>
+                <th data-field="failed"   data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Failed</th>
+                <th data-field="disabled" data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Disabled</th>
+                <th data-field="warnings" data-sortable="false" data-formatter="dart.format_warnings">Warnings</th>
+                <th data-formatter="dart.format_actions" data-events="dart.column_actions">Actions</th>
+            </tr>
+        </thead>
+    </table>
 {% endblock %}
 
 {% block footer %}

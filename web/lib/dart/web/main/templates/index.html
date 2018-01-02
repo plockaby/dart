@@ -1,94 +1,76 @@
 {% extends "master.html" %}
 
 {% block content %}
-    <!-- this is from the example here http://getbootstrap.com/examples/offcanvas/  -->
-    <div class="row row-offcanvas row-offcanvas-left">
+    <div class="row" id="search">
+        <div class="col-md-6">
+            <p><strong>Search Hosts</strong></p>
+            <form id="autocomplete-hosts">
+                <div class="input-group">
+                    <input type="text" required="required" class="form-control" name="search" placeholder="Host" value="" autocomplete="off"/>
+                    <span class="input-group-btn"><button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button></span>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-6">
+            <p><strong>Search Processes</strong></p>
+            <form id="autocomplete-processes">
+                <div class="input-group">
+                    <input type="text" required="required" class="form-control" name="search" placeholder="Process" value="" autocomplete="off"/>
+                    <span class="input-group-btn"><button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button></span>
+                </div>
+            </form>
+        </div>
+    </div>
 
-        {% include "menu.html" %}
+    <h2>Disabled Processes</h2>
+    <p>
+        The following processes are disabled on assigned hosts:
+        <ul>
+            {% for process in processes.values()|sort(attribute="process") if process.disabled %}
+                {% for fqdn in process.disabled_hosts|sort %}
+                    <li>
+                        <a href="{{ url_for('main.process', process=process.process) }}">{{ process.process }}</a> is disabled on <a href="{{ url_for('main.host', fqdn=fqdn) }}">{{ fqdn }}</a>
+                    </li>
+                {% endfor %}
+            {% else %}
+                <li>No processes are disabled.</li>
+            {% endfor %}
+        </ul>
+    </p>
 
-        <div class="col-xs-12 col-sm-9">
-            <p class="pull-left visible-xs">
-                <button type="button" class="btn btn-primary btn-md" data-toggle="offcanvas">Menu</button>
-            </p>
+    <h2>Failed Host Heartbeats</h2>
+    <p>
+        The following hosts have not sent a heartbeart in a
+        while and may no longer be online:
+        <ul>
+            {% for host in hosts.values()|sort(attribute="fqdn") if (host.checked and host.checked.timestamp() < (now.timestamp() - (60 * 60 * 4))) %}
+                <li><a href="{{ url_for('main.host', fqdn=host.fqdn) }}">{{ host.fqdn }}</a> last checked {{ moment(host.checked).format('MMMM Do YYYY, h:mm:ssa') }}</a></li>
+            {% else %}
+                <li>All hosts have:sent a heartbeat within the last four hours.</li>
+            {% endfor %}
+        </ul>
+    </p>
 
-            <div class="row" id="apps-container">
-                <div class="col-xs-12">
-                    <div class="row" id="search">
-                        <div class="col-md-6">
-                            <p><strong>Search Hosts</strong></p>
-                            <form id="autocomplete-hosts">
-                                <div class="input-group">
-                                    <input type="text" required="required" class="form-control" name="search" placeholder="Host" value="" autocomplete="off"/>
-                                    <span class="input-group-btn"><button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button></span>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong>Search Processes</strong></p>
-                            <form id="autocomplete-processes">
-                                <div class="input-group">
-                                    <input type="text" required="required" class="form-control" name="search" placeholder="Process" value="" autocomplete="off"/>
-                                    <span class="input-group-btn"><button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button></span>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+    <hr/>
 
-                    <h2>Disabled Processes</h2>
-                    <p>
-                        The following processes are disabled on assigned hosts:
-                        <ul>
-                            {% for process in processes.values()|sort(attribute="process") if process.disabled %}
-                                {% for fqdn in process.disabled_hosts|sort %}
-                                    <li>
-                                        <a href="{{ url_for('main.process', process=process.process) }}">{{ process.process }}</a> is disabled on <a href="{{ url_for('main.host', fqdn=fqdn) }}">{{ fqdn }}</a>
-                                    </li>
-                                {% endfor %}
-                            {% else %}
-                                <li>No processes are disabled.</li>
-                            {% endfor %}
-                        </ul>
-                    </p>
+    <p>
+        {% set managed_hosts = hosts.values()|selectattr('checked')|list %}
+        {% set managed_processes = processes.values()|list %}
+        Dart is currently managing
+            <a href="{{ url_for('main.hosts') }}">{{ managed_hosts|count }} {% if managed_hosts|count == 1 %}host{% else %}hosts{% endif %}</a>
+            and
+            <a href="{{ url_for('main.processes') }}">{{ managed_processes|count }} {% if managed_processes|count == 1 %}process{% else %}processes{% endif %}</a>.
+    </p>
 
-                    <h2>Failed Host Heartbeats</h2>
-                    <p>
-                        The following hosts have not sent a heartbeart in a
-                        while and may no longer be online:
-                        <ul>
-                            {% for host in hosts.values()|sort(attribute="fqdn") if (host.checked and host.checked.timestamp() < (now.timestamp() - (60 * 60 * 4))) %}
-                                <li><a href="{{ url_for('main.host', fqdn=host.fqdn) }}">{{ host.fqdn }}</a> last checked {{ moment(host.checked).format('MMMM Do YYYY, h:mm:ssa') }}</a></li>
-                            {% else %}
-                                <li>All hosts have:sent a heartbeat within the last four hours.</li>
-                            {% endfor %}
-                        </ul>
-                    </p>
-
-                    <hr/>
-
-                    <p>
-                        {% set managed_hosts = hosts.values()|selectattr('checked')|list %}
-                        {% set managed_processes = processes.values()|list %}
-                        Dart is currently managing
-                            <a href="{{ url_for('main.hosts') }}">{{ managed_hosts|count }} {% if managed_hosts|count == 1 %}host{% else %}hosts{% endif %}</a>
-                            and
-                            <a href="{{ url_for('main.processes') }}">{{ managed_processes|count }} {% if managed_processes|count == 1 %}process{% else %}processes{% endif %}</a>.
-                    </p>
-
-                    <p>
-                        Dart is a system for managing process configurations
-                        across many hosts, for controlling those processes once
-                        assigned to hosts, and for monitoring those processes as
-                        they run. Dart is a monitoring system but not an event
-                        management system. Use your event management system to
-                        view, triage, and manage events that may come from
-                        hosts and processes controlled by dart.
-                    </p>
-
-                </div><!--/.col-xs-12-->
-            </div><!--/row-->
-        </div><!--/.col-xs-12.col-sm-9-->
-
-    </div><!--/row-->
+    <p>
+        Dart is a system for managing process configurations
+        across many hosts, for controlling those processes once
+        assigned to hosts, and for monitoring those processes as
+        they run. Dart is a monitoring system but not an event
+        management system. Use your event management system to
+        view, triage, and manage events that may come from
+        hosts and processes controlled by dart.
+    </p>
 {% endblock %}
 
 {% block footer %}
