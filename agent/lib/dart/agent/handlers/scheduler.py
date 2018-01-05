@@ -31,7 +31,7 @@ class SchedulerHandler(BaseHandler):
 
     def start(self):
         # try to load our configuration file
-        self.logger.info("{} handler reading configuration".format(self.name))
+        self.logger.debug("{} handler reading configuration".format(self.name))
         while (self.configuration is None):
             self.configuration = self._load_configuration(self.configuration_path, self.configuration_file)
 

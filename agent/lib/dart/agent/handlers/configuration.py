@@ -393,7 +393,7 @@ class ConfigurationHandler(BaseHandler):
         # existing file with the temporary file.
         path = "{}/{}".format(path_name, file_name)
         temporary_path = "{}/.{}.tmp".format(path_name, file_name)
-        self.logger.info("{} handler writing new supervisor configuration file: {}".format(self.name, temporary_path))
+        self.logger.debug("{} handler writing new supervisor configuration file: {}".format(self.name, temporary_path))
         with open(temporary_path, "w") as f:
             for name in sorted(configurations):
                 (type, configuration) = configurations[name]
@@ -403,7 +403,7 @@ class ConfigurationHandler(BaseHandler):
         # move temp file into place. the os.replace function is atomic so
         # we can be sure that nothing will read an empty file while we move
         # the new one into place
-        self.logger.info("{} handler moving {} to {}".format(self.name, temporary_path, path))
+        self.logger.debug("{} handler moving {} to {}".format(self.name, temporary_path, path))
         os.replace(temporary_path, path)
 
     def _write_scheduler_configurations(self, configurations, path_name, file_name):
@@ -412,14 +412,14 @@ class ConfigurationHandler(BaseHandler):
         # existing file with the temporary file.
         path = "{}/{}".format(path_name, file_name)
         temporary_path = "{}/.{}.tmp".format(path_name, file_name)
-        self.logger.info("{} handler writing new scheduler configuration file: {}".format(self.name, temporary_path))
+        self.logger.debug("{} handler writing new scheduler configuration file: {}".format(self.name, temporary_path))
         with open(temporary_path, "w") as f:
             json.dump(configurations, f, sort_keys=True, indent=4)
 
         # move temp file into place. the os.replace function is atomic so
         # we can be sure that nothing will read an empty file while we move
         # the new one into place
-        self.logger.info("{} handler moving {} to {}".format(self.name, temporary_path, path))
+        self.logger.debug("{} handler moving {} to {}".format(self.name, temporary_path, path))
         os.replace(temporary_path, path)
 
     def _write_monitor_configurations(self, configurations, path_name, file_name):
@@ -428,12 +428,12 @@ class ConfigurationHandler(BaseHandler):
         # existing file with the temporary file.
         path = "{}/{}".format(path_name, file_name)
         temporary_path = "{}/.{}.tmp".format(path_name, file_name)
-        self.logger.info("{} handler writing new monitor configuration file: {}".format(self.name, temporary_path))
+        self.logger.debug("{} handler writing new monitor configuration file: {}".format(self.name, temporary_path))
         with open(temporary_path, "w") as f:
             json.dump(configurations, f, sort_keys=True, indent=4)
 
         # move temp file into place. the os.replace function is atomic so
         # we can be sure that nothing will read an empty file while we move
         # the new one into place
-        self.logger.info("{} handler moving {} to {}".format(self.name, temporary_path, path))
+        self.logger.debug("{} handler moving {} to {}".format(self.name, temporary_path, path))
         os.replace(temporary_path, path)

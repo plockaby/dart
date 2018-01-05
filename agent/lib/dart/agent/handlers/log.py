@@ -53,7 +53,7 @@ class LogHandler(BaseHandler):
 
     def start(self):
         # try to load our configuration file
-        self.logger.info("{} handler reading configuration".format(self.name))
+        self.logger.debug("{} handler reading configuration".format(self.name))
         with self.configuration_lock:
             while (self.configuration is None):
                 self.configuration = self._load_configuration(self.configuration_path, self.configuration_file)
@@ -103,7 +103,7 @@ class LogHandler(BaseHandler):
             if (self.reread_trigger.wait(timeout=1)):
                 try:
                     with self.configuration_lock:
-                        self.logger.info("{} handler rereading configuration".format(self.name))
+                        self.logger.debug("{} handler rereading configuration".format(self.name))
 
                         # don't just blindly load the configuration. ensure
                         # that we were able to actually load the file before
@@ -119,7 +119,7 @@ class LogHandler(BaseHandler):
                     self.reread_trigger.clear()
 
         # note that this thread is finished
-        self.logger.info("{} handler configuration loader exiting".format(self.name))
+        self.logger.debug("{} handler configuration loader exiting".format(self.name))
 
     # this method runs in a thread
     def _run(self):
@@ -138,7 +138,7 @@ class LogHandler(BaseHandler):
                 # to the queue. this happens when someone calls the ".stop"
                 # method on the class.
                 if (item is None):
-                    self.logger.info("{} handler queue listener cleaning up before exit".format(self.name))
+                    self.logger.debug("{} handler queue listener cleaning up before exit".format(self.name))
                     finished = True
                 else:
                     self._check(item["event"], item["data"])
@@ -210,7 +210,7 @@ class LogHandler(BaseHandler):
                             break
 
                         if (regex.search(line)):
-                            self.logger.info("{} handler matched '{}' for {} on {}".format(self.name, monitor["regex"], process, stream))
+                            self.logger.debug("{} handler matched '{}' for {} on {}".format(self.name, monitor["regex"], process, stream))
 
                             # some regexes don't have severities set. in that
                             # case we do not create any events. this typically
@@ -228,7 +228,7 @@ class LogHandler(BaseHandler):
                             # "stop" configuration set then we break out of the
                             # monitors loop and then process the next line.
                             if (monitor["stop"]):
-                                self.logger.info("{} handler stopping log processing for {} on {} because of stop rule".format(self.name, process, stream))
+                                self.logger.debug("{} handler stopping log processing for {} on {} because of stop rule".format(self.name, process, stream))
                                 break
         except Exception as e:
             subject = "{} handler unexpected error: {}".format(self.name, repr(e))

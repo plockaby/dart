@@ -168,7 +168,7 @@ class CoordinationHandler(BaseHandler):
                 # rabbitmq so we'll check again here.
                 if (not self.killer.killed()):
                     interval = 10
-                    self.logger.warn("{} handler sleeping for {} seconds before trying again".format(self.name, interval))
+                    self.logger.warning("{} handler sleeping for {} seconds before trying again".format(self.name, interval))
                     time.sleep(interval)
 
         # tell everything that we're done

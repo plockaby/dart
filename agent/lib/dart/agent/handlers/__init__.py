@@ -60,7 +60,7 @@ class BaseHandler(object):
             )
 
             # trigger a rewrite of the configuration file
-            self.logger.info("{} handler setting rewrite trigger".format(self.name))
+            self.logger.info("{} handler triggering a rewrite".format(self.name))
             self.rewrite_trigger.set()
         except OSError as e:
             subject = "{} handler could not read file {}/{}".format(self.name, configuration_path, configuration_file)
@@ -78,7 +78,7 @@ class BaseHandler(object):
             )
 
             # trigger a rewrite of the configuration file
-            self.logger.info("{} handler setting rewrite trigger".format(self.name))
+            self.logger.info("{} handler triggering a rewrite".format(self.name))
             self.rewrite_trigger.set()
         except Exception as e:
             subject = "{} handler unexpected error reading file {}/{}: {}".format(self.name, configuration_path, configuration_file, repr(e))

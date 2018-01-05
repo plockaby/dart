@@ -60,7 +60,7 @@ class StateHandler(BaseHandler):
 
     def start(self):
         # try to load our configuration file
-        self.logger.info("{} handler reading configuration".format(self.name))
+        self.logger.debug("{} handler reading configuration".format(self.name))
         with self.configuration_lock:
             while (self.configuration is None):
                 self.configuration = self._load_configuration(self.configuration_path, self.configuration_file)
@@ -110,7 +110,7 @@ class StateHandler(BaseHandler):
             if (self.reread_trigger.wait(timeout=1)):
                 try:
                     with self.configuration_lock:
-                        self.logger.info("{} handler rereading configuration".format(self.name))
+                        self.logger.debug("{} handler rereading configuration".format(self.name))
 
                         # don't just blindly load the configuration. ensure
                         # that we were able to actually load the file before
@@ -126,7 +126,7 @@ class StateHandler(BaseHandler):
                     self.reread_trigger.clear()
 
         # note that this thread is finished
-        self.logger.info("{} handler configuration loader exiting".format(self.name))
+        self.logger.debug("{} handler configuration loader exiting".format(self.name))
 
     # this method runs in a thread
     def _run(self):
@@ -145,7 +145,7 @@ class StateHandler(BaseHandler):
                 # to the queue. this happens when someone calls the ".stop"
                 # method on the class.
                 if (item is None):
-                    self.logger.info("{} handler queue listener cleaning up before exit".format(self.name))
+                    self.logger.debug("{} handler queue listener cleaning up before exit".format(self.name))
                     finished = True
                 else:
                     self._check(item["type"], item["event"])
@@ -210,7 +210,7 @@ class StateHandler(BaseHandler):
             state = client.connection.supervisor.getProcessInfo(event["processname"])
 
             # send the state message to the message bus
-            self.logger.info("recording state change on {} to {}".format(event["processname"], event_type))
+            self.logger.debug("{} handler recording state change on {} to {}".format(self.name, event["processname"], event_type))
             self.queue.put(dict(
                 exchange="state",
                 payload=dict(
@@ -228,7 +228,7 @@ class StateHandler(BaseHandler):
                 if (state["statename"] == "RUNNING"):
                     # if the process is successfully running then clear any
                     # state alerts for it.
-                    self.logger.info("{} handler clearing state event for {} because it is now RUNNING".format(self.name, process))
+                    self.logger.debug("{} handler clearing state event for {} because it is now RUNNING".format(self.name, process))
                     dart.common.event.send(
                         component="dart:monitor:state:{}".format(process),
                         severity=6,
@@ -238,7 +238,7 @@ class StateHandler(BaseHandler):
                     # if this process is being state monitored and it has gone
                     # into one of these error states then raise an error.
                     if (state["statename"] in ["UNKNOWN", "FATAL", "BACKOFF"]):
-                        self.logger.info("{} handler raising state event for {} because it has gone into state {}".format(self.name, process, state["statename"]))
+                        self.logger.debug("{} handler raising state event for {} because it has gone into state {}".format(self.name, process, state["statename"]))
                         dart.common.event.send(
                             component="dart:monitor:state:{}".format(process),
                             severity=configuration["severity"],
@@ -250,7 +250,7 @@ class StateHandler(BaseHandler):
                     # if this process is being state monitored and it returned
                     # an error when it exited then raise an error.
                     elif (state["spawnerr"]):
-                        self.logger.info("{} handler raising state event for {} because it exited with an error".format(self.name, process))
+                        self.logger.debug("{} handler raising state event for {} because it exited with an error".format(self.name, process))
                         dart.common.event.send(
                             component="dart:monitor:state:{}".format(process),
                             severity=configuration["severity"],
@@ -265,14 +265,14 @@ class StateHandler(BaseHandler):
                 if (state["statename"] == "RUNNING"):
                     # if the process is successfully running then clear any
                     # daemon alerts for it.
-                    self.logger.info("{} handler clearing daemon event for {} because it is now RUNNING".format(self.name, process))
+                    self.logger.debug("{} handler clearing daemon event for {} because it is now RUNNING".format(self.name, process))
                     dart.common.event.send(
                         component="dart:monitor:daemon:{}".format(process),
                         severity=6,
                         subject="clear",
                     )
                 else:
-                    self.logger.info("{} handler raising daemon event for {} because it is in state {} when it is supposed to be in state RUNNING".format(self.name, process, state["statename"]))
+                    self.logger.debug("{} handler raising daemon event for {} because it is in state {} when it is supposed to be in state RUNNING".format(self.name, process, state["statename"]))
                     dart.common.event.send(
                         component="dart:monitor:daemon:{}".format(process),
                         severity=configuration["severity"],

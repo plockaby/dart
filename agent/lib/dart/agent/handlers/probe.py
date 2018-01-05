@@ -40,7 +40,7 @@ class ProbeHandler(BaseHandler):
 
     def start(self):
         # try to load our configuration file
-        self.logger.info("{} handler reading configuration".format(self.name))
+        self.logger.debug("{} handler reading configuration".format(self.name))
         while (self.configuration is None):
             self.configuration = self._load_configuration(self.configuration_path, self.configuration_file)
 
@@ -103,7 +103,7 @@ class ProbeHandler(BaseHandler):
 
     def _probe_active_supervisor_configurations(self):
         try:
-            self.logger.info("{} handler probing active supervisor configurations".format(self.name))
+            self.logger.debug("{} handler probing active supervisor configurations".format(self.name))
 
             # get active processes
             timestamp = time.time()
@@ -133,7 +133,7 @@ class ProbeHandler(BaseHandler):
                     if (state["statename"] == "RUNNING"):
                         # if the process is successfully running then clear any
                         # state alerts for it.
-                        self.logger.info("{} handler clearing state event for {} because it is now RUNNING".format(self.name, process))
+                        self.logger.debug("{} handler clearing state event for {} because it is now RUNNING".format(self.name, process))
                         dart.common.event.send(
                             component="dart:monitor:state:{}".format(process),
                             severity=6,
@@ -143,7 +143,7 @@ class ProbeHandler(BaseHandler):
                         # if this process is being state monitored and it has gone
                         # into one of these error states then raise an error.
                         if (state["statename"] in ["UNKNOWN", "FATAL", "BACKOFF"]):
-                            self.logger.info("{} handler raising state event for {} because it has gone into state {}".format(self.name, process, state["statename"]))
+                            self.logger.debug("{} handler raising state event for {} because it has gone into state {}".format(self.name, process, state["statename"]))
                             dart.common.event.send(
                                 component="dart:monitor:state:{}".format(process),
                                 severity=configuration["severity"],
@@ -155,7 +155,7 @@ class ProbeHandler(BaseHandler):
                         # if this process is being state monitored and it returned
                         # an error when it exited then raise an error.
                         elif (state["spawnerr"]):
-                            self.logger.info("{} handler raising state event for {} because it exited with an error".format(self.name, process))
+                            self.logger.debug("{} handler raising state event for {} because it exited with an error".format(self.name, process))
                             dart.common.event.send(
                                 component="dart:monitor:state:{}".format(process),
                                 severity=configuration["severity"],
@@ -168,7 +168,7 @@ class ProbeHandler(BaseHandler):
                     configuration = self.configuration["daemon"][process]
 
                     if (state["statename"] == "RUNNING"):
-                        self.logger.info("{} handler clearing state event for {} because it is now RUNNING".format(self.name, process))
+                        self.logger.debug("{} handler clearing state event for {} because it is now RUNNING".format(self.name, process))
                         # if the process is successfully running then clear any
                         # daemon alerts for it.
                         dart.common.event.send(
@@ -177,7 +177,7 @@ class ProbeHandler(BaseHandler):
                             subject="clear",
                         )
                     else:
-                        self.logger.info("{} handler raising daemon event for {} because it is in state {} when it is supposed to be in state RUNNING".format(self.name, process, state["statename"]))
+                        self.logger.debug("{} handler raising daemon event for {} because it is in state {} when it is supposed to be in state RUNNING".format(self.name, process, state["statename"]))
                         dart.common.event.send(
                             component="dart:monitor:daemon:{}".format(process),
                             severity=configuration["severity"],
@@ -222,7 +222,7 @@ class ProbeHandler(BaseHandler):
 
     def _probe_pending_supervisor_configurations(self):
         try:
-            self.logger.info("{} handler probing pending supervisor configurations".format(self.name))
+            self.logger.debug("{} handler probing pending supervisor configurations".format(self.name))
 
             # get pending process changes
             timestamp = time.time()
@@ -260,7 +260,7 @@ class ProbeHandler(BaseHandler):
                 if (len(pending["changed"])):
                     subject.append("{} changed".format(",".join(pending["changed"])))
 
-                self.logger.info("raising severity 3 event for {}".format("; ".join(subject)))
+                self.logger.debug("raising severity 3 event for {}".format("; ".join(subject)))
                 dart.common.event.send(
                     component="dart:monitor:pending",
                     severity=3,
@@ -311,7 +311,7 @@ class ProbeHandler(BaseHandler):
 
     def _probe_system_configuration(self):
         try:
-            self.logger.info("{} handler probing system configuration".format(self.name))
+            self.logger.debug("{} handler probing system configuration".format(self.name))
 
             # when did we start probing (used by processor)
             timestamp = time.time()

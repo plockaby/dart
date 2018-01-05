@@ -91,7 +91,7 @@ class QueueHandler(BaseHandler):
                         # listening to the queue. this happens when someone
                         # calls the ".stop" method to this class.
                         if (item is None):
-                            self.logger.info("{} handler cleaning up before exit".format(self.name))
+                            self.logger.debug("{} handler cleaning up before exit".format(self.name))
                             finished = True
                             break
 
@@ -177,7 +177,7 @@ class QueueHandler(BaseHandler):
             finally:
                 if (not finished):
                     interval = 10
-                    self.logger.warn("{} handler sleeping for {} seconds before trying again".format(self.name, interval))
+                    self.logger.warning("{} handler sleeping for {} seconds before trying again".format(self.name, interval))
                     time.sleep(interval)
 
         # tell everything that we're done

@@ -19,7 +19,7 @@ def keepalive(component, severity, message, timeout, contact=None, hostname=None
         contact = "me@example.com"
 
     # TODO - implement keepalive system
-    logger.warning("keepalive not sent -- not implemented")
+    logger.debug("keepalive not sent -- not implemented")
 
 
 def send(component, severity, subject, message="", contact=None, hostname=None, origin=None):
@@ -35,4 +35,4 @@ def send(component, severity, subject, message="", contact=None, hostname=None, 
 
     # TODO - implement notification system
     if (severity < 6):
-        logger.error("{} {} {} {}".format(component, severity, subject, message))
+        logger.debug("{} {} {} {}".format(component, severity, subject, message))

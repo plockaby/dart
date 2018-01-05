@@ -156,7 +156,7 @@ class DartAgent(object):
     def run(self, *args, **kwargs):
         # start all of the handlers
         for handler in self.handlers:
-            self.logger.info("starting handler: {}".format(handler.name))
+            self.logger.debug("starting handler: {}".format(handler.name))
             handler.start()
 
         # if we need to exit then this will be changed to True
@@ -228,11 +228,11 @@ class DartAgent(object):
                 # this prints to stdout where we communicate with supervisor
                 print("RESULT 2\nOK", flush=True, end="")
         else:
-            self.logger.info("finished supervisor listener loop")
+            self.logger.debug("finished supervisor listener loop")
 
         # tell the handlers to all stop
         for handler in self.handlers:
-            self.logger.info("stopping handler: {}".format(handler.name))
+            self.logger.debug("stopping handler: {}".format(handler.name))
             handler.stop()
 
         # say goodnight, kevin.
@@ -278,7 +278,7 @@ class DartAgent(object):
 
     def _handle_event(self, header, event, data):
         if (header["eventname"].startswith("TICK_")):
-            self.logger.info("received {} event".format(header["eventname"]))
+            self.logger.debug("received {} event".format(header["eventname"]))
             return self._handle_tick_event(header["eventname"], event, data)
 
         # if it's not a tick event, send it on its way to the even thandlers
@@ -304,7 +304,7 @@ class DartAgent(object):
         timestamp = int(time.time())  # get the current time
         event_timestamp = int(event.get("when", 0))  # get the time of the event (only present on TICK events)
         if (timestamp - event_timestamp > interval):
-            self.logger.warn("skipping {} from {} because it is older than {} seconds ({} seconds ago)".format(event_type, event_timestamp, interval, (timestamp - event_timestamp)))
+            self.logger.warning("skipping {} from {} because it is older than {} seconds ({} seconds ago)".format(event_type, event_timestamp, interval, (timestamp - event_timestamp)))
 
             # don't bother checking to see if the version changed, just keep
             # processing things (including tick events) and eventually we'll
@@ -321,7 +321,7 @@ class DartAgent(object):
         )
 
         # now that we've collapsed the tick events, issue a rewrite command
-        self.logger.info("tick handler triggering a rewrite")
+        self.logger.debug("tick handler triggering a rewrite")
         self.rewrite_trigger.set()
 
         # now that we've collapsed the tick events, send it to our handlers
