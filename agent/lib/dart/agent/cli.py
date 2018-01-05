@@ -36,13 +36,13 @@ def main():
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
     log_handler = logging.handlers.SysLogHandler(address="/dev/log")
-    log_handler.setFormatter(logging.Formatter("dart-agent: %(asctime)s %(levelname)-8s - %(message)s"))
+    log_handler.setFormatter(logging.Formatter("dart-agent[%(process)d]: %(asctime)s %(levelname)-8s - %(message)s"))
     logger.addHandler(log_handler)
 
     # change the level and output format if we're going to be verbose
     if args.verbose:
         logger.setLevel(logging.DEBUG)
-        log_handler.setFormatter(logging.Formatter("dart-agent: %(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] - %(message)s"))
+        log_handler.setFormatter(logging.Formatter("dart-agent[%(process)d]: %(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] - %(message)s"))
 
     # start the main program
     try:
