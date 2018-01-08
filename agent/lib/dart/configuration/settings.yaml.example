@@ -14,7 +14,7 @@ configuration:
 cassandra:
     username: dart
     password: xxxx
-    addresses":
+    addresses:
         # a list of ip addresses or hostnames to connect to
         - 127.0.0.1
 
