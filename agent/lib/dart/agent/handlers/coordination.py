@@ -3,7 +3,6 @@ import dart.common.event
 import dart.common.configuration
 from dart.common.killer import GracefulEventKiller
 from dart.common.supervisor import SupervisorClient
-import logging
 import traceback
 from threading import Thread
 import xmlrpc.client

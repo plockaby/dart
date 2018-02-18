@@ -1,6 +1,5 @@
 from . import BaseHandler
 import dart.common.event
-import logging
 import traceback
 from threading import Thread
 import kombu

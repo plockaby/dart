@@ -2,7 +2,6 @@ from . import BaseHandler
 import dart.common.event
 import dart.common.database
 from dart.common.killer import GracefulEventKiller
-import logging
 import traceback
 from threading import Thread
 import cassandra
