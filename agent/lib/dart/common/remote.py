@@ -57,7 +57,7 @@ def command(fqdn, action, process=None, retries=None):
                         declare=[exchange],
                         retry=True,
                     )
-    except (socket.gaierror, socket.timeout, OSError, TimeoutError, ConnectionError, amqp.exceptions.ConnectionForced, amqp.exceptions.AccessRefused, amqp.exceptions.NotAllowed) as e:
+    except (socket.gaierror, socket.timeout, OSError, TimeoutError, ConnectionError, amqp.exceptions.ConnectionError, amqp.exceptions.ChannelError) as e:
         logger.warning("connection error: {}".format(repr(e)))
         logger.debug(traceback.format_exc())
     except Exception as e:

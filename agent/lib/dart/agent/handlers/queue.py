@@ -15,9 +15,6 @@ class QueueHandler(BaseHandler):
     def __init__(self, queue, **kwargs):
         super().__init__(**kwargs)
 
-        # disable the verbose logging in kombu
-        logging.getLogger("kombu").setLevel(logging.INFO)
-
         # this is the queue that we should read off of
         self.queue = queue
 
@@ -141,7 +138,7 @@ class QueueHandler(BaseHandler):
                         # try again in that event.
                         self.queue.put(item)
                         raise e
-            except (socket.gaierror, socket.timeout, TimeoutError, ConnectionError, amqp.exceptions.ConnectionForced, amqp.exceptions.AccessRefused, amqp.exceptions.NotAllowed) as e:
+            except (socket.gaierror, socket.timeout, OSError, TimeoutError, ConnectionError, amqp.exceptions.ConnectionError, amqp.exceptions.ChannelError) as e:
                 subject = "queue listener connection error: {}".format(repr(e))
                 message = traceback.format_exc()
                 self.logger.warning(subject)

@@ -19,9 +19,6 @@ class CoordinationHandler(BaseHandler):
     def __init__(self, supervisor_server_url, reread_trigger, rewrite_trigger, **kwargs):
         super().__init__(**kwargs)
 
-        # disable the verbose logging in kombu
-        logging.getLogger("kombu").setLevel(logging.INFO)
-
         # this is how we connect to supervisor
         self.supervisor_server_url = supervisor_server_url
 
@@ -97,6 +94,13 @@ class CoordinationHandler(BaseHandler):
 
                     # we want the queue to go away when we're done with it.
                     auto_delete=True,
+
+                    # it should also be transient
+                    durable=False,
+
+                    # for extra good luck, delete the queue if it has gone
+                    # unused (no connections) for more than 60 seconds.
+                    expires=60,
                 )
 
                 # create the consumer
@@ -122,7 +126,7 @@ class CoordinationHandler(BaseHandler):
                             subject="clear",
                         )
                         clear_error = False
-            except (socket.gaierror, socket.timeout, OSError, TimeoutError, ConnectionError, amqp.exceptions.ConnectionForced, amqp.exceptions.AccessRefused, amqp.exceptions.NotAllowed) as e:
+            except (socket.gaierror, socket.timeout, OSError, TimeoutError, ConnectionError, amqp.exceptions.ConnectionError, amqp.exceptions.ChannelError) as e:
                 subject = "{} handler connection error: {}".format(self.name, repr(e))
                 message = traceback.format_exc()
                 self.logger.warning(subject)

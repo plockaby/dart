@@ -1,10 +1,6 @@
 (function () {
     "use strict";
 
-    $("[data-toggle='offcanvas']").click(function () {
-        $(".row-offcanvas").toggleClass("active");
-    });
-
     // namespace for the program
     var dart = {};
 

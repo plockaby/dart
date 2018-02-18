@@ -154,7 +154,7 @@ class DartProcessor(object):
 
                     # check to see if we should exit
                     finished = self._should_finish()
-            except (socket.gaierror, socket.timeout, OSError, TimeoutError, ConnectionError, amqp.exceptions.ConnectionForced, amqp.exceptions.AccessRefused, amqp.exceptions.NotAllowed) as e:
+            except (socket.gaierror, socket.timeout, OSError, TimeoutError, ConnectionError, amqp.exceptions.ConnectionError, amqp.exceptions.ChannelError) as e:
                 self.logger.warning("connection error: {}".format(repr(e)))
                 self.logger.debug(traceback.format_exc())
             except Exception as e:

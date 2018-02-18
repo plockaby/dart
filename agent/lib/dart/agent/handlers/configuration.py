@@ -15,10 +15,6 @@ class ConfigurationHandler(BaseHandler):
     def __init__(self, configuration_path, supervisor_configuration_file, scheduler_configuration_file, monitor_configuration_file, reread_trigger, rewrite_trigger, **kwargs):
         super().__init__(**kwargs)
 
-        # ignore cassandra errors only if we aren't explicitly in verbose mode
-        if (not self.logger.isEnabledFor(logging.DEBUG)):
-            logging.getLogger("cassandra").setLevel(logging.ERROR)
-
         # we can set these to force a reread or a rewrite
         self.reread_trigger = reread_trigger
         self.rewrite_trigger = rewrite_trigger

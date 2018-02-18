@@ -31,6 +31,11 @@ class DartAgent(object):
     def __init__(self, **kwargs):
         self.logger = logging.getLogger(__name__)
 
+        # disable the verbose logging in kombu
+        if (not self.logger.isEnabledFor(logging.DEBUG)):
+            logging.getLogger("kombu").setLevel(logging.INFO)
+            logging.getLogger("cassandra").setLevel(logging.INFO)
+
         # this keeps track of whether we've been told to die or not
         self.killer = GracefulSignalKiller()
 
