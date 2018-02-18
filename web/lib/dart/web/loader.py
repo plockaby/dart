@@ -1,7 +1,5 @@
 import os
-import sys
 import logging
-import logging.handlers
 from flask import Flask
 from flask_moment import Moment
 import dart.common.configuration
@@ -12,7 +10,6 @@ from datetime import datetime
 # enable a logger
 logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 # these things defined here get used by views, forms, and errors
 db_client = CassandraClient()
@@ -26,18 +23,9 @@ def load():
     if ("FLASK_CONFIG" in os.environ):
         app.config.from_envvar("FLASK_CONFIG")
 
-    # send logs to stdout
-    log_handler = logging.StreamHandler(stream=sys.stdout)
-
-    # enable debug logging if in debug mode
-    if app.config.get("DEBUG", False):
-        log_handler.setFormatter(logging.Formatter("[%(asctime)s] (%(pathname)s:%(lineno)d) %(levelname)-8s - %(message)s"))
-        logger.setLevel(logging.DEBUG)
-    else:
-        log_handler.setFormatter(logging.Formatter("[%(asctime)s] %(levelname)-8s - %(message)s"))
-
-    # our log handler has the log format in it as well as the log destination
-    logger.addHandler(log_handler)
+    # disable debug logging for kombu and cassandra
+    logging.getLogger("kombu").setLevel(logging.INFO)
+    logging.getLogger("cassandra").setLevel(logging.INFO)
 
     # initialize the cassandra thingy
     configuration = dart.common.configuration.load()
