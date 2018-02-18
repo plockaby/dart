@@ -1,4 +1,4 @@
-from . import DataCommand
+from . import BaseCommand
 import sys
 import yaml
 import cassandra.query
@@ -7,7 +7,7 @@ from crontab import CronTab
 import re
 
 
-class RegisterCommand(DataCommand):
+class RegisterCommand(BaseCommand):
     def run(self, file, **kwargs):
         self.logger.info("processing {} for registration with dart".format(file))
         data = None

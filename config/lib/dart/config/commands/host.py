@@ -1,9 +1,9 @@
-from . import DataCommand
+from . import BaseCommand
 import cassandra.query
 import json
 
 
-class HostsCommand(DataCommand):
+class HostsCommand(BaseCommand):
     def run(self, **kwargs):
         hosts = dict()
 

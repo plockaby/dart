@@ -10,11 +10,6 @@ class BaseCommand(object):
         # get configuration from options
         self.verbose = kwargs.get("verbose", False)
 
-
-class DataCommand(BaseCommand):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
         # ignore cassandra errors only if we aren't explicitly in verbose mode
         if (not self.logger.isEnabledFor(logging.DEBUG)):
             logging.getLogger("cassandra").setLevel(logging.ERROR)
