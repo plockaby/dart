@@ -40,6 +40,7 @@ def host(fqdn):
             "host.html",
             fqdn=fqdn,
             error="No host named {} is managed by dart.".format(fqdn),
+            ignore=dart.common.PROCESSES_TO_IGNORE,
         )
 
     # shows information about one host, similar to "dart host" command
@@ -51,7 +52,7 @@ def host(fqdn):
         fqdn=fqdn,
         host=host,
         tags=tags,
-        ignore=dart.common.PROCESSES_TO_IGNORE
+        ignore=dart.common.PROCESSES_TO_IGNORE,
     )
 
 
@@ -68,6 +69,7 @@ def process(process):
             "process.html",
             process=process,
             error="No process named {} is configured in dart.".format(process),
+            ignore=dart.common.PROCESSES_TO_IGNORE,
         )
 
     # shows information about one process, similar to "dart process" command
@@ -85,7 +87,7 @@ def process(process):
         daemon_monitoring=daemon_monitoring,
         state_monitoring=state_monitoring,
         log_monitoring=log_monitoring,
-        ignore=dart.common.PROCESSES_TO_IGNORE
+        ignore=dart.common.PROCESSES_TO_IGNORE,
     )
 
 

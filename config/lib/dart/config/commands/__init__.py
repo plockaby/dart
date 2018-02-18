@@ -25,5 +25,5 @@ class BaseCommand(object):
     def __del__(self):
         try:
             self.session.shutdown()
-        except Exception as e:
+        except Exception:
             pass

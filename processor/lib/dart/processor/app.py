@@ -11,18 +11,12 @@ import cassandra.cluster
 from statsd import StatsClient
 from dart.common.killer import GracefulSignalKiller
 import dart.common.database
-import importlib
 
 # these are the processors that we support
 from .processors.active import ActiveConfigurationProcessor
 from .processors.pending import PendingConfigurationProcessor
 from .processors.probe import ProbeProcessor
 from .processors.state import StateProcessor
-
-# import explicitly and specifically like this and NOT as a relative import.
-# this is entirely so that we can check if the version number has changed. if
-# it changes then we are going to exit so that we can restart ourselves.
-import dart.processor
 
 
 class DartProcessor(object):
@@ -90,8 +84,11 @@ class DartProcessor(object):
             self.processors[processor.name] = processor
 
     def __del__(self):
-        # this will wait for all async queries to finish
-        self.session.shutdown()
+        try:
+            # this will wait for all async queries to finish
+            self.session.shutdown()
+        except Exception:
+            pass
 
     def run(self):
         # generate the url out here so that it is randomized in the same way.
@@ -223,29 +220,14 @@ class DartProcessor(object):
             # always ack the message, even if we can't process it. that way we
             # don't sit there trying to parse an unparseable message forever.
             # we'll get the data eventually even if we miss a few messages
-            message.ack()
+            try:
+                message.ack()
+            except Exception:
+                pass
 
     def _should_finish(self):
         if (self.killer.killed()):
             self.logger.info("exiting because we were killed")
             return True
-
-        if (self._has_version_changed()):
-            self.logger.info("exiting because of version change")
-            return True
-
-        return False
-
-    def _has_version_changed(self):
-        try:
-            old_version = dart.processor.__version__
-            importlib.reload(dart.processor)
-            new_version = dart.processor.__version__
-
-            if (old_version != new_version):
-                self.logger.info("new version {} is not the same as old version {}".format(new_version, old_version))
-                return True
-        except Exception as e:
-            pass
 
         return False

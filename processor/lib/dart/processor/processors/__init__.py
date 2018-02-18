@@ -20,10 +20,10 @@ class BaseProcessor(object):
 
     @property
     def name(self):
-        raise NotImplementedError("property must be implemented in subclass")
+        raise NotImplementedError("{}: property must be implemented in subclass".format(__name__))
 
     def process_task(self, body, message):
-        raise NotImplementedError("must be implemented in subclass")
+        raise NotImplementedError("{}: method must be implemented in subclass".format(__name__))
 
     def _send_keepalive(self):
         # raise an alarm if our event listener never processes anything
