@@ -55,16 +55,6 @@ class RestartCommand(RemoteCommand):
         return self.send(fqdn, "restart", process)
 
 
-class AddCommand(RemoteCommand):
-    def run(self, fqdn, process, **kwargs):
-        return self.send(fqdn, "add", process)
-
-
-class RemoveCommand(RemoteCommand):
-    def run(self, fqdn, process, **kwargs):
-        return self.send(fqdn, "remove", process)
-
-
 class UpdateCommand(RemoteCommand):
     def run(self, fqdn, process, **kwargs):
         return self.send(fqdn, "update", process)

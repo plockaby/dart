@@ -189,9 +189,6 @@
                 "<ul class='dropdown-menu'>",
                     "<li><a href='javascript:void(0);' class='update'>Update</a></li>",
                     "<li role='separator' class='divider'></li>",
-                    "<li><a href='javascript:void(0);' class='add'>Add</a></li>",
-                    "<li><a href='javascript:void(0);' class='remove'>Remove</a></li>",
-                    "<li role='separator' class='divider'></li>",
                     "<li><a href='javascript:void(0);' class='enable'>Enable</a></li>",
                     "<li><a href='javascript:void(0);' class='disable'>Disable</a></li>",
                 "</ul>",
@@ -254,16 +251,6 @@
             var fqdn = row.fqdn ? row.fqdn : dart.fqdn,
                 process = row.process ? row.process : dart.process;
             dart.command_update(dart.endpoints.update, fqdn, process);
-        },
-        "click a.add": function (e, value, row) {
-            var fqdn = row.fqdn ? row.fqdn : dart.fqdn,
-                process = row.process ? row.process : dart.process;
-            dart.command_add(dart.endpoints.add, fqdn, process);
-        },
-        "click a.remove": function (e, value, row) {
-            var fqdn = row.fqdn ? row.fqdn : dart.fqdn,
-                process = row.process ? row.process : dart.process;
-            dart.command_remove(dart.endpoints.remove, fqdn, process);
         },
         "click a.enable": function (e, value, row) {
             var fqdn = row.fqdn ? row.fqdn : dart.fqdn,
@@ -347,24 +334,6 @@
             endpoint,
             { fqdn: fqdn, process: process },
             "Sent update command to " + fqdn + " for " + process + ". Configurations should be updated soon.",
-            "Problem encountered when sending command to " + fqdn + " for " + process + ": "
-        );
-    };
-
-    dart.command_add = function (endpoint, fqdn, process) {
-        dart.send_command(
-            endpoint,
-            { fqdn: fqdn, process: process },
-            "Sent add command to " + fqdn + " for " + process + ". Configurations should be updated soon.", 
-            "Problem encountered when sending command to " + fqdn + " for " + process + ": "
-        );
-    };
-
-    dart.command_remove = function (endpoint, fqdn, process) {
-        dart.send_command(
-            endpoint,
-            { fqdn: fqdn, process: process },
-            "Sent remove command to " + fqdn + " for " + process + ". Configurations should be updated soon.", 
             "Problem encountered when sending command to " + fqdn + " for " + process + ": "
         );
     };

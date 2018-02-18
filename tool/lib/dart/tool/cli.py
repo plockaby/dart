@@ -18,14 +18,14 @@ This is a tool that controls the dart system. It provides these commands:
   Assigns a process environment to a host. Only one process environment may be
   assigned to a host at one time. As soon as the assignment change is pushed to
   the host then the process will be marked on the host as "pending add". You
-  will need to tell the host to "add" the process.
+  will need to tell the host to "update" the process.
 
 * unassign <process> <fqdn>
   Unassigns a process from a host. Only one process environment may be assigned
   to a host at one time so you do not need to give the environment name when
   unassigning a process from a host. As soon as the assignment change is pushed
   to the host then the process will be marked on the host as "pending removal".
-  You will need to tell the host to "remove" the process.
+  You will need to tell the host to "update" the process.
 
 * enable <process> <fqdn>
   Enables a process on a host. When a process is "disabled" it will no longer
@@ -49,19 +49,6 @@ This is a tool that controls the dart system. It provides these commands:
   Restarts a process on a host. If the process is not assigned and added to
   this host then this command will do nothing. If the process is not running it
   will be started.
-
-* add <process> <fqdn>
-  Adds a process to a host's supervisor configuration. It is necessary to run
-  this command to add a process to a host after assigning it. Assigning a
-  process simply puts the configuration on the host but does not tell
-  supervisor to use it. This command tells supervisor to use it.
-
-* remove <process> <fqdn>
-  Removes a process from a host's supervisor configuration. It is necessary to
-  run this command to remove a process from a host after unassigning it.
-  Unassigning a process simply takes the configuration off of the host but does
-  not tell supervisor to stop using it. This command tells supervisor to stop
-  using it.
 
 * update <process> <fqdn>
   Updates the configuration for a process on a particular host. Note that this
@@ -181,18 +168,6 @@ def main():
     subparser.add_argument("process", help="name of process")
     subparser.add_argument("fqdn", help="fully qualified domain name")
 
-    # options for the "add" command
-    subparser = subparsers.add_parser("add", help="add a process to a host's configuration")
-    subparser.add_argument("-v", "--verbose", dest="verbose", action="store_true", default=False, help="send verbose output to the console")
-    subparser.add_argument("process", help="name of process")
-    subparser.add_argument("fqdn", help="fully qualified domain name")
-
-    # options for the "remove" command
-    subparser = subparsers.add_parser("remove", help="remove a process from a host's configuration")
-    subparser.add_argument("-v", "--verbose", dest="verbose", action="store_true", default=False, help="send verbose output to the console")
-    subparser.add_argument("process", help="name of process")
-    subparser.add_argument("fqdn", help="fully qualified domain name")
-
     # options for the "update" command
     subparser = subparsers.add_parser("update", help="update a process configuration on a host")
     subparser.add_argument("-v", "--verbose", dest="verbose", action="store_true", default=False, help="send verbose output to the console")
@@ -301,14 +276,6 @@ def main():
         if (command == "restart"):
             from .commands.remote import RestartCommand
             runnable = RestartCommand(**configuration)
-
-        if (command == "add"):
-            from .commands.remote import AddCommand
-            runnable = AddCommand(**configuration)
-
-        if (command == "remove"):
-            from .commands.remote import RemoveCommand
-            runnable = RemoveCommand(**configuration)
 
         if (command == "update"):
             from .commands.remote import UpdateCommand
