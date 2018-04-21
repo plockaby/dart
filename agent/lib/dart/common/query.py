@@ -168,6 +168,19 @@ def hosts():
     """)
     rows = s.execute(query)
     for row in rows:
+        if (row["fqdn"] not in hosts):
+            hosts[row["fqdn"]] = dict(
+                fqdn=row["fqdn"],
+                checked=None,
+                total=0,
+                running=0,
+                stopped=0,
+                failed=0,
+                pending=0,
+                assigned=0,
+                disabled=0,
+            )
+
         hosts[row["fqdn"]]["total"] += 1
         if (row["status"] is not None):
             if (row["status"] == "RUNNING"):
@@ -189,6 +202,19 @@ def hosts():
     """)
     rows = s.execute(query)
     for row in rows:
+        if (row["fqdn"] not in hosts):
+            hosts[row["fqdn"]] = dict(
+                fqdn=row["fqdn"],
+                checked=None,
+                total=0,
+                running=0,
+                stopped=0,
+                failed=0,
+                pending=0,
+                assigned=0,
+                disabled=0,
+            )
+
         hosts[row["fqdn"]]["pending"] += 1
 
     # find out how many processes are assigned and disabled
@@ -200,6 +226,19 @@ def hosts():
     """)
     rows = s.execute(query)
     for row in rows:
+        if (row["fqdn"] not in hosts):
+            hosts[row["fqdn"]] = dict(
+                fqdn=row["fqdn"],
+                checked=None,
+                total=0,
+                running=0,
+                stopped=0,
+                failed=0,
+                pending=0,
+                assigned=0,
+                disabled=0,
+            )
+
         hosts[row["fqdn"]]["assigned"] += 1
         if (row["disabled"]):
             hosts[row["fqdn"]]["disabled"] += 1
