@@ -303,7 +303,7 @@
             method: "GET",
             data: params
         }).done(function () {
-            dart.message("Done", success, "alert-info");
+            dart.message("Done", success);
         }).fail(function (jqXHR) {
             var error = jqXHR.responseJSON.error;
             if (!error) { error = "uknown error"; }
