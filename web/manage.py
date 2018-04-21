@@ -26,7 +26,7 @@ logger.addHandler(log_handler)
 
 
 def create_app(info):
-    from dart.web import app
+    from dart.web.loader import app
     return app
 
 
