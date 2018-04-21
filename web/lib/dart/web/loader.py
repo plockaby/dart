@@ -39,10 +39,13 @@ def load():
     def inject_now():
         return {"now": datetime.utcnow()}
 
-    # register our one and only blueprint using the prefix defined in the
-    # configuration as the application root.
+    # register the blueprint using the prefix defined in the configuration as
+    # the application root. if APPLICATION_ROOT is defined incorrectly then
+    # this whole thing will break. multiple blueprints may be defined with a
+    # different value for "url_prefix" but all blueprints SHOULD begin with the
+    # same prefix defined in APPLICATION_ROOT.
     from .main import main
-    prefix = app.config.get("APPLICATION_ROOT") or "/"
+    prefix = app.config.get("APPLICATION_ROOT", "")
     logger.info("using application url prefix {}".format(prefix))
     app.register_blueprint(main, url_prefix=prefix)
 
@@ -65,5 +68,10 @@ def load():
     api_prefix = "{}/api/processes".format(prefix)
     logger.info("using api url prefix {}".format(api_prefix))
     app.register_blueprint(api, url_prefix=api_prefix)
+
+    # tell ourselves what we've mapped.
+    if (logger.isEnabledFor(logging.DEBUG)):
+        for url in app.url_map.iter_rules():
+            logger.debug(repr(url))
 
     return app
