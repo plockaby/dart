@@ -1,6 +1,7 @@
 from ... import logger
 from . import api
 from flask import jsonify, request, make_response
+from dart.common.bleach import sanitize
 import dart.common.query as q
 import traceback
 
@@ -16,7 +17,7 @@ def hosts():
         return make_response(jsonify(list(hosts.values())), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
-        return make_response(jsonify(dict(error="error getting hosts: {}".format(e))), 500)
+        return make_response(jsonify(dict(error="error getting hosts: {}".format(sanitize(e)))), 500)
 
 
 @api.route("/advanced")
@@ -37,7 +38,7 @@ def advanced():
         return make_response(jsonify(list(hosts.values())), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
-        return make_response(jsonify(dict(error="error getting hosts: {}".format(e))), 500)
+        return make_response(jsonify(dict(error="error getting hosts: {}".format(sanitize(e)))), 500)
 
 
 @api.route("/host")
@@ -57,7 +58,7 @@ def host():
         ), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
-        return make_response(jsonify(dict(error="error getting details for host {}: {}".format(fqdn, e))), 500)
+        return make_response(jsonify(dict(error="error getting details for host {}: {}".format(sanitize(fqdn), sanitize(e)))), 500)
 
 
 @api.route("/host/active")
@@ -80,7 +81,7 @@ def active():
         return make_response(jsonify(list(processes.values())), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
-        return make_response(jsonify(dict(error="error getting active processes for host {}: {}".format(fqdn, e))), 500)
+        return make_response(jsonify(dict(error="error getting active processes for host {}: {}".format(sanitize(fqdn), sanitize(e)))), 500)
 
 
 @api.route("/host/pending")
@@ -93,7 +94,7 @@ def pending():
         return make_response(jsonify(list(q.host_pending(fqdn).values())), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
-        return make_response(jsonify(dict(error="error getting pending processes for host {}: {}".format(fqdn, e))), 500)
+        return make_response(jsonify(dict(error="error getting pending processes for host {}: {}".format(sanitize(fqdn), sanitize(e)))), 500)
 
 
 @api.route("/host/assigned")
@@ -106,4 +107,4 @@ def assigned():
         return make_response(jsonify(list(q.host_assigned(fqdn).values())), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
-        return make_response(jsonify(dict(error="error getting assigned processes for host {}: {}".format(fqdn, e))), 500)
+        return make_response(jsonify(dict(error="error getting assigned processes for host {}: {}".format(sanitize(fqdn), sanitize(e)))), 500)

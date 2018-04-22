@@ -1,6 +1,7 @@
 from ... import logger
 from . import api
 from flask import jsonify, request, make_response
+from dart.common.bleach import sanitize
 import dart.common.remote
 import dart.common.query as q
 import dart.common.exceptions as exceptions
@@ -36,10 +37,10 @@ def assign():
 
         return make_response(jsonify(dict()), 200)
     except (exceptions.DartHostDoesNotExistException, exceptions.DartProcessEnvironmentDoesNotExistException) as e:
-        return make_response(jsonify(dict(error="could not assign {} {} to {}: {}".format(process, environment, fqdn, e))), 406)
+        return make_response(jsonify(dict(error="could not assign {} {} to {}: {}".format(sanitize(process), sanitize(environment), sanitize(fqdn), sanitize(e)))), 406)
     except Exception as e:
         logger.error(traceback.format_exc())
-        return make_response(jsonify(dict(error="error assigning {} {} to {}: {}".format(process, environment, fqdn, e))), 500)
+        return make_response(jsonify(dict(error="error assigning {} {} to {}: {}".format(sanitize(process), sanitize(environment), sanitize(fqdn), sanitize(e)))), 500)
 
 
 @api.route("/unassign")
@@ -68,10 +69,10 @@ def unassign():
 
         return make_response(jsonify(dict()), 200)
     except (exceptions.DartHostDoesNotExistException, exceptions.DartProcessDoesNotExistException) as e:
-        return make_response(jsonify(dict(error="could not unassign {} from {}: {}".format(process, fqdn, e))), 406)
+        return make_response(jsonify(dict(error="could not unassign {} from {}: {}".format(sanitize(process), sanitize(fqdn), sanitize(e)))), 406)
     except Exception as e:
         logger.error(traceback.format_exc())
-        return make_response(jsonify(dict(error="error unassigning {} from {}: {}".format(process, fqdn, e))), 500)
+        return make_response(jsonify(dict(error="error unassigning {} from {}: {}".format(sanitize(process), sanitize(fqdn), sanitize(e)))), 500)
 
 
 @api.route("/enable")
@@ -100,10 +101,10 @@ def enable():
 
         return make_response(jsonify(dict()), 200)
     except (exceptions.DartHostDoesNotExistException, exceptions.DartProcessDoesNotExistException, exceptions.DartProcessNotAssignedException) as e:
-        return make_response(jsonify(dict(error="could not enable {} on {}: {}".format(process, fqdn, e))), 406)
+        return make_response(jsonify(dict(error="could not enable {} on {}: {}".format(sanitize(process), sanitize(fqdn), sanitize(e)))), 406)
     except Exception as e:
         logger.error(traceback.format_exc())
-        return make_response(jsonify(dict(error="error enabling {} on {}: {}".format(process, fqdn, e))), 500)
+        return make_response(jsonify(dict(error="error enabling {} on {}: {}".format(sanitize(process), sanitize(fqdn), sanitize(e)))), 500)
 
 
 @api.route("/disable")
@@ -132,7 +133,7 @@ def disable():
 
         return make_response(jsonify(dict()), 200)
     except (exceptions.DartHostDoesNotExistException, exceptions.DartProcessDoesNotExistException, exceptions.DartProcessNotAssignedException) as e:
-        return make_response(jsonify(dict(error="could not disable {} on {}: {}".format(process, fqdn, e))), 406)
+        return make_response(jsonify(dict(error="could not disable {} on {}: {}".format(sanitize(process), sanitize(fqdn), sanitize(e)))), 406)
     except Exception as e:
         logger.error(traceback.format_exc())
-        return make_response(jsonify(dict(error="error disabling {} on {}: {}".format(process, fqdn, e))), 500)
+        return make_response(jsonify(dict(error="error disabling {} on {}: {}".format(sanitize(process), sanitize(fqdn), sanitize(e)))), 500)

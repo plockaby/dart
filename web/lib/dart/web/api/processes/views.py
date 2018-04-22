@@ -1,6 +1,7 @@
 from ... import logger
 from . import api
 from flask import jsonify, request, make_response
+from dart.common.bleach import sanitize
 import dart.common.query as q
 import traceback
 
@@ -20,7 +21,7 @@ def processes():
         return make_response(jsonify(list(processes.values())), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
-        return make_response(jsonify(dict(error="error getting processes: {}".format(e))), 500)
+        return make_response(jsonify(dict(error="error getting processes: {}".format(sanitize(e)))), 500)
 
 
 @api.route("/process")
@@ -48,7 +49,7 @@ def process():
         ), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
-        return make_response(jsonify(dict(error="error getting details for process named {}: {}".format(process, e))), 500)
+        return make_response(jsonify(dict(error="error getting details for process named {}: {}".format(sanitize(process), sanitize(e)))), 500)
 
 
 @api.route("/process/active")
@@ -71,7 +72,7 @@ def active():
         return make_response(jsonify(list(hosts.values())), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
-        return make_response(jsonify(dict(error="error getting active hosts for process named {}: {}".format(process, e))), 500)
+        return make_response(jsonify(dict(error="error getting active hosts for process named {}: {}".format(sanitize(process), sanitize(e)))), 500)
 
 
 @api.route("/process/pending")
@@ -84,7 +85,7 @@ def pending():
         return make_response(jsonify(list(q.process_pending(process).values())), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
-        return make_response(jsonify(dict(error="error getting pending hosts for process named {}: {}".format(process, e))), 500)
+        return make_response(jsonify(dict(error="error getting pending hosts for process named {}: {}".format(sanitize(process), sanitize(e)))), 500)
 
 
 @api.route("/process/assigned")
@@ -97,4 +98,4 @@ def assigned():
         return make_response(jsonify(list(q.process_assigned(process).values())), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
-        return make_response(jsonify(dict(error="error getting assigned hosts for process named {}: {}".format(process, e))), 500)
+        return make_response(jsonify(dict(error="error getting assigned hosts for process named {}: {}".format(sanitize(process), sanitize(e)))), 500)

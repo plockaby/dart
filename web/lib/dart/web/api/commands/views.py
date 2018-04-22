@@ -1,6 +1,7 @@
 from ... import logger
 from . import api
 from flask import jsonify, request, make_response
+from dart.common.bleach import sanitize
 import dart.common.remote
 import dart.common.query as q
 import traceback
@@ -12,7 +13,7 @@ def start():
     if (not fqdn):
         return make_response(jsonify(dict(error="missing fqdn")), 400)
     if (not q.is_valid_host(fqdn)):
-        return make_response(jsonify(dict(error="{} is not the name of a valid host".format(fqdn))), 400)
+        return make_response(jsonify(dict(error="{} is not the name of a valid host".format(sanitize(fqdn)))), 400)
 
     process = request.args.get("process")
     if (not process):
@@ -27,7 +28,7 @@ def start():
         return make_response(jsonify(dict()), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
-        return make_response(jsonify(dict(error="error sending command: {}".format(e))), 500)
+        return make_response(jsonify(dict(error="error sending command: {}".format(sanitize(e)))), 500)
 
 
 @api.route("/stop")
@@ -36,7 +37,7 @@ def stop():
     if (not fqdn):
         return make_response(jsonify(dict(error="missing fqdn")), 400)
     if (not q.is_valid_host(fqdn)):
-        return make_response(jsonify(dict(error="{} is not the name of a valid host".format(fqdn))), 400)
+        return make_response(jsonify(dict(error="{} is not the name of a valid host".format(sanitize(fqdn)))), 400)
 
     process = request.args.get("process")
     if (not process):
@@ -51,7 +52,7 @@ def stop():
         return make_response(jsonify(dict()), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
-        return make_response(jsonify(dict(error="error sending command: {}".format(e))), 500)
+        return make_response(jsonify(dict(error="error sending command: {}".format(sanitize(e)))), 500)
 
 
 @api.route("/restart")
@@ -60,7 +61,7 @@ def restart():
     if (not fqdn):
         return make_response(jsonify(dict(error="missing fqdn")), 400)
     if (not q.is_valid_host(fqdn)):
-        return make_response(jsonify(dict(error="{} is not the name of a valid host".format(fqdn))), 400)
+        return make_response(jsonify(dict(error="{} is not the name of a valid host".format(sanitize(fqdn)))), 400)
 
     process = request.args.get("process")
     if (not process):
@@ -75,7 +76,7 @@ def restart():
         return make_response(jsonify(dict()), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
-        return make_response(jsonify(dict(error="error sending command: {}".format(e))), 500)
+        return make_response(jsonify(dict(error="error sending command: {}".format(sanitize(e)))), 500)
 
 
 @api.route("/update")
@@ -84,7 +85,7 @@ def update():
     if (not fqdn):
         return make_response(jsonify(dict(error="missing fqdn")), 400)
     if (not q.is_valid_host(fqdn)):
-        return make_response(jsonify(dict(error="{} is not the name of a valid host".format(fqdn))), 400)
+        return make_response(jsonify(dict(error="{} is not the name of a valid host".format(sanitize(fqdn)))), 400)
 
     process = request.args.get("process")
     if (not process):
@@ -99,7 +100,7 @@ def update():
         return make_response(jsonify(dict()), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
-        return make_response(jsonify(dict(error="error sending command: {}".format(e))), 500)
+        return make_response(jsonify(dict(error="error sending command: {}".format(sanitize(e)))), 500)
 
 
 @api.route("/reread")
@@ -108,7 +109,7 @@ def reread():
     if (not fqdn):
         return make_response(jsonify(dict(error="missing fqdn")), 400)
     if (not q.is_valid_host(fqdn)):
-        return make_response(jsonify(dict(error="{} is not the name of a valid host".format(fqdn))), 400)
+        return make_response(jsonify(dict(error="{} is not the name of a valid host".format(sanitize(fqdn)))), 400)
 
     logger.info("rereading {}".format(fqdn))
     try:
@@ -116,7 +117,7 @@ def reread():
         return make_response(jsonify(dict()), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
-        return make_response(jsonify(dict(error="error sending command: {}".format(e))), 500)
+        return make_response(jsonify(dict(error="error sending command: {}".format(sanitize(e)))), 500)
 
 
 @api.route("/rewrite")
@@ -125,7 +126,7 @@ def rewrite():
     if (not fqdn):
         return make_response(jsonify(dict(error="missing fqdn")), 400)
     if (not q.is_valid_host(fqdn)):
-        return make_response(jsonify(dict(error="{} is not the name of a valid host".format(fqdn))), 400)
+        return make_response(jsonify(dict(error="{} is not the name of a valid host".format(sanitize(fqdn)))), 400)
 
     logger.info("rewriting {}".format(fqdn))
     try:
@@ -133,4 +134,4 @@ def rewrite():
         return make_response(jsonify(dict()), 200)
     except Exception as e:
         logger.error(traceback.format_exc())
-        return make_response(jsonify(dict(error="error sending command: {}".format(e))), 500)
+        return make_response(jsonify(dict(error="error sending command: {}".format(sanitize(e)))), 500)
