@@ -62,6 +62,10 @@ class RestoreCommand(BaseCommand):
             self.logger.info("importing process state monitor data")
             self._import_process_state_monitor(data.get("process_state_monitor"), truncate=truncate)
 
+        if ("process_keepalive_monitor" in data):
+            self.logger.info("importing dart.process_keepalive_monitor")
+            self._import_process_keepalive_monitor(data.get("process_keepalive_monitor"), truncate=truncate)
+
         if ("assignment" in data):
             self.logger.info("importing assignment data")
             self._import_assignment(data.get("assignment"), truncate=truncate)
@@ -163,6 +167,21 @@ class RestoreCommand(BaseCommand):
         query = cassandra.query.SimpleStatement("""
             INSERT INTO dart.process_state_monitor (process, environment, contact, severity)
             VALUES (%(process)s, %(environment)s, %(contact)s, %(severity)s)
+        """)
+        for datum in data:
+            self.logger.debug(datum)
+            self.session.execute(query, datum)
+
+    def _import_process_keepalive_monitor(self, data, truncate=False):
+        if (truncate):
+            query = cassandra.query.SimpleStatement("""
+                TRUNCATE TABLE dart.process_keepalive_monitor
+            """)
+            self.session.execute(query)
+
+        query = cassandra.query.SimpleStatement("""
+            INSERT INTO dart.process_keepalive_monitor (process, environment, contact, severity, timeout)
+            VALUES (%(process)s, %(environment)s, %(contact)s, %(severity)s, %(timeout)s)
         """)
         for datum in data:
             self.logger.debug(datum)

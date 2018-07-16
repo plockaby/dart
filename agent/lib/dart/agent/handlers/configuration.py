@@ -77,6 +77,7 @@ class ConfigurationHandler(BaseHandler):
                 "configurations": None,
                 "schedules": None,
                 "monitors": {
+                    "keepalive": None,
                     "daemon": None,
                     "state": None,
                     "log": None,
@@ -290,6 +291,31 @@ class ConfigurationHandler(BaseHandler):
 
     def _get_monitors(self, assignments):
         monitors = {}
+
+        # get keepalive monitors
+        if ("keepalive" not in self.queries["monitors"]):
+            self.queries["monitors"]["keepalive"] = self.session.prepare("""
+                SELECT
+                    process,
+                    contact,
+                    severity,
+                    timeout
+                FROM dart.process_keepalive_monitor
+                WHERE process = ?
+                  AND environment = ?
+            """)
+
+        futures = []
+        for process in assignments:
+            # don't monitor processes that are disabled
+            if (not assignments[process]["disabled"]):
+                futures.append(self.session.execute_async(self.queries["monitors"]["keepalive"], (process, assignments[process]["environment"])))
+
+        monitors["keepalive"] = {}
+        for future in futures:
+            rows = future.result()
+            for row in rows:
+                monitors["keepalive"][row["process"]] = row
 
         # get daemon monitors
         if (self.queries["monitors"]["daemon"] is None):

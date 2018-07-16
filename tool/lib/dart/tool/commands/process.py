@@ -80,6 +80,7 @@ class ProcessCommand(DataCommand):
         assigned = dart.common.query.process_assigned(process)
 
         # get monitoring information from cassandra
+        keepalive_monitoring = dart.common.query.process_keepalive_monitoring_configuration(process)
         daemon_monitoring = dart.common.query.process_daemon_monitoring_configuration(process)
         state_monitoring = dart.common.query.process_state_monitoring_configuration(process)
         log_monitoring = dart.common.query.process_log_monitoring_configurations(process)
@@ -272,9 +273,19 @@ class ProcessCommand(DataCommand):
             for environment in sorted(configurations):
                 print(" {}".format(colored(environment, "cyan", attrs=["bold"])))
 
+                if (environment in keepalive_monitoring):
+                    print("   Keepalive monitoring is {} with timeout {}min at severity {} for contact '{}'.".format(
+                        colored("ENABLED", "green", attrs=["bold"]),
+                        keepalive_monitoring[environment]["timeout"],
+                        keepalive_monitoring[environment]["severity"],
+                        keepalive_monitoring[environment]["contact"] or "DEFAULT",
+                    ))
+                else:           
+                    print("   Keepalive monitoring is {} for '{}' in {}.".format(colored("DISABLED", "red", attrs=["bold"]), process, environment))
+
                 if (environment in daemon_monitoring):
                     print("   Daemon monitoring is {} at severity {} for contact '{}'.".format(
-                        colored("enabled", "green", attrs=["bold"]),
+                        colored("ENABLED", "green", attrs=["bold"]),
                         daemon_monitoring[environment]["severity"],
                         daemon_monitoring[environment]["contact"] or "DEFAULT",
                     ))
@@ -283,7 +294,7 @@ class ProcessCommand(DataCommand):
 
                 if (environment in state_monitoring):
                     print("   State monitoring is {} at severity {} for contact '{}'.".format(
-                        colored("enabled", "green", attrs=["bold"]),
+                        colored("ENABLED", "green", attrs=["bold"]),
                         state_monitoring[environment]["severity"],
                         state_monitoring[environment]["contact"] or "DEFAULT"
                     ))

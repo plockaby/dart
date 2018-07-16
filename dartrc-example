@@ -34,15 +34,24 @@ processes:
       schedule: "0 1 * * *"
 
       monitoring:
+          keepalive:
+              # see above for information about severity
+              severity: 3
+              # who to contact, will default to something reasonable
+              contact: me@example.com
+              # the keepalive will timeout after ten minutes. ensure that this
+              # timeout is LONGER than the normal schedule above or else there
+              # will be lots of alerts generated.
+              timeout: 10
           daemon:
               # see above for information about severity
               severity: 3
-              # not required, will default to something reasonable
+              # who to contact, will default to something reasonable
               contact: me@example.com
           state:
               # see above for information about severity
               severity: 3
-              # not required, will default to something reasonable
+              # who to contact, will default to something reasonable
               contact: me@example.com
           logs:
               # note: log monitors are processed in the order that they are
@@ -66,8 +75,9 @@ processes:
                     # default is "false" meaning that all regexes will be
                     # compared.
                     stop: true
-                    # not required, will default to something reasonable
+                    # who to contact, will default to something reasonable
                     contact: me@example.com
+              # all of the same options apply to stderr as to stdout
               stderr:
                   - regex: .*
                     severity: 4

@@ -222,14 +222,29 @@ class StateHandler(BaseHandler):
             # process the state message through the monitoring configuration
             process = state["name"]
 
-            if (process in self.configuration_copy["state"]):
+            if (process in self.configuration_copy.get("keepalive", {})):
+                configuration = self.configuration_copy["keepalive"][process]
+
+                # check both states because they both mean that the program was
+                # successfully started and exited.
+                if (state["statename"] in ["RUNNING", "EXITED"] and not state["spawnerr"]):
+                    self.logger.debug("{} handler sending keepalive event for {} because it has started RUNNING or EXITED without a spawn error".format(self.name, process))
+                    dart.common.event.send(
+                        contact=configuration["contact"],
+                        component="dart:monitor:keepalive:{}".format(process),
+                        severity=configuration["severity"],
+                        timeout=configuration["timeout"],
+                        subject="{} has stopped responding".format(process),
+                    )
+
+            if (process in self.configuration_copy.get("state", {})):
                 configuration = self.configuration_copy["state"][process]
 
                 if (state["statename"] == "RUNNING"):
-                    # if the process is successfully running then clear any
-                    # state alerts for it.
+                    # if the process is successfully running then clear event
                     self.logger.debug("{} handler clearing state event for {} because it is now RUNNING".format(self.name, process))
                     dart.common.event.send(
+                        contact=configuration["contact"],
                         component="dart:monitor:state:{}".format(process),
                         severity="OK",
                         subject="clear",
@@ -240,6 +255,7 @@ class StateHandler(BaseHandler):
                     if (state["statename"] in ["UNKNOWN", "FATAL", "BACKOFF"]):
                         self.logger.debug("{} handler raising state event for {} because it has gone into state {}".format(self.name, process, state["statename"]))
                         dart.common.event.send(
+                            contact=configuration["contact"],
                             component="dart:monitor:state:{}".format(process),
                             severity=configuration["severity"],
                             contact=configuration["contact"],
@@ -252,6 +268,7 @@ class StateHandler(BaseHandler):
                     elif (state["spawnerr"]):
                         self.logger.debug("{} handler raising state event for {} because it exited with an error".format(self.name, process))
                         dart.common.event.send(
+                            contact=configuration["contact"],
                             component="dart:monitor:state:{}".format(process),
                             severity=configuration["severity"],
                             contact=configuration["contact"],
@@ -259,7 +276,7 @@ class StateHandler(BaseHandler):
                             message=state["spawnerr"],
                         )
 
-            if (process in self.configuration_copy["daemon"]):
+            if (process in self.configuration_copy.get("daemon", {})):
                 configuration = self.configuration_copy["daemon"][process]
 
                 if (state["statename"] == "RUNNING"):
@@ -267,6 +284,7 @@ class StateHandler(BaseHandler):
                     # daemon alerts for it.
                     self.logger.debug("{} handler clearing daemon event for {} because it is now RUNNING".format(self.name, process))
                     dart.common.event.send(
+                        contact=configuration["contact"],
                         component="dart:monitor:daemon:{}".format(process),
                         severity="OK",
                         subject="clear",
@@ -274,6 +292,7 @@ class StateHandler(BaseHandler):
                 else:
                     self.logger.debug("{} handler raising daemon event for {} because it is in state {} when it is supposed to be in state RUNNING".format(self.name, process, state["statename"]))
                     dart.common.event.send(
+                        contact=configuration["contact"],
                         component="dart:monitor:daemon:{}".format(process),
                         severity=configuration["severity"],
                         contact=configuration["contact"],

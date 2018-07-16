@@ -12,6 +12,7 @@ class BackupCommand(BaseCommand):
         export["process_log_monitor"] = self._export_process_log_monitor()
         export["process_daemon_monitor"] = self._export_process_daemon_monitor()
         export["process_state_monitor"] = self._export_process_state_monitor()
+        export["process_keepalive_monitor"] = self._export_process_keepalive_monitor()
         export["assignment"] = self._export_assignment()
         export["host_tag"] = self._export_host_tag()
 
@@ -110,6 +111,24 @@ class BackupCommand(BaseCommand):
                 contact,
                 severity
             FROM dart.process_state_monitor
+        """)
+        rows = self.session.execute(query)
+        for row in rows:
+            data.append(row)
+
+        return data
+
+    def _export_process_keepalive_monitor(self):
+        data = []
+
+        query = cassandra.query.SimpleStatement("""
+            SELECT
+                process,
+                environment,
+                contact,
+                severity,
+                timeout
+            FROM dart.process_keepalive_monitor
         """)
         rows = self.session.execute(query)
         for row in rows:

@@ -106,6 +106,8 @@ class RegisterCommand(BaseCommand):
             supervisor = process.get("supervisor", "").strip()
             schedule = process.get("schedule", "").strip()
             monitors = process.get("monitoring", dict())
+            default_contact = monitors.get("contact")
+            keepalive_monitor = monitors.get("keepalive")
             daemon_monitor = monitors.get("daemon")
             state_monitor = monitors.get("state")
             log_monitor = monitors.get("logs")
@@ -124,23 +126,30 @@ class RegisterCommand(BaseCommand):
                 self.logger.info("removing schedule for '{}' in '{}'".format(name, environment))
                 self._remove_schedule_environment(name, environment)
 
+            if (keepalive_monitor):
+                self.logger.info("adding keepalive monitors for '{}' in '{}'".format(name, environment))
+                self._insert_process_keepalive_monitor_environment(name, environment, keepalive_monitor, default_contact)
+            else:
+                self.logger.info("removing keepalive monitors for '{}' in '{}'".format(name, environment))
+                self._remove_process_keepalive_monitor_environment(name, environment)
+
             if (daemon_monitor):
                 self.logger.info("adding daemon monitors for '{}' in '{}'".format(name, environment))
-                self._insert_process_daemon_monitor_environment(name, environment, daemon_monitor)
+                self._insert_process_daemon_monitor_environment(name, environment, daemon_monitor, default_contact)
             else:
                 self.logger.info("removing daemon monitors for '{}' in '{}'".format(name, environment))
                 self._remove_process_daemon_monitor_environment(name, environment)
 
             if (state_monitor):
                 self.logger.info("adding state monitors for '{}' in '{}'".format(name, environment))
-                self._insert_process_state_monitor_environment(name, environment, state_monitor)
+                self._insert_process_state_monitor_environment(name, environment, state_monitor, default_contact)
             else:
                 self.logger.info("removing state monitors for '{}' in '{}'".format(name, environment))
                 self._remove_process_state_monitor_environment(name, environment)
 
             if (log_monitor):
                 self.logger.info("adding log monitors for '{}' in '{}'".format(name, environment))
-                self._insert_process_log_monitor_environment(name, environment, log_monitor)
+                self._insert_process_log_monitor_environment(name, environment, log_monitor, default_contact)
             else:
                 self.logger.info("removing log monitors for '{}' in '{}'".format(name, environment))
                 self._remove_process_log_monitor_environment(name, environment)
@@ -163,6 +172,12 @@ class RegisterCommand(BaseCommand):
                 if (environment not in environments[name]):
                     self.logger.info("removing schedule configuration for environment '{}' for process '{}'".format(environment, name))
                     self._remove_schedule_environment(name, environment)
+
+            configured = self._get_process_keepalive_monitor_environments(name)
+            for environment in configured:
+                if (environment not in environments[name]):
+                    self.logger.info("removing keepalive monitor configuration for environment '{}' for process '{}'".format(environment, name))
+                    self._remove_process_keepalive_monitor_environment(name, environment)
 
             configured = self._get_process_daemon_monitor_environments(name)
             for environment in configured:
@@ -220,6 +235,20 @@ class RegisterCommand(BaseCommand):
         query = cassandra.query.SimpleStatement("""
             SELECT environment
             FROM dart.schedule
+            WHERE process = %s
+        """)
+        rows = self.session.execute(query, (process,))
+        for row in rows:
+            results.add(row["environment"])
+
+        return results
+
+    def _get_process_keepalive_monitor_environments(self, process):
+        results = set()
+
+        query = cassandra.query.SimpleStatement("""
+            SELECT environment
+            FROM dart.process_keepalive_monitor
             WHERE process = %s
         """)
         rows = self.session.execute(query, (process,))
@@ -287,6 +316,14 @@ class RegisterCommand(BaseCommand):
         """)
         self.session.execute(query, (process, environment))
 
+    def _remove_process_keepalive_monitor_environment(self, process, environment):
+        query = cassandra.query.SimpleStatement("""
+            DELETE FROM dart.process_keepalive_monitor
+            WHERE process = %s
+              AND environment = %s
+        """)
+        self.session.execute(query, (process, environment))
+
     def _remove_process_daemon_monitor_environment(self, process, environment):
         query = cassandra.query.SimpleStatement("""
             DELETE FROM dart.process_daemon_monitor
@@ -333,8 +370,41 @@ class RegisterCommand(BaseCommand):
         """)
         self.session.execute(query, (process, environment, configuration))
 
-    def _insert_process_daemon_monitor_environment(self, process, environment, configuration):
-        contact = configuration.get("contact")
+    def _insert_process_keepalive_monitor_environment(self, process, environment, configuration, default_contact):
+        contact = configuration.get("contact") or default_contact
+        timeout = configuration.get("timeout")
+
+        # severity can be 1, 2, 3, 4, 5 or "OK"
+        severity = configuration.get("severity")
+        if (severity is None):
+            raise RuntimeError("invalid dartrc file: keepalive severity is missing for '{}' in '{}'".format(process, environment))
+        if (severity != str(severity)):
+            try:
+                severity = int(severity)
+            except TypeError as e:
+                raise RuntimeError("invalid dartrc file: keepalive severity '{}' for '{}' in '{}' is invalid".format(severity, process, environment))
+        severity = str(severity).strip().upper()
+        if (severity not in ["1", "2", "3", "4", "5", "OK"]):
+            raise RuntimeError("invalid dartrc file: keepalive severity '{}' for '{}' in '{}' is invalid".format(severity, process, environment))
+
+        # validate the timeout
+        if (timeout is None):
+            raise RuntimeError("invalid dartrc file: keepalive timeout is missing for '{}' in '{}'".format(process, environment))
+        try:
+            timeout = int(timeout)
+        except (ValueError, TypeError):
+            raise RuntimeError("invalid dartrc file: keepalive timeout must be an integer for '{}' in '{}'".format(process, environment))
+        if (timeout < 1 or timeout > 10080):
+            raise RuntimeError("invalid dartrc file: keepalive timeout must be greater than 0 and less than one week for '{}' in '{}'".format(process, environment))
+
+        query = cassandra.query.SimpleStatement("""
+            INSERT INTO dart.process_keepalive_monitor (process, environment, contact, severity, timeout)
+            VALUES (%s, %s, %s, %s, %s)
+        """)
+        self.session.execute(query, (process, environment, ci, kba, severity, timeout))
+
+    def _insert_process_daemon_monitor_environment(self, process, environment, configuration, default_contact):
+        contact = configuration.get("contact") or default_contact
 
         # severity can be 1, 2, 3, 4, 5 or "OK"
         severity = configuration.get("severity")
@@ -355,8 +425,8 @@ class RegisterCommand(BaseCommand):
         """)
         self.session.execute(query, (process, environment, contact, severity))
 
-    def _insert_process_state_monitor_environment(self, process, environment, configuration):
-        contact = configuration.get("contact")
+    def _insert_process_state_monitor_environment(self, process, environment, configuration, default_contact):
+        contact = configuration.get("contact") or default_contact
 
         # severity can be 1, 2, 3, 4, 5 or "OK"
         severity = configuration.get("severity")
@@ -377,7 +447,7 @@ class RegisterCommand(BaseCommand):
         """)
         self.session.execute(query, (process, environment, contact, severity))
 
-    def _insert_process_log_monitor_environment(self, process, environment, configurations):
+    def _insert_process_log_monitor_environment(self, process, environment, configurations, default_contact):
         if (not isinstance(configurations, dict)):
             raise RuntimeError("invalid dartrc file: log monitors for '{}' in '{}' must contain only the keys 'stdout' and 'stderr'".format(process, environment))
         for stream in configurations:
@@ -386,17 +456,17 @@ class RegisterCommand(BaseCommand):
 
         stdout_configurations = configurations.get("stdout")
         if (stdout_configurations is not None):
-            self.__insert_process_log_monitor_environment(process, environment, "stdout", stdout_configurations)
+            self.__insert_process_log_monitor_environment(process, environment, "stdout", stdout_configurations, default_contact)
         else:
             self._remove_process_log_monitor_environment(process, environment, ["stdout"])
 
         stderr_configurations = configurations.get("stderr")
         if (stderr_configurations is not None):
-            self.__insert_process_log_monitor_environment(process, environment, "stderr", stderr_configurations)
+            self.__insert_process_log_monitor_environment(process, environment, "stderr", stderr_configurations, default_contact)
         else:
             self._remove_process_log_monitor_environment(process, environment, ["stderr"])
 
-    def __insert_process_log_monitor_environment(self, process, environment, stream, configuration):
+    def __insert_process_log_monitor_environment(self, process, environment, stream, configuration, default_contact):
         validated = []
 
         # validate the log monitors first
@@ -405,7 +475,7 @@ class RegisterCommand(BaseCommand):
             name = config.get("name")  # optional
             severity = config.get("severity")  # optional but must be int
             stop = config.get("stop")  # optional but must be a boolean
-            contact = config.get("contact")  # optional
+            contact = config.get("contact") or default_contact
 
             # validate the regex: must exist, must be valid
             if (regex is None):

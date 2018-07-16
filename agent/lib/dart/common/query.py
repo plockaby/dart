@@ -835,6 +835,35 @@ def process_log_monitoring_configurations(process):
     return details
 
 
+def process_keepalive_monitoring_configuration(process):
+    """
+        Given a process name this will return a dict with the keepalive
+        monitoring configuration for the process. The key to the dict is the
+        name of the environment for which the configuration pertains. The value
+        is a dict containing the keepalive monitoring configuration. No checks
+        are performed to see if the process name is valid. In both the case
+        where the process name is not valid and the case where the process has
+        no keepalive monitoring configuration this will return an empty dict.
+    """
+    s = __get_session()
+
+    details = dict()
+    query = cassandra.query.SimpleStatement("""
+        SELECT
+            environment,
+            contact,
+            severity,
+            timeout
+        FROM dart.process_keepalive_monitor
+        WHERE process = %s
+    """)
+    rows = s.execute(query, (process,))
+    for row in rows:
+        details[row["environment"]] = row
+
+    return details
+
+
 def process_state_monitoring_configuration(process):
     """
         Given a process name this will return a dict with the state monitoring

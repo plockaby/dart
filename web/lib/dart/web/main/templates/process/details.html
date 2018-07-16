@@ -67,13 +67,25 @@
                     <div class="row">
                         <div class="col-sm-12">
                             <dl class="dl-horizontal">
+                                <dt>Keepalive Monitoring</dt>
+                                <dd>
+                                    {% if environment in keepalive_monitoring %}
+                                        <div>Keepalive monitoring is
+                                            <span class='alert-success' style='background-color: transparent; font-weight: bold;'>ENABLED</span>
+                                            with timeout {{ keepalive_monitoring[environment].timeout }}min at severity {{ keepalive_monitoring[environment].severity }} for contact '{{ keepalive_monitoring[environment].contact or "DEFAULT" }}'.</div>
+                                    {% else %}
+                                        <span class='alert-danger' style='background-color: transparent; font-weight: bold;'>
+                                            No keepalive monitoring configuration exists for {{ process }} in {{ environment }}.
+                                        </span>
+                                    {% endif %}
+                                </dd>
                                 <dt>Daemon Monitoring</dt>
                                 <dd>
                                     {% if environment in daemon_monitoring %}
                                         Daemon monitoring is
                                             <span class='alert-success' style='background: transparent; font-weight: bold;'>ENABLED</span>
                                             at severity {{ state_monitoring[environment].severity }}
-                                            for configuration item '{{ state_monitoring[environment].ci or "DEFAULT" }}'.
+                                            for contact '{{ state_monitoring[environment].contact or "DEFAULT" }}'.
                                         </span>
                                     {% else %}
                                         <span class='alert-danger' style='background: transparent; font-weight: bold;'>
@@ -87,7 +99,7 @@
                                         State monitoring is
                                             <span class='alert-success' style='background: transparent; font-weight: bold;'>ENABLED</span>
                                             at severity {{ state_monitoring[environment].severity }}
-                                            for configuration item '{{ state_monitoring[environment].ci or "DEFAULT" }}'.
+                                            for contact '{{ state_monitoring[environment].contact or "DEFAULT" }}'.
                                     {% else %}
                                         <span class='alert-danger' style='background: transparent; font-weight: bold;'>
                                             No state monitoring configuration exists for {{ process }} in {{ environment }}.
@@ -103,7 +115,7 @@
                                                 <dt>{{ monitor.id }}</dt>
                                                 <dd>
                                                     <div>{{ monitor.stream }} matching '<tt>{{ monitor.regex }}</tt>'</div>
-                                                    <div>severity {{ monitor.severity }} for configuration item '{{ monitor.ci or "DEFAULT" }}'</div>
+                                                    <div>severity {{ monitor.severity }} for contact '{{ monitor.contact or "DEFAULT" }}'</div>
                                                     {% if monitor.name %}<div>events will be created with the name '{{ monitor.name }}'</div>{% endif %}
                                                     {% if monitor.stop %}<div>matches to this regex will <strong>stop</strong> anymore matches</div>{% endif %}
                                                 </dd>

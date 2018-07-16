@@ -76,6 +76,7 @@ def process(process):
     configurations = q.process(process)
 
     # get monitoring information from cassandra
+    keepalive_monitoring = q.process_keepalive_monitoring_configuration(process)
     daemon_monitoring = q.process_daemon_monitoring_configuration(process)
     state_monitoring = q.process_state_monitoring_configuration(process)
     log_monitoring = q.process_log_monitoring_configurations(process)
@@ -84,6 +85,7 @@ def process(process):
         "process.html",
         process=process,
         configurations=configurations,
+        keepalive_monitoring=keepalive_monitoring,
         daemon_monitoring=daemon_monitoring,
         state_monitoring=state_monitoring,
         log_monitoring=log_monitoring,

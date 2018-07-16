@@ -112,3 +112,13 @@ CREATE TABLE dart.process_daemon_monitor (
     severity     text,
     PRIMARY KEY (process, environment)
 ) WITH COMMENT = 'daemon monitoring';
+
+-- NOTICE: this table is manually populated with push register
+CREATE TABLE dart.process_keepalive_monitor (
+    process     text,
+    environment text,
+    context     text,
+    severity    text,
+    timeout     int,
+    PRIMARY KEY (process, environment)
+) WITH COMMENT = 'keepalive monitoring';
