@@ -193,7 +193,7 @@ class DartAgent(object):
                     parts = self._read_message(sys.stdin.buffer)
                     if (parts is None):
                         # reached a timeout, see if we were killed
-                        self.logger.debug("timed out")
+                        pass
                     else:
                         # if the event handling routine returns "true" then we
                         # should keep processing events. false means that we are
