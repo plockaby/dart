@@ -122,7 +122,7 @@ class QueueHandler(BaseHandler):
                         if (clear_error):
                             dart.common.event.send(
                                 component="dart:agent:{}".format(self.name),
-                                severity=6,
+                                severity="OK",
                                 subject="clear",
                             )
                             clear_error = False

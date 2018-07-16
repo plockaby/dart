@@ -231,7 +231,7 @@ class StateHandler(BaseHandler):
                     self.logger.debug("{} handler clearing state event for {} because it is now RUNNING".format(self.name, process))
                     dart.common.event.send(
                         component="dart:monitor:state:{}".format(process),
-                        severity=6,
+                        severity="OK",
                         subject="clear",
                     )
                 else:
@@ -268,7 +268,7 @@ class StateHandler(BaseHandler):
                     self.logger.debug("{} handler clearing daemon event for {} because it is now RUNNING".format(self.name, process))
                     dart.common.event.send(
                         component="dart:monitor:daemon:{}".format(process),
-                        severity=6,
+                        severity="OK",
                         subject="clear",
                     )
                 else:

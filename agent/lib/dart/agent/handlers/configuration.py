@@ -106,7 +106,7 @@ class ConfigurationHandler(BaseHandler):
                         # clear the transient error events
                         dart.common.event.send(
                             component="dart:agent:{}".format(self.name),
-                            severity=6,
+                            severity="OK",
                             subject="clear",
                         )
                     except cassandra.cluster.NoHostAvailable as e:

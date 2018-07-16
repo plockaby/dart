@@ -147,7 +147,7 @@ class DartProcessor(object):
                     try:
                         connection.drain_events(timeout=10)
                     except socket.timeout:
-                        self.logger.debug("timed out waiting for messages from the message bus")
+                        pass
 
                     # check to see if we should exit
                     finished = self._should_finish()

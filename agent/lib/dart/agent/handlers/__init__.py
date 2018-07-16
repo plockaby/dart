@@ -38,7 +38,7 @@ class BaseHandler(object):
             # clear any errors saying that we weren't able to load it.
             dart.common.event.send(
                 component="dart:agent:{}:configuration".format(self.name),
-                severity=6,
+                severity="OK",
                 subject="clear",
             )
 

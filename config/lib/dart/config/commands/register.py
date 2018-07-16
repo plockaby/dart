@@ -335,10 +335,18 @@ class RegisterCommand(BaseCommand):
 
     def _insert_process_daemon_monitor_environment(self, process, environment, configuration):
         contact = configuration.get("contact")
+
+        # severity can be 1, 2, 3, 4, 5 or "OK"
         severity = configuration.get("severity")
-        try:
-            severity = int(severity)
-        except TypeError as e:
+        if (severity is None):
+            raise RuntimeError("invalid dartrc file: daemon severity is missing for '{}' in '{}'".format(process, environment))
+        if (severity != str(severity)):
+            try:
+                severity = int(severity)
+            except TypeError as e:
+                raise RuntimeError("invalid dartrc file: daemon severity '{}' for '{}' in '{}' is invalid".format(severity, process, environment))
+        severity = str(severity).strip().upper()
+        if (severity not in ["1", "2", "3", "4", "5", "OK"]):
             raise RuntimeError("invalid dartrc file: daemon severity '{}' for '{}' in '{}' is invalid".format(severity, process, environment))
 
         query = cassandra.query.SimpleStatement("""
@@ -349,10 +357,18 @@ class RegisterCommand(BaseCommand):
 
     def _insert_process_state_monitor_environment(self, process, environment, configuration):
         contact = configuration.get("contact")
+
+        # severity can be 1, 2, 3, 4, 5 or "OK"
         severity = configuration.get("severity")
-        try:
-            severity = int(severity)
-        except TypeError as e:
+        if (severity is None):
+            raise RuntimeError("invalid dartrc file: state severity is missing for '{}' in '{}'".format(process, environment))
+        if (severity != str(severity)):
+            try:
+                severity = int(severity)
+            except TypeError as e:
+                raise RuntimeError("invalid dartrc file: state severity '{}' for '{}' in '{}' is invalid".format(severity, process, environment))
+        severity = str(severity).strip().upper()
+        if (severity not in ["1", "2", "3", "4", "5", "OK"]):
             raise RuntimeError("invalid dartrc file: state severity '{}' for '{}' in '{}' is invalid".format(severity, process, environment))
 
         query = cassandra.query.SimpleStatement("""
@@ -399,14 +415,16 @@ class RegisterCommand(BaseCommand):
             except re.error as e:
                 raise RuntimeError("invalid dartrc file: '{}' monitor '{}' for '{}' in '{}' does not compile: '{}'".format(stream, index, process, environment, e))
 
-            # validate the severity
+            # severity can be 1, 2, 3, 4, 5 or "OK"
             if (severity is not None):
-                try:
-                    severity = int(severity)
-                except ValueError as e:
+                if (severity != str(severity)):
+                    try:
+                        severity = int(severity)
+                    except TypeError as e:
+                        raise RuntimeError("invalid dartrc file: severity for '{}' monitor '{}' for '{}' in '{}' is invalid: '{}'".format(stream, index, process, environment, severity))
+                severity = str(severity).strip().upper()
+                if (severity not in ["1", "2", "3", "4", "5", "OK"]):
                     raise RuntimeError("invalid dartrc file: severity for '{}' monitor '{}' for '{}' in '{}' is invalid: '{}'".format(stream, index, process, environment, severity))
-                if (severity < 1 or severity > 6):
-                    raise RuntimeError("invalid dartrc file: severity for '{}' monitor '{}' for '{}' in '{}' must be between 1 and 6, inclusive".format(stream, index, process, environment))
 
             # validate the stop
             if (stop is not None):

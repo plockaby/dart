@@ -87,7 +87,7 @@ class SchedulerHandler(BaseHandler):
                 # process then the alert will be recreated.
                 dart.common.event.send(
                     component="dart:agent:{}:{}:configuration".format(self.name, key),
-                    severity=6,
+                    severity="OK",
                     subject="clear",
                 )
 
@@ -106,7 +106,7 @@ class SchedulerHandler(BaseHandler):
                         # the crontab for this process.
                         dart.common.event.send(
                             component="dart:agent:{}:{}".format(self.name, key),
-                            severity=6,
+                            severity="OK",
                             subject="clear",
                         )
                     except xmlrpc.client.Fault as e:

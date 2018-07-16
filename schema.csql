@@ -89,7 +89,7 @@ CREATE TABLE dart.process_log_monitor (
     regex        text,
     name         text,
     contact      text,
-    severity     int,
+    severity     text,
     stop         boolean,
     PRIMARY KEY ((process, environment, stream), id)
 ) WITH CLUSTERING ORDER BY (id asc)
@@ -100,7 +100,7 @@ CREATE TABLE dart.process_state_monitor (
     process      text,
     environment  text,
     contact      text,
-    severity     int,
+    severity     text,
     PRIMARY KEY (process, environment)
 ) WITH COMMENT = 'state monitoring configurations';
 
@@ -109,6 +109,6 @@ CREATE TABLE dart.process_daemon_monitor (
     process      text,
     environment  text,
     contact      text,
-    severity     int,
+    severity     text,
     PRIMARY KEY (process, environment)
 ) WITH COMMENT = 'daemon monitoring';

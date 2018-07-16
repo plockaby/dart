@@ -136,7 +136,7 @@ class ProbeHandler(BaseHandler):
                         self.logger.debug("{} handler clearing state event for {} because it is now RUNNING".format(self.name, process))
                         dart.common.event.send(
                             component="dart:monitor:state:{}".format(process),
-                            severity=6,
+                            severity="OK",
                             subject="clear",
                         )
                     else:
@@ -173,7 +173,7 @@ class ProbeHandler(BaseHandler):
                         # daemon alerts for it.
                         dart.common.event.send(
                             component="dart:monitor:daemon:{}".format(process),
-                            severity=6,
+                            severity="OK",
                             subject="clear",
                         )
                     else:
@@ -188,7 +188,7 @@ class ProbeHandler(BaseHandler):
             # clear any error events
             dart.common.event.send(
                 component="dart:agent:{}:active".format(self.name),
-                severity=6,
+                severity="OK",
                 subject="clear",
             )
         except xmlrpc.client.Fault as e:
@@ -270,14 +270,14 @@ class ProbeHandler(BaseHandler):
                 # clear pending change events
                 dart.common.event.send(
                     component="dart:monitor:pending",
-                    severity=6,
+                    severity="OK",
                     subject="clear",
                 )
 
             # clear any error events
             dart.common.event.send(
                 component="dart:agent:{}:pending".format(self.name),
-                severity=6,
+                severity="OK",
                 subject="clear",
             )
         except xmlrpc.client.Fault as e:
