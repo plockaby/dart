@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block header %}
-    <link rel="stylesheet" href="{{ url_for('main.static', filename='third-party/bootstrap-table/1.11.1/bootstrap-table.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('main.static', filename='third-party/bootstrap-table/1.12.1/bootstrap-table.min.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -26,7 +26,6 @@
         data-sort-name="fqdn"
         data-sort-order="asc"
         data-search="true"
-        data-show-toggle="true"
         data-show-columns="true"
         data-show-refresh="true"
         class="table table-hover table-condensed table-striped">
@@ -48,8 +47,8 @@
 
 {% block footer %}
     <!-- include moment like this so that it works with flask -->
-    {{ moment.include_moment(local_js=url_for('main.static', filename='third-party/moment.js/2.18.1/moment-with-locales.min.js')) }}
-    <script type="text/javascript" src="{{ url_for('main.static', filename='third-party/bootstrap-table/1.11.1/bootstrap-table.min.js') }}"></script>
+    {{ moment.include_moment(local_js=url_for('main.static', filename='third-party/moment.js/2.22.2/moment-with-locales.min.js')) }}
+    <script type="text/javascript" src="{{ url_for('main.static', filename='third-party/bootstrap-table/1.12.1/bootstrap-table.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('main.static', filename='common.js') }}"></script>
     <script type="text/javascript">
         // wrap host names in links to the page for the fqdn
