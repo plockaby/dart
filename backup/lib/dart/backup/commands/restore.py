@@ -82,6 +82,8 @@ class RestoreCommand(BaseCommand):
             self.logger.info("importing configured pending data")
             self._import_(data.get("configured_pending"), truncate=truncate)
 
+        return 0
+
     def _ask(self, question):
         answer = None
         while (not answer):

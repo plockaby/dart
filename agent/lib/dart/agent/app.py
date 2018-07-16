@@ -78,7 +78,7 @@ class DartAgent(object):
         #        )
         #    )
         #
-        self.queue = Queue()
+        queue = Queue()
 
         # these are the handlers that we're working with. they get processed in
         # the order in which they appear in this array.
@@ -128,7 +128,7 @@ class DartAgent(object):
             # monitoring configurations. it also sends state changes to the
             # message bus so that they can be recorded more quickly.
             StateHandler(
-                queue=self.queue,
+                queue=queue,
                 supervisor_server_url=supervisor_server_url,
                 configuration_path=configuration_path,
                 configuration_file=monitor_configuration_file,
@@ -142,7 +142,7 @@ class DartAgent(object):
             # raises alerts for daemon and state monitors. finally, this raises
             # events for any process that is in a pending state.
             ProbeHandler(
-                queue=self.queue,
+                queue=queue,
                 supervisor_server_url=supervisor_server_url,
                 configuration_path=configuration_path,
                 configuration_file=monitor_configuration_file,
@@ -154,7 +154,7 @@ class DartAgent(object):
             # to be stopped last because we want to be able to flush the queue
             # before shutting down.
             QueueHandler(
-                queue=self.queue,
+                queue=queue,
             )
         ]
 
@@ -242,6 +242,7 @@ class DartAgent(object):
 
         # say goodnight, kevin.
         self.logger.info("gracefully exiting")
+        return 1
 
     def _read_message(self, handle):
         # wait ten seconds for a message before exiting with nothing

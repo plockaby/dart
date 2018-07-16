@@ -12,9 +12,7 @@ things such as:
 import sys
 import argparse
 import logging
-import logging.handlers
 import traceback
-from .app import DartProcessor
 
 
 def main():
@@ -43,9 +41,10 @@ def main():
     try:
         options = vars(args)
         configuration = dict(verbose=options.pop("verbose"))
+
+        from .app import DartProcessor
         runnable = DartProcessor(**configuration)
-        runnable.run(**options)
-        return 0
+        return runnable.run(**options)
     except Exception as e:
         logger.error(str(e))
         logger.debug(traceback.format_exc())

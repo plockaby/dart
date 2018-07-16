@@ -14,7 +14,6 @@ through more programmatically amenable means.
 import sys
 import argparse
 import logging
-import logging.handlers
 import traceback
 
 
@@ -69,9 +68,9 @@ def main():
 
         # now that we've imported our generic tool, run it
         if (runnable is not None):
-            runnable.run(**options)
+            return runnable.run(**options)
 
-        return 0
+        return 1
     except Exception as e:
         logger.error(str(e))
         logger.debug(traceback.format_exc())

@@ -22,6 +22,7 @@ class BackupCommand(BaseCommand):
             export["configured_pending"] = self._export_configured_pending()
 
         print(json.dumps(export, sort_keys=True, indent=4))
+        return 0
 
     def _fix_timestamp(self, timestamp):
         if (timestamp is not None):

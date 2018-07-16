@@ -93,7 +93,6 @@ This is a tool that controls the dart system. It provides these commands:
 import sys
 import argparse
 import logging
-import logging.handlers
 import traceback
 
 

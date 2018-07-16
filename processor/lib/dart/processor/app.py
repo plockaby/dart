@@ -181,7 +181,8 @@ class DartProcessor(object):
                     time.sleep(interval)
 
         # tell everything that we're done
-        self.logger.info("exiting")
+        self.logger.info("gracefully exiting")
+        return 0
 
     def process_task(self, body, message):
         try:
