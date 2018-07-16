@@ -319,7 +319,7 @@ class DartAgent(object):
             return True
 
         # send a keepalive to the monitoring system
-        dart.common.event.keepalive(
+        dart.common.event.send(
             component="dart:agent",
             severity=1,
             message="dart agent not responding",

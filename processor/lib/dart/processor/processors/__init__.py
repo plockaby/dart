@@ -28,7 +28,7 @@ class BaseProcessor(object):
     def _send_keepalive(self):
         # raise an alarm if our event listener never processes anything
         if (self.last_keepalive is None or (int(time.time()) - 30) > self.last_keepalive):
-            dart.common.event.keepalive(
+            dart.common.event.send(
                 component="dart:processor:{}".format(self.name),
                 severity=1,
                 message="dart {} processor stopped processing".format(self.name),
