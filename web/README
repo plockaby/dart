@@ -21,7 +21,7 @@ If you make changes to the requirements, you can save the new requirements:
 
 To start a development instance of your application, you can run this command:
 
-    ./manage.py run -p 3000 --reload --debugger
+    ./manage.py run -p 3000 --no-reload --debugger
 
 If you need to test the gunicorn instance, you can start it like this:
 

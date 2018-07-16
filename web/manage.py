@@ -27,8 +27,11 @@ logger.addHandler(log_handler)
 
 
 def create_app(info):
-    from dart.web.loader import app
-    return app
+    import dart.common.monkey
+    dart.common.monkey.patch()
+
+    from dart.web import load
+    return load()
 
 
 @click.group(cls=FlaskGroup, create_app=create_app)

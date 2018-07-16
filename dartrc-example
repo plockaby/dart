@@ -1,12 +1,12 @@
 # vi:syntax=yaml
 
 # about severities:
-# 1 - "critical" creates an event with an escalating incident
-# 2 - "error" creates an event with a non-escalating incident
-# 3 - "warning" creates an event with no incident
-# 4 - "information" creates an event with no incident
-# 5 - "ok" creates an event with no incident
-# 6 - "clear" clears an existing event
+# 1 - will create an event and incident with urgency 1
+# 2 - will create an event and incident with urgency 2
+# 3 - will create an event and incident with urgency 3
+# 4 - "warning" - will create an event
+# 5 - "information" - will create an event
+# OK - will clear any existing event or incident
 
 processes:
       # the name must be unique across all hosts
