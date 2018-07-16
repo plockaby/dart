@@ -15,6 +15,7 @@ path = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, "{}/lib".format(path))
 
 # tell flask where its configuration is
+os.environ["FLASK_ENV"] = os.environ.get("FLASK_ENV", "development")
 os.environ["FLASK_CONFIG"] = os.environ.get("FLASK_CONFIG", "{}/lib/dart/web/configurations/development.cfg".format(path))
 
 # set up logging
