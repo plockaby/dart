@@ -258,7 +258,6 @@ class StateHandler(BaseHandler):
                             contact=configuration["contact"],
                             component="dart:monitor:state:{}".format(process),
                             severity=configuration["severity"],
-                            contact=configuration["contact"],
                             subject="{} entered the state {}".format(process, state["statename"]),
                             message=state["spawnerr"],
                         )
@@ -271,7 +270,6 @@ class StateHandler(BaseHandler):
                             contact=configuration["contact"],
                             component="dart:monitor:state:{}".format(process),
                             severity=configuration["severity"],
-                            contact=configuration["contact"],
                             subject="{} exited with an error".format(process),
                             message=state["spawnerr"],
                         )
@@ -295,7 +293,6 @@ class StateHandler(BaseHandler):
                         contact=configuration["contact"],
                         component="dart:monitor:daemon:{}".format(process),
                         severity=configuration["severity"],
-                        contact=configuration["contact"],
                         subject="{} is in state {} when it is supposed to be in state RUNNING".format(process, state["statename"]),
                     )
         except xmlrpc.client.Fault as e:

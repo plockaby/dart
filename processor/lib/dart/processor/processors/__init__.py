@@ -31,7 +31,7 @@ class BaseProcessor(object):
             dart.common.event.send(
                 component="dart:processor:{}".format(self.name),
                 severity=1,
-                message="dart {} processor stopped processing".format(self.name),
+                subject="dart {} processor stopped processing".format(self.name),
                 timeout=15,  # minutes
                 hostname=self.fqdn,
             )

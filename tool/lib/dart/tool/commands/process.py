@@ -280,7 +280,7 @@ class ProcessCommand(DataCommand):
                         keepalive_monitoring[environment]["severity"],
                         keepalive_monitoring[environment]["contact"] or "DEFAULT",
                     ))
-                else:           
+                else:
                     print("   Keepalive monitoring is {} for '{}' in {}.".format(colored("DISABLED", "red", attrs=["bold"]), process, environment))
 
                 if (environment in daemon_monitoring):
@@ -314,6 +314,8 @@ class ProcessCommand(DataCommand):
                         print("")
                 else:
                     print("   Log monitoring is {} for '{}' in {}.".format(colored("DISABLED", "red", attrs=["bold"]), process, environment))
+
+                print("")
         else:
             print(" No monitoring configurations are defined for '{}'".format(process))
             print("")

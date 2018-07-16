@@ -117,7 +117,7 @@ CREATE TABLE dart.process_daemon_monitor (
 CREATE TABLE dart.process_keepalive_monitor (
     process     text,
     environment text,
-    context     text,
+    contact     text,
     severity    text,
     timeout     int,
     PRIMARY KEY (process, environment)

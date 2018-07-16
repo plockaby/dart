@@ -401,7 +401,7 @@ class RegisterCommand(BaseCommand):
             INSERT INTO dart.process_keepalive_monitor (process, environment, contact, severity, timeout)
             VALUES (%s, %s, %s, %s, %s)
         """)
-        self.session.execute(query, (process, environment, ci, kba, severity, timeout))
+        self.session.execute(query, (process, environment, contact, severity, timeout))
 
     def _insert_process_daemon_monitor_environment(self, process, environment, configuration, default_contact):
         contact = configuration.get("contact") or default_contact

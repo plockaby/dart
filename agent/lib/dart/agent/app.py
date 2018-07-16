@@ -322,7 +322,7 @@ class DartAgent(object):
         dart.common.event.send(
             component="dart:agent",
             severity=1,
-            message="dart agent not responding",
+            subject="dart agent not responding",
             timeout=10,  # minutes
         )
 

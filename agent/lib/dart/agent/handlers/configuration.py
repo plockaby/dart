@@ -293,7 +293,7 @@ class ConfigurationHandler(BaseHandler):
         monitors = {}
 
         # get keepalive monitors
-        if ("keepalive" not in self.queries["monitors"]):
+        if (self.queries["monitors"]["keepalive"] is None):
             self.queries["monitors"]["keepalive"] = self.session.prepare("""
                 SELECT
                     process,
