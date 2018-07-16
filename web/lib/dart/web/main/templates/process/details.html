@@ -67,19 +67,6 @@
                     <div class="row">
                         <div class="col-sm-12">
                             <dl class="dl-horizontal">
-                                <dt>State Monitoring</dt>
-                                <dd>
-                                    {% if environment in state_monitoring %}
-                                        State monitoring is
-                                            <span class='alert-success' style='background: transparent; font-weight: bold;'>ENABLED</span>
-                                            at severity {{ state_monitoring[environment].severity }}
-                                            for configuration item '{{ state_monitoring[environment].ci or "DEFAULT" }}'.
-                                    {% else %}
-                                        <span class='alert-danger' style='background: transparent; font-weight: bold;'>
-                                            No state monitoring configuration exists for {{ process }} in {{ environment }}.
-                                        </span>
-                                    {% endif %}
-                                </dd>
                                 <dt>Daemon Monitoring</dt>
                                 <dd>
                                     {% if environment in daemon_monitoring %}
@@ -91,6 +78,19 @@
                                     {% else %}
                                         <span class='alert-danger' style='background: transparent; font-weight: bold;'>
                                             No daemon monitoring configuration exists for {{ process }} in {{ environment }}.
+                                        </span>
+                                    {% endif %}
+                                </dd>
+                                <dt>State Monitoring</dt>
+                                <dd>
+                                    {% if environment in state_monitoring %}
+                                        State monitoring is
+                                            <span class='alert-success' style='background: transparent; font-weight: bold;'>ENABLED</span>
+                                            at severity {{ state_monitoring[environment].severity }}
+                                            for configuration item '{{ state_monitoring[environment].ci or "DEFAULT" }}'.
+                                    {% else %}
+                                        <span class='alert-danger' style='background: transparent; font-weight: bold;'>
+                                            No state monitoring configuration exists for {{ process }} in {{ environment }}.
                                         </span>
                                     {% endif %}
                                 </dd>
