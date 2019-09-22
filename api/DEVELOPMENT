@@ -1,0 +1,28 @@
+To get started on development, first create a virtual environment:
+
+    rm -rf venv && virtualenv -p python3 venv
+
+Then, use the virtual environment:
+
+    source venv/bin/activate
+
+If you need to load the requirements then you can load the requirements file
+after you've activated the virtual environment:
+
+    pip install -r requirements.txt
+
+If the requirements file still needs to be built then use this command:
+
+    pip install flask gunicorn eventlet flask-login psycopg2-binary tenacity pyyaml
+
+If you make changes to the requirements, you can save the new requirements:
+
+    pip freeze > requirements.txt
+
+You can run a development instance of your application like this:
+
+    PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=lib:$PYTHONPATH FLASK_ENV=development FLASK_CONFIG=configurations/development.cfg venv/bin/python3 venv/bin/gunicorn dart.api.loader:app -b unix:/srv/run/sites/sockets/dart-api.sock --worker-class=eventlet --log-config=lib/dart/api/configurations/logging/development.conf
+
+When you're done, you can deactivate it:
+
+    deactivate

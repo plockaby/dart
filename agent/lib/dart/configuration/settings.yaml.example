@@ -1,0 +1,60 @@
+# vi:syntax=yaml
+
+agent:
+    api:
+        # configuration information for DartAPI
+        dart:
+            url: https://localhost:274/dart
+            ca: /usr/local/ssl/certs/local-ca.cert
+            key: /usr/local/ssl/certs/local/dart.local.lockaby.org.pem
+
+        # configuration information for CorkAPI
+        cork:
+            url: https://localhost:274/cork
+            ca: /usr/local/ssl/certs/local-ca.cert
+            key: /usr/local/ssl/certs/local/cork.local.lockaby.org.pem
+
+    configuration:
+        # directory where configurations are stored. supervisord will need to
+        # include {path}/supervisor.conf to load configurations.
+        path: /run/dart
+
+        # user/group to use when writing configuration files. this is only
+        # used if the program is run as root and is really mostly applicable if
+        # trying to create configuration files before supervisor starts.
+        user: nobody
+        group: nogroup
+
+    events:
+        # path to unix socket
+        path: /run/dart/events.sock
+
+        # port on localhost
+        port: 1337
+
+    coordination:
+        # what CA will we use to validate certs and what common name is allowed
+        ca: /usr/local/ssl/certs/local-ca.cert
+        key: /usr/local/ssl/certs/local/dart.local.lockaby.org.pem
+        name: dart.local.lockaby.org
+
+        # what port will our coordinator listen on
+        port: 3278
+
+api:
+    # path where the api will be mounted
+    prefix: /dart
+
+    # database configuration options
+    database:
+        # arbitrary name for the connection
+        name: dart
+
+        # connection details passed directly to psycopg2
+        host: localhost
+        user: dart
+        database: dart
+
+    # a list of authorized certificate cns for accessing the api
+    authorized:
+        - dart.local.lockaby.org

@@ -1,0 +1,12 @@
+# vi:syntax=python
+from pushlib.modules.python import *
+env.clone_path = "push/dart"
+
+
+class DeployTask(DeployTask):
+    def before(self):
+        super().before()
+
+        # remove the project before redeploying
+        self.clean("{}/dart/common".format(env.python_release_lib_dir))
+        self.clean("{}/dart/agent".format(env.python_release_lib_dir))
