@@ -1,9 +1,9 @@
 import logging
-from collections.abc import Mapping
 from dart.common.singleton import Singleton
 import dart.agent.api
 from .settings import SettingsManager
 from threading import RLock
+from copy import deepcopy
 import urllib.parse
 import socket
 import pwd
@@ -157,7 +157,7 @@ class ConfigurationsWriter(metaclass=Singleton):
         os.replace(temporary_path, self.supervisor_configuration_path)
 
 
-class ConfigurationsManager(Mapping, metaclass=Singleton):
+class ConfigurationsManager(metaclass=Singleton):
     def __init__(self):
         # control access to the data structure so that we can reload it
         self.lock = RLock()
@@ -171,14 +171,16 @@ class ConfigurationsManager(Mapping, metaclass=Singleton):
             self.configurations.clear()
             self.configurations.update(configurations)
 
-    def __getitem__(self, key):
+    def schedules(self):
         with self.lock:
-            return self.configurations[key]
+            # return a shallow copy of all schedules. a shallow copy is ok
+            # because the key is a string and the value is a string.
+            return self.configurations["schedule"].copy()
 
-    def __iter__(self):
+    def configuration(self, monitor, key):
         with self.lock:
-            return iter(self.configurations)
-
-    def __len__(self):
-        with self.lock:
-            return len(self.configurations)
+            # returns a data structure with all monitoring details given the
+            # monitor type (state, deamon, keepalive, log) and the name of the
+            # program that we're looking for details about.
+            data = self.configurations["monitor"].get(monitor, {}).get(key)
+            return deepcopy(data) if data is not None else None

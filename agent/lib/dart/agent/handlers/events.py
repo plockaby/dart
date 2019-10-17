@@ -238,7 +238,7 @@ class EventHandler(BaseHandler):
 
                 # get some pieces out of the event that was enqueued
                 event_data = item["data"]
-                event_type = item.get("type", "event")
+                event_type = item.get("type", "event")  # determines API endpoint
 
                 # if no hostname is provided then fill ours in
                 if ("host" not in event_data or event_data["host"] is None):
@@ -249,6 +249,7 @@ class EventHandler(BaseHandler):
                     event_data["host"]["name"] = self.fqdn
 
                 # send the event to the API
+                self.logger.debug("{} handler sending {} to CorkAPI".format(self.name, event_type))
                 # TODO
             except requests.RequestException as e:
                 self.logger.warning("{} handler could not talk to CorkAPI -- skipping: {}".format(self.name, e))

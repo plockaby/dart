@@ -85,7 +85,7 @@ class CoordinationHandler(BaseHandler):
                     except CommandValidationException as e:
                         self.logger.error("{} handler received invalid command: {}".format(self.name, e))
 
-                        # send it to the event api
+                        # first send it to the CorkAPI
                         self.events.put({
                             "data": {
                                 "component": {"name": "agent:{}:command".format(self.name)},

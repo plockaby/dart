@@ -94,6 +94,46 @@ class DartAgent(object):
             rewrite_trigger=self.rewrite_trigger,
         ))
 
+        # this handler, when signaled, gets the active and pending
+        # configurations from supervisord and posts those to the DartAPI.
+        from .handlers.probe import ProbeHandler
+        self.handlers.append(ProbeHandler(
+            events=self.events,
+            supervisor_server_url=supervisor_server_url,
+            reread_trigger=self.reread_trigger,
+            rewrite_trigger=self.rewrite_trigger,
+        ))
+
+        # this handler listens for state change events and if they match a
+        # monitoring configuration creates an event. It also posts state
+        # changes to the DartAPI to update the central data store.
+        from .handlers.state import StateHandler
+        self.handlers.append(StateHandler(
+            events=self.events,
+            supervisor_server_url=supervisor_server_url,
+            reread_trigger=self.reread_trigger,
+            rewrite_trigger=self.rewrite_trigger,
+        ))
+
+        # this handler listens for log events and if they match a monitoring
+        # configuration creates an event.
+        from .handlers.log import LogHandler
+        self.handlers.append(LogHandler(
+            events=self.events,
+            reread_trigger=self.reread_trigger,
+            rewrite_trigger=self.rewrite_trigger,
+        ))
+
+        # this handler, when signaled, checks all configured schedules and
+        # start programs as necessary.
+        from .handlers.scheduler import SchedulerHandler
+        self.handlers.append(SchedulerHandler(
+            events=self.events,
+            supervisor_server_url=supervisor_server_url,
+            reread_trigger=self.reread_trigger,
+            rewrite_trigger=self.rewrite_trigger,
+        ))
+
         # start all of the handlers
         for handler in self.handlers:
             self.logger.debug("starting handler: {}".format(handler.name))
