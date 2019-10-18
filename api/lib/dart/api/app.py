@@ -53,9 +53,15 @@ def load():
     logger.info("using application url prefix {}".format(prefix))
     app.register_blueprint(v1, url_prefix=prefix)
 
-    # routes that the portal  will query
+    # routes that the portal will query
     from .blueprints.portal.v1 import v1
     prefix = "{}/portal/v1".format(settings_manager.settings.get("prefix", ""))
+    logger.info("using application url prefix {}".format(prefix))
+    app.register_blueprint(v1, url_prefix=prefix)
+
+    # routes to control remote systems
+    from .blueprints.control.v1 import v1
+    prefix = "{}/control/v1".format(settings_manager.settings.get("prefix", ""))
     logger.info("using application url prefix {}".format(prefix))
     app.register_blueprint(v1, url_prefix=prefix)
 

@@ -13,7 +13,7 @@ after you've activated the virtual environment:
 
 If the requirements file still needs to be built then use this command:
 
-    pip install flask gunicorn eventlet flask-moment requests
+    pip install flask gunicorn gevent flask-moment requests
 
 If you make changes to the requirements, you can save the new requirements:
 
@@ -21,7 +21,7 @@ If you make changes to the requirements, you can save the new requirements:
 
 You can run a development instance of your application like this:
 
-    PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=lib:$PYTHONPATH FLASK_ENV=development FLASK_CONFIG=configurations/development.cfg venv/bin/python3 venv/bin/gunicorn dart.portal.loader:app -b unix:/srv/run/sites/sockets/dart-portal.sock --worker-class=eventlet --log-config=lib/dart/portal/configurations/logging/development.conf
+    PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=lib:$PYTHONPATH FLASK_ENV=development FLASK_CONFIG=configurations/development.cfg venv/bin/python3 venv/bin/gunicorn dart.portal.loader:app -b unix:/srv/run/sites/sockets/dart-portal.sock --log-config=lib/dart/portal/configurations/logging/development.conf --worker-class=gevent
 
 When you're done, you can deactivate it:
 
