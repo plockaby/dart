@@ -2,6 +2,7 @@
 from pushlib.modules.python import *
 from pushlib.modules.jshint import *
 env.clone_path = "push/dart"
+env.virtualenv = "dart-portal"
 
 
 class TestTask(TestTask):
