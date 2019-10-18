@@ -20,7 +20,8 @@ COMMENT ON COLUMN dart.host.booted IS 'when the host was last rebooted';
 COMMENT ON COLUMN dart.host.kernel IS 'the kernel that the host is running';
 ALTER TABLE dart.host OWNER TO postgres;
 ALTER TABLE dart.host ADD CONSTRAINT host_pkey PRIMARY KEY (fqdn);
-CREATE TRIGGER t11_anchored_column BEFORE UPDATE ON dart.host FOR EACH ROW EXECUTE PROCEDURE standard.anchored_column('fqdn');
+CREATE TRIGGER t11_anchored_column_fqdn BEFORE UPDATE ON dart.host FOR EACH ROW EXECUTE PROCEDURE standard.anchored_column('fqdn');
+CREATE TRIGGER t30_distinct_update BEFORE UPDATE ON dart.host FOR EACH ROW EXECUTE PROCEDURE standard.distinct_update();
 GRANT SELECT ON TABLE dart.host TO PUBLIC;
 GRANT INSERT,DELETE,UPDATE ON TABLE dart.host TO dart;
 
@@ -40,26 +41,11 @@ COMMENT ON TABLE dart.process IS 'process configurations for supervisord, manual
 ALTER TABLE dart.process ADD CONSTRAINT process_pkey PRIMARY KEY (name, environment);
 CREATE TRIGGER t11_anchored_column_environment BEFORE UPDATE ON dart.process FOR EACH ROW EXECUTE PROCEDURE standard.anchored_column('environment');
 CREATE TRIGGER t11_anchored_column_name BEFORE UPDATE ON dart.process FOR EACH ROW EXECUTE PROCEDURE standard.anchored_column('name');
-CREATE TRIGGER t50_modified BEFORE INSERT OR UPDATE ON dart.process FOR EACH ROW EXECUTE PROCEDURE standard.modified();
-CREATE TRIGGER t90_history_saver AFTER INSERT OR DELETE OR UPDATE ON dart.process FOR EACH ROW EXECUTE PROCEDURE standard.history_trigger();
-CREATE TRIGGER t90_history_saver_truncate AFTER TRUNCATE ON dart.process FOR EACH STATEMENT EXECUTE PROCEDURE standard.history_trigger();
 GRANT SELECT ON TABLE dart.process TO PUBLIC;
 GRANT INSERT,DELETE,UPDATE ON TABLE dart.process TO dart;
 
-CREATE TABLE dart.process_history (
-    modified_action character varying NOT NULL,
-    txn_timestamp timestamp with time zone NOT NULL,
-    name text,
-    environment text,
-    type text,
-    configuration text,
-    schedule text,
-    modified_at timestamp with time zone,
-    modified_by text
-);
-
+SELECT standard.standardize_table_history_and_trigger('dart', 'process');
 ALTER TABLE dart.process_history OWNER TO postgres;
-GRANT SELECT ON TABLE dart.process_history TO PUBLIC;
 
 CREATE TABLE dart.assignment (
     fqdn text NOT NULL,
@@ -73,27 +59,13 @@ CREATE TABLE dart.assignment (
 ALTER TABLE dart.assignment OWNER TO postgres;
 COMMENT ON TABLE dart.assignment IS 'processes assigned to hosts, populated manually by users, manually removed';
 ALTER TABLE dart.assignment ADD CONSTRAINT assignment_pkey PRIMARY KEY (fqdn, process_name);
-CREATE TRIGGER t50_modified BEFORE INSERT OR UPDATE ON dart.assignment FOR EACH ROW EXECUTE PROCEDURE standard.modified();
-CREATE TRIGGER t90_history_saver AFTER INSERT OR DELETE OR UPDATE ON dart.assignment FOR EACH ROW EXECUTE PROCEDURE standard.history_trigger();
-CREATE TRIGGER t90_history_saver_truncate AFTER TRUNCATE ON dart.assignment FOR EACH STATEMENT EXECUTE PROCEDURE standard.history_trigger();
 ALTER TABLE dart.assignment ADD CONSTRAINT assignment_fqdn_fkey FOREIGN KEY (fqdn) REFERENCES dart.host(fqdn) ON DELETE RESTRICT;
 ALTER TABLE dart.assignment ADD CONSTRAINT assignment_process_name_fkey FOREIGN KEY (process_name, process_environment) REFERENCES dart.process(name, environment) ON DELETE RESTRICT;
 GRANT SELECT ON TABLE dart.assignment TO PUBLIC;
 GRANT INSERT,DELETE,UPDATE ON TABLE dart.assignment TO dart;
 
-CREATE TABLE dart.assignment_history (
-    modified_action character varying NOT NULL,
-    txn_timestamp timestamp with time zone NOT NULL,
-    fqdn text,
-    process_name text,
-    process_environment text,
-    disabled boolean,
-    modified_at timestamp with time zone,
-    modified_by text
-);
-
+SELECT standard.standardize_table_history_and_trigger('dart', 'assignment');
 ALTER TABLE dart.assignment_history OWNER TO postgres;
-GRANT SELECT ON TABLE dart.assignment_history TO PUBLIC;
 
 CREATE TABLE dart.active_process (
     fqdn text NOT NULL,
@@ -118,6 +90,9 @@ COMMENT ON COLUMN dart.active_process.error IS 'corresponds with supervisord "sp
 COMMENT ON COLUMN dart.active_process.polled IS 'when we last received an update for this process';
 ALTER TABLE dart.active_process ADD CONSTRAINT active_process_pkey PRIMARY KEY (fqdn, name);
 ALTER TABLE dart.active_process ADD CONSTRAINT active_process_fqdn_fkey FOREIGN KEY (fqdn) REFERENCES dart.host(fqdn) ON DELETE CASCADE;
+CREATE TRIGGER t11_anchored_column_fqdn BEFORE UPDATE ON dart.active_process FOR EACH ROW EXECUTE PROCEDURE standard.anchored_column('fqdn');
+CREATE TRIGGER t11_anchored_column_name BEFORE UPDATE ON dart.active_process FOR EACH ROW EXECUTE PROCEDURE standard.anchored_column('name');
+CREATE TRIGGER t30_distinct_update BEFORE UPDATE ON dart.active_process FOR EACH ROW EXECUTE PROCEDURE standard.distinct_update();
 GRANT SELECT ON TABLE dart.active_process TO PUBLIC;
 GRANT INSERT,DELETE,UPDATE ON TABLE dart.active_process TO dart;
 
@@ -133,6 +108,9 @@ ALTER TABLE dart.pending_process OWNER TO postgres;
 COMMENT ON TABLE dart.pending_process IS 'processes currently pending on hosts, automatically populated, automatically removed';
 ALTER TABLE dart.pending_process ADD CONSTRAINT pending_process_pkey PRIMARY KEY (fqdn, name);
 ALTER TABLE dart.pending_process ADD CONSTRAINT pending_process_fqdn_fkey FOREIGN KEY (fqdn) REFERENCES dart.host(fqdn) ON DELETE CASCADE;
+CREATE TRIGGER t11_anchored_column_fqdn BEFORE UPDATE ON dart.pending_process FOR EACH ROW EXECUTE PROCEDURE standard.anchored_column('fqdn');
+CREATE TRIGGER t11_anchored_column_name BEFORE UPDATE ON dart.pending_process FOR EACH ROW EXECUTE PROCEDURE standard.anchored_column('name');
+CREATE TRIGGER t30_distinct_update BEFORE UPDATE ON dart.pending_process FOR EACH ROW EXECUTE PROCEDURE standard.distinct_update();
 GRANT SELECT ON TABLE dart.pending_process TO PUBLIC;
 GRANT INSERT,DELETE,UPDATE ON TABLE dart.pending_process TO dart;
 
@@ -149,12 +127,12 @@ CREATE TABLE dart.process_state_monitor (
 ALTER TABLE dart.process_state_monitor OWNER TO postgres;
 COMMENT ON TABLE dart.process_state_monitor IS 'state monitoring configurations, manually populated, automatically removed';
 ALTER TABLE dart.process_state_monitor ADD CONSTRAINT process_state_monitor_pkey PRIMARY KEY (process_name, process_environment);
-CREATE TRIGGER t50_modified BEFORE INSERT OR UPDATE ON dart.process_state_monitor FOR EACH ROW EXECUTE PROCEDURE standard.modified();
-CREATE TRIGGER t90_history_saver AFTER INSERT OR DELETE OR UPDATE ON dart.process_state_monitor FOR EACH ROW EXECUTE PROCEDURE standard.history_trigger();
-CREATE TRIGGER t90_history_saver_truncate AFTER TRUNCATE ON dart.process_state_monitor FOR EACH STATEMENT EXECUTE PROCEDURE standard.history_trigger();
 ALTER TABLE dart.process_state_monitor ADD CONSTRAINT process_state_monitor_process_name_fkey FOREIGN KEY (process_name, process_environment) REFERENCES dart.process(name, environment) ON DELETE CASCADE;
 GRANT SELECT ON TABLE dart.process_state_monitor TO PUBLIC;
 GRANT INSERT,DELETE,UPDATE ON TABLE dart.process_state_monitor TO dart;
+
+SELECT standard.standardize_table_history_and_trigger('dart', 'process_state_monitor');
+ALTER TABLE dart.process_state_monitor_history OWNER TO postgres;
 
 CREATE TABLE dart.process_daemon_monitor (
     process_name text NOT NULL,
@@ -169,12 +147,12 @@ CREATE TABLE dart.process_daemon_monitor (
 ALTER TABLE dart.process_daemon_monitor OWNER TO postgres;
 COMMENT ON TABLE dart.process_daemon_monitor IS 'daemon monitoring configurations, manually populated, automatically removed';
 ALTER TABLE dart.process_daemon_monitor ADD CONSTRAINT process_daemon_monitor_pkey PRIMARY KEY (process_name, process_environment);
-CREATE TRIGGER t50_modified BEFORE INSERT OR UPDATE ON dart.process_daemon_monitor FOR EACH ROW EXECUTE PROCEDURE standard.modified();
-CREATE TRIGGER t90_history_saver AFTER INSERT OR DELETE OR UPDATE ON dart.process_daemon_monitor FOR EACH ROW EXECUTE PROCEDURE standard.history_trigger();
-CREATE TRIGGER t90_history_saver_truncate AFTER TRUNCATE ON dart.process_daemon_monitor FOR EACH STATEMENT EXECUTE PROCEDURE standard.history_trigger();
 ALTER TABLE dart.process_daemon_monitor ADD CONSTRAINT process_daemon_monitor_process_name_fkey FOREIGN KEY (process_name, process_environment) REFERENCES dart.process(name, environment) ON DELETE CASCADE;
 GRANT SELECT ON TABLE dart.process_daemon_monitor TO PUBLIC;
 GRANT INSERT,DELETE,UPDATE ON TABLE dart.process_daemon_monitor TO dart;
+
+SELECT standard.standardize_table_history_and_trigger('dart', 'process_daemon_monitor');
+ALTER TABLE dart.process_daemon_monitor_history OWNER TO postgres;
 
 CREATE TABLE dart.process_keepalive_monitor (
     process_name text NOT NULL,
@@ -187,16 +165,15 @@ CREATE TABLE dart.process_keepalive_monitor (
     CONSTRAINT process_keepalive_monitor_severity_check CHECK (((severity = 'OK'::text) OR (severity = '1'::text) OR (severity = '2'::text) OR (severity = '3'::text) OR (severity = '4'::text) OR (severity = '5'::text)))
 );
 
-
 ALTER TABLE dart.process_keepalive_monitor OWNER TO postgres;
 COMMENT ON TABLE dart.process_keepalive_monitor IS 'keepalive monitoring configurations, manually populated, automatically removed';
 ALTER TABLE dart.process_keepalive_monitor ADD CONSTRAINT process_keepalive_monitor_pkey PRIMARY KEY (process_name, process_environment);
-CREATE TRIGGER t50_modified BEFORE INSERT OR UPDATE ON dart.process_keepalive_monitor FOR EACH ROW EXECUTE PROCEDURE standard.modified();
-CREATE TRIGGER t90_history_saver AFTER INSERT OR DELETE OR UPDATE ON dart.process_keepalive_monitor FOR EACH ROW EXECUTE PROCEDURE standard.history_trigger();
-CREATE TRIGGER t90_history_saver_truncate AFTER TRUNCATE ON dart.process_keepalive_monitor FOR EACH STATEMENT EXECUTE PROCEDURE standard.history_trigger();
 ALTER TABLE dart.process_keepalive_monitor ADD CONSTRAINT process_keepalive_monitor_process_name_fkey FOREIGN KEY (process_name, process_environment) REFERENCES dart.process(name, environment) ON DELETE CASCADE;
 GRANT SELECT ON TABLE dart.process_keepalive_monitor TO PUBLIC;
 GRANT INSERT,DELETE,UPDATE ON TABLE dart.process_keepalive_monitor TO dart;
+
+SELECT standard.standardize_table_history_and_trigger('dart', 'process_keepalive_monitor');
+ALTER TABLE dart.process_keepalive_monitor_history OWNER TO postgres;
 
 CREATE TABLE dart.process_log_monitor (
     process_name text NOT NULL,
@@ -223,11 +200,11 @@ COMMENT ON COLUMN dart.process_log_monitor.regex IS 'the regular expression to a
 COMMENT ON COLUMN dart.process_log_monitor.stop IS 'if true then if this matches no more log monitors will be applied';
 COMMENT ON COLUMN dart.process_log_monitor.name IS 'a name to give to the log monitor for the event monitoring';
 ALTER TABLE dart.process_log_monitor ADD CONSTRAINT process_log_monitor_pkey PRIMARY KEY (process_name, process_environment, stream, sort_order);
-CREATE TRIGGER t50_modified BEFORE INSERT OR UPDATE ON dart.process_log_monitor FOR EACH ROW EXECUTE PROCEDURE standard.modified();
-CREATE TRIGGER t90_history_saver AFTER INSERT OR DELETE OR UPDATE ON dart.process_log_monitor FOR EACH ROW EXECUTE PROCEDURE standard.history_trigger();
-CREATE TRIGGER t90_history_saver_truncate AFTER TRUNCATE ON dart.process_log_monitor FOR EACH STATEMENT EXECUTE PROCEDURE standard.history_trigger();
 ALTER TABLE dart.process_log_monitor ADD CONSTRAINT process_log_monitor_process_name_fkey FOREIGN KEY (process_name, process_environment) REFERENCES dart.process(name, environment) ON DELETE CASCADE;
 GRANT SELECT ON TABLE dart.process_log_monitor TO PUBLIC;
 GRANT INSERT,DELETE,UPDATE ON TABLE dart.process_log_monitor TO dart;
+
+SELECT standard.standardize_table_history_and_trigger('dart', 'process_log_monitor');
+ALTER TABLE dart.process_log_monitor_history OWNER TO postgres;
 
 COMMIT;

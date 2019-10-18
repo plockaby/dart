@@ -1,5 +1,5 @@
 """
-This is a supervisord event listener.
+This connects to the DartAPI to register configuration files.
 """
 
 import sys
@@ -10,12 +10,12 @@ import traceback
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="dart-agent",
+        prog="dart-registrar",
         formatter_class=argparse.RawTextHelpFormatter,
         description=__doc__,
     )
-    parser.add_argument("--write-configuration", action="store_true", dest="write_configuration", help="write configuration files and exit")
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", default=False, help="send verbose output to the console")
+    parser.add_argument("path", help="path to file to register (use - to read from stdin)")
     args = parser.parse_args()
 
     # configure logging
@@ -36,8 +36,8 @@ def main():
         options = vars(args)
         configuration = dict(verbose=options.pop("verbose"))
 
-        from .app import DartAgent
-        runnable = DartAgent(**configuration)
+        from .app import DartRegistrar
+        runnable = DartRegistrar(**configuration)
         return runnable.run(**options)
     except Exception as e:
         logger.error(str(e))

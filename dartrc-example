@@ -34,25 +34,23 @@ processes:
       schedule: "0 1 * * *"
 
       monitoring:
-          keepalive:
-              # see above for information about severity
+          state:
               severity: 3
-              # who to contact, will default to something reasonable
               contact: me@example.com
+
+          daemon:
+              severity: 3
+              contact: me@example.com
+
+          keepalive:
+              severity: 3
+              contact: me@example.com
+
               # the keepalive will timeout after ten minutes. ensure that this
               # timeout is LONGER than the normal schedule above or else there
               # will be lots of alerts generated.
               timeout: 10
-          daemon:
-              # see above for information about severity
-              severity: 3
-              # who to contact, will default to something reasonable
-              contact: me@example.com
-          state:
-              # see above for information about severity
-              severity: 3
-              # who to contact, will default to something reasonable
-              contact: me@example.com
+
           logs:
               # note: log monitors are processed in the order that they are
               # seen here. if a rule says to stop processing then subsequent
@@ -64,20 +62,29 @@ processes:
                     # event component. otherwise this is not required and the
                     # component will default to the name of the program.
                     name: foobar
+
                     # see above for information about severity. however, for
                     # log monitoring note that if the severity is not present
                     # then no event will be raised. this can be used with the
                     # "stop" keyword to have a monitoring entry that completely
                     # stops processing but doesn't do anything else.
                     severity: 4
+
                     # if set to true then if this regex matches then no further
                     # regexes will be compared against this log line. the
                     # default is "false" meaning that all regexes will be
                     # compared.
                     stop: true
-                    # who to contact, will default to something reasonable
+
+                    # who to contact -- this is required
                     contact: me@example.com
+
               # all of the same options apply to stderr as to stdout
               stderr:
                   - regex: .*
                     severity: 4
+
+                    # rather than write one contact over and over again you
+                    # can put "contact" just under "monitoring" and dart will
+                    # use the same contact for all monitors.
+                    contact: me@example.com

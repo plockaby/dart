@@ -58,3 +58,11 @@ api:
     # a list of authorized certificate cns for accessing the api
     authorized:
         - dart.local.lockaby.org
+
+portal:
+    api:
+        # configuration information for DartAPI
+        dart:
+            url: https://localhost:274/dart
+            ca: /usr/local/ssl/certs/local-ca.cert
+            key: /usr/local/ssl/certs/local/dart.local.lockaby.org.pem

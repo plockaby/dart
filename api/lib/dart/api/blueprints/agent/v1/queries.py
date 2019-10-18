@@ -24,11 +24,7 @@ def get_assigned_processes(fqdn):
                         WHERE process_name = %s
                           AND process_environment = %s
                     """, (row["name"], row["environment"]))
-                    subrow = subcur.fetchone()
-                    try:
-                        row["monitors"]["state"] = subrow
-                    except (json.JSONDecodeError, TypeError):
-                        row["monitors"]["state"] = None
+                    row["monitors"]["state"] = subcur.fetchone()
 
                 # daemon monitor information
                 with conn.cursor() as subcur:
@@ -39,11 +35,7 @@ def get_assigned_processes(fqdn):
                         WHERE process_name = %s
                           AND process_environment = %s
                     """, (row["name"], row["environment"]))
-                    subrow = subcur.fetchone()
-                    try:
-                        row["monitors"]["daemon"] = subrow
-                    except (json.JSONDecodeError, TypeError):
-                        row["monitors"]["daemon"] = None
+                    row["monitors"]["daemon"] = subcur.fetchone()
 
                 # keepalive monitor information
                 with conn.cursor() as subcur:
@@ -54,11 +46,7 @@ def get_assigned_processes(fqdn):
                         WHERE process_name = %s
                           AND process_environment = %s
                     """, (row["name"], row["environment"]))
-                    subrow = subcur.fetchone()
-                    try:
-                        row["monitors"]["keepalive"] = subrow
-                    except (json.JSONDecodeError, TypeError):
-                        row["monitors"]["keepalive"] = None
+                    row["monitors"]["keepalive"] = subcur.fetchone()
 
                 # log monitor information
                 with conn.cursor() as subcur:
@@ -73,11 +61,8 @@ def get_assigned_processes(fqdn):
                     """, (row["name"], row["environment"]))
                     for subrow in subcur:
                         stream = subrow.pop("stream")
-                        try:
-                            row["monitors"]["log"][stream].append(subrow)
-                        except (json.JSONDecodeError, TypeError):
-                            pass
-    
+                        row["monitors"]["log"][stream].append(subrow)
+
                 # return the rows as we get them
                 yield row
 

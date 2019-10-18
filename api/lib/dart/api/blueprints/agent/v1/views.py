@@ -1,3 +1,4 @@
+from ....app import logger
 from ....app import db_client
 from ....validators import validate_json_data
 from . import v1
@@ -16,6 +17,7 @@ def get_assigned_processes(fqdn):
         conn.autocommit = False
 
         # returns assignments and all configurations
+        logger.debug("getting process assignments for {}".format(fqdn))
         assignments = q.get_assigned_processes(fqdn)
 
         # clean up the transaction
@@ -79,11 +81,12 @@ def post_active_processes(fqdn):
             if (process.get("statename") is None):
                 raise BadRequest("The DartAPI received invalid data.")
 
+            logger.debug("inserting active process {} on fqdn {} in state {}".format(process["name"], fqdn, process["statename"]))
             active.append(process["name"])
             q.insert_active(
                 fqdn,
-                process.get("name"),
-                process.get("statename"),
+                process["name"],
+                process["statename"],
                 process.get("start"),
                 process.get("stop"),
                 process.get("stdout_logfile"),
@@ -140,12 +143,15 @@ def post_pending_processes(fqdn):
 
         # then insert them all again
         for process in request.data.get("added", []):
+            logger.debug("inserting pending 'added' record for {} on {}".format(process, fqdn))
             pending.append(process)
             q.insert_pending(fqdn, process, "added")
         for process in request.data.get("changed", []):
+            logger.debug("inserting pending 'changed' record for {} on {}".format(process, fqdn))
             pending.append(process)
             q.insert_pending(fqdn, process, "changed")
         for process in request.data.get("removed", []):
+            logger.debug("inserting pending 'removed' record for {} on {}".format(process, fqdn))
             pending.append(process)
             q.insert_pending(fqdn, process, "removed")
 
@@ -207,10 +213,11 @@ def post_state(fqdn, process):
             raise BadRequest("The DartAPI received invalid data.")
 
         # send it to the database
+        logger.info("registering state change for {} on {} to {}".format(request.data["name"], fqdn, request.data["statename"]))
         q.insert_active(
             fqdn,
-            request.data.get("name"),
-            request.data.get("statename"),
+            request.data["name"],
+            request.data["statename"],
             request.data.get("start"),
             request.data.get("stop"),
             request.data.get("stdout_logfile"),
@@ -255,6 +262,7 @@ def post_probe(fqdn):
         conn.autocommit = False
 
         # save default information
+        logger.info("received host update for {}, booted {} with kernel {}".format(fqdn, request.data.get("booted"), request.data.get("kernel")))
         q.insert_host(
             fqdn,
             request.data.get("booted"),

@@ -64,6 +64,41 @@ COMMENT ON TRIGGER t30_distinct_update ON {schema.table} IS 'ensure update is di
 */
 DECLARE
 BEGIN
+    -- don't perform update if the row has not been modified
+    IF (row(old.*) IS NOT DISTINCT FROM row(new.*)) THEN
+        RETURN NULL;
+    END IF;
+
+    -- update
+    RETURN new;
+END;
+$$;
+
+ALTER FUNCTION standard.distinct_update() OWNER TO postgres;
+
+
+CREATE OR REPLACE FUNCTION standard.distinct_update_modified() RETURNS trigger
+    LANGUAGE plpgsql
+AS $$
+/*  Function:     standard.distinct_update_modified()
+    Description:  Trigger function that will drop an update that does not
+                  modify any column on the row. This will prevent the creation
+                  of additional history records. See the example trigger below.
+    Affects:      makes no changes to data
+    Arguments:    none
+    Returns:      If there are no changes NULL is returned which ends the
+                  processing of the update on that specific row. Otherwise NEW
+                  is returned (the updated row).
+
+CREATE TRIGGER t30_distinct_update
+    BEFORE UPDATE ON {schema.table}
+    FOR EACH ROW
+    EXECUTE PROCEDURE standard.distinct_update_modified();
+
+COMMENT ON TRIGGER t30_distinct_update ON {schema.table} IS 'ensure update is distinct';
+*/
+DECLARE
+BEGIN
     -- set old modified* fields to the new values
     old.modified_at := new.modified_at;
     old.modified_by := new.modified_by;
@@ -78,7 +113,7 @@ BEGIN
 END;
 $$;
 
-ALTER FUNCTION standard.distinct_update() OWNER TO postgres;
+ALTER FUNCTION standard.distinct_update_modified() OWNER TO postgres;
 
 
 CREATE OR REPLACE FUNCTION standard.get_userid() RETURNS text
@@ -303,13 +338,16 @@ BEGIN
                 AND is_nullable = 'NO' LOOP
 
         EXECUTE 'ALTER TABLE '||_history_table||' ALTER COLUMN '||_column||' DROP NOT NULL';
+
+        IF _column = 'id' THEN
+            EXECUTE 'CREATE TRIGGER t10_anchored_column BEFORE UPDATE ON '||_parent_full_table||' FOR EACH ROW EXECUTE PROCEDURE standard.anchored_column(''id'')';
+        END IF;
     END LOOP;
 
     EXECUTE 'GRANT SELECT ON '||_history_table||' to PUBLIC';
 
     -- create triggers
-    EXECUTE 'CREATE TRIGGER t10_anchored_column BEFORE UPDATE ON '||_parent_full_table||' FOR EACH ROW EXECUTE PROCEDURE standard.anchored_column(''id'')';
-    EXECUTE 'CREATE TRIGGER t30_distinct_update BEFORE UPDATE ON '||_parent_full_table||' FOR EACH ROW EXECUTE PROCEDURE standard.distinct_update()';
+    EXECUTE 'CREATE TRIGGER t30_distinct_update_modified BEFORE UPDATE ON '||_parent_full_table||' FOR EACH ROW EXECUTE PROCEDURE standard.distinct_update_modified()';
     EXECUTE 'CREATE TRIGGER t50_modified BEFORE INSERT OR UPDATE ON '||_parent_full_table||' FOR EACH ROW EXECUTE PROCEDURE standard.modified()';
     EXECUTE 'CREATE TRIGGER t90_history_saver AFTER INSERT OR UPDATE OR DELETE ON '||_parent_full_table||' FOR EACH ROW EXECUTE PROCEDURE standard.history_trigger()';
     EXECUTE 'CREATE TRIGGER t90_history_saver_truncate AFTER TRUNCATE ON '||_parent_full_table||' FOR EACH STATEMENT EXECUTE PROCEDURE standard.history_trigger()';
@@ -517,6 +555,7 @@ ALTER TABLE standard.show_object_privileges OWNER TO postgres;
 
 GRANT EXECUTE ON FUNCTION standard.anchored_column() TO PUBLIC;
 GRANT EXECUTE ON FUNCTION standard.distinct_update() TO PUBLIC;
+GRANT EXECUTE ON FUNCTION standard.distinct_update_modified() TO PUBLIC;
 GRANT EXECUTE ON FUNCTION standard.get_userid() TO PUBLIC;
 GRANT EXECUTE ON FUNCTION standard.history_trigger() TO PUBLIC;
 GRANT EXECUTE ON FUNCTION standard.modified() TO PUBLIC;

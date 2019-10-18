@@ -19,6 +19,9 @@ class SettingsManager(Mapping, metaclass=Singleton):
 
             # now pull out the "agent" settings. our code should set good defaults.
             self.settings = settings.get("agent", {})
+        except (OSError, UnicodeDecodeError, yaml.YAMLError) as e:
+            self.logger.error("could not load settings: {}".format(e))
+            raise
         except Exception as e:
             self.logger.error("could not load settings: {}".format(e))
             raise
