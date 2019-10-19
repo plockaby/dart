@@ -445,10 +445,11 @@ def register_process(data, sort_order):
     schedule = data.get("schedule", "").strip() or None  # this should be NULL if no schedule
 
     # validate the schedule
-    try:
-        CronTab(schedule)
-    except ValueError:
-        raise BadRequest("The schedule for '{}' in '{}' is not valid: {}".format(process_name, process_environment, schedule))
+    if (schedule is not None):
+        try:
+            CronTab(schedule)
+        except ValueError:
+            raise BadRequest("The schedule for '{}' in '{}' is not valid: {}".format(process_name, process_environment, schedule))
 
     # update the database with the new process details
     q.insert_process(process_name, process_environment, process_type, supervisor, schedule)
