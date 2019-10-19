@@ -71,9 +71,10 @@ def insert_fqdn(fqdn):
     with db_client.conn() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                INSERT INTO dart.host (fqdn)
-                VALUES (%s)
-                ON CONFLICT DO NOTHING
+                INSERT INTO dart.host (fqdn, polled)
+                VALUES (%s, transaction_timestamp())
+                ON CONFLICT (fqdn) DO UPDATE
+                SET polled = excluded.polled
             """, (fqdn,))
 
 

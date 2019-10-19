@@ -9,6 +9,10 @@ import time
 from queue import Queue
 from threading import Event
 from dart.common.killer import GracefulSignalKiller
+import urllib.parse
+import dart.agent.api
+import platform
+import json
 
 # import explicitly and specifically like this and NOT as a relative import.
 # this is entirely so that we can check if the version number has changed. if
@@ -61,6 +65,9 @@ class DartAgent(object):
         if (supervisor_server_url is None):
             raise RuntimeError("cannot run from outside of a supervisor eventlistener")
         self.logger.info("connecting to supervisor over {}".format(supervisor_server_url))
+
+        # tell dart about the system
+        self._update_system_configuration()
 
         # this handler listens for TCP/UDP/Unix connections from the local
         # host. those connections send us events that will be forwarded to the
@@ -261,7 +268,7 @@ class DartAgent(object):
 
     def _handle_event(self, header, event, data):
         # kick off all housekeeping once per minute
-        if (header["eventname"].startswith("TICK_60")):
+        if (header["eventname"] == "TICK_60"):
             self.logger.debug("received {} event".format(header["eventname"]))
             return self._handle_tick_event(header["eventname"], event, data)
 
@@ -320,6 +327,25 @@ class DartAgent(object):
 
         # finally, we periodically check to see if we need to restart ourselves
         return not self._has_version_changed()
+
+    def _update_system_configuration(self):
+        booted = None
+        try:
+            import psutil
+            booted = int(psutil.boot_time())
+        except ModuleNotFoundError:
+            pass
+
+        # assemble all of the parts
+        configuration = {
+            "booted": booted,               # when the server started
+            "kernel": platform.platform(),  # kernel version
+        }
+
+        # send system information to the DartAPI
+        url = "{}/agent/v1/probe/{}".format(dart.agent.api.DART_API_URL, urllib.parse.quote(self.fqdn))
+        response = dart.agent.api.dart.post(url, data=json.dumps(configuration), timeout=22)
+        response.raise_for_status()
 
     def _has_version_changed(self):
         try:

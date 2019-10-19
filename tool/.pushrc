@@ -8,4 +8,4 @@ class DeployTask(DeployTask):
         super().before()
 
         # remove the project before redeploying
-        self.clean("{}/dart/registrar".format(env.python_release_lib_dir))
+        self.clean("{}/dart/tool".format(env.python_release_lib_dir))

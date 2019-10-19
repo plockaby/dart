@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 sys.dont_write_bytecode = True
 
 setup(
-    name='dart-registrar',
+    name='dart',
     scripts=[],
     package_dir={'': 'lib'},
     packages=find_packages(where='lib', exclude=('tests', 'tests.*')),

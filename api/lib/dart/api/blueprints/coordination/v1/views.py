@@ -1,6 +1,5 @@
 from ....app import logger
 from ....app import settings_manager
-from ....validators import validate_json_data
 from . import v1
 from flask import jsonify, make_response
 from flask_login import login_required
@@ -82,7 +81,7 @@ def send_command(fqdn, action, process=None):
 
             if (process is None):
                 logger.debug("connected to {}, sending {}".format(fqdn, action))
-                ssock.sendall(bytes(json.dumps({"action": action}), "utf-8"))
+                ssock.sendall((json.dumps({"action": action}) + "\n").encode())
             else:
                 logger.debug("connected to {}, sending {} to {}".format(fqdn, action, process))
-                ssock.sendall(bytes(json.dumps({"action": action, "process": process}), "utf-8"))
+                ssock.sendall((json.dumps({"action": action, "process": process}) + "\n").encode())

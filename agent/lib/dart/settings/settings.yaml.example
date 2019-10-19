@@ -59,7 +59,16 @@ api:
     authorized:
         - dart.local.lockaby.org
 
-portal:
+    coordination:
+        # what CA will we use to validate certs and what common name is allowed
+        ca: /usr/local/ssl/certs/local-ca.cert
+        key: /usr/local/ssl/certs/local/dart.local.lockaby.org.pem
+        name: dart.local.lockaby.org
+
+        # what port will our coordinator listen on
+        port: 3278
+
+tool:
     api:
         # configuration information for DartAPI
         dart:

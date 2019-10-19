@@ -106,7 +106,7 @@ def processes():
     try:
         conn = db_client.conn()
         conn.autocommit = False
-        processes = q.select_processes()
+        processes = list(q.select_processes())
         conn.commit()
 
         return make_response(jsonify(processes), 200)

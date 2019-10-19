@@ -4,7 +4,7 @@ import requests
 import pprint
 
 
-endpoint = "https://localhost:274/dart/portal/v1/hosts"
+endpoint = "https://localhost:274/dart/tool/v1/hosts"
 cert = "/usr/local/ssl/certs/local/dart.local.lockaby.org.pem"
 ca = "/usr/local/ssl/certs/local-ca.cert"
 response = requests.get(endpoint, cert=cert, verify=ca)
