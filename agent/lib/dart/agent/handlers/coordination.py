@@ -75,7 +75,6 @@ class CoordinationHandler(BaseHandler):
                     common_name = subself._get_certificate_common_name(subself.request.getpeercert())
                     if (common_name is None or common_name != self.settings["name"]):
                         self.logger.warning("{} handler rejecting connection from {}".format(self.name, common_name))
-                        subself.wfile.write(('{"accepted": false}' + "\n").encode())
                         return
 
                     # now we're going to listen to what they have to say
@@ -93,15 +92,6 @@ class CoordinationHandler(BaseHandler):
                                 "message": "received invalid command\n\n{}".format(e),
                             }
                         })
-
-                        # then send it to the client
-                        result = json.dumps({
-                            "accepted": False,
-                            "error": str(e),
-                        })
-                        subself.wfile.write((result + "\n").encode())
-                    else:
-                        subself.wfile.write(('{"accepted": true}' + "\n").encode())
                 except BrokenPipeError:
                     self.logger.debug("{} handler broken pipe from {}:{}".format(self.name, subself.client_address[0], subself.client_address[1]))
 
