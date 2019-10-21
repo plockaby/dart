@@ -468,6 +468,8 @@ def register_process(data, sort_order):
             q.insert_process_state_monitor(process_name, process_environment, contact, severity)
         except BadRequest as e:
             raise BadRequest("The state monitoring configuration for '{}' in '{}' is not valid: {}.".format(process_name, process_environment, e))
+    else:
+        q.delete_process_state_monitor(process_name, process_environment)
 
     if (daemon_monitor is not None):
         try:
@@ -476,6 +478,8 @@ def register_process(data, sort_order):
             q.insert_process_daemon_monitor(process_name, process_environment, contact, severity)
         except BadRequest as e:
             raise BadRequest("The daemon monitoring configuration for '{}' in '{}' is not valid: {}.".format(process_name, process_environment, e))
+    else:
+        q.delete_process_daemon_monitor(process_name, process_environment)
 
     if (keepalive_monitor is not None):
         try:
@@ -495,6 +499,8 @@ def register_process(data, sort_order):
             q.insert_process_keepalive_monitor(process_name, process_environment, timeout, contact, severity)
         except BadRequest as e:
             raise BadRequest("The keepalive monitoring configuration for '{}' in '{}' is not valid: {}.".format(process_name, process_environment, e))
+    else:
+        q.delete_process_keepalive_monitor(process_name, process_environment)
 
     if (log_monitor is not None):
         try:
@@ -528,6 +534,8 @@ def register_process(data, sort_order):
                     q.insert_process_log_monitor(process_name, process_environment, stream, index, regex, stop, name, contact, severity)
         except BadRequest as e:
             raise BadRequest("The log monitoring configuration for '{}' in '{}' is not valid: {}.".format(process_name, process_environment, e))
+    else:
+        q.delete_process_log_monitor(process_name, process_environment)
 
 
 def validate_contact(contact):

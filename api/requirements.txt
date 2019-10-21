@@ -8,7 +8,7 @@ gunicorn==19.9.0
 itsdangerous==1.1.0
 Jinja2==2.10.3
 MarkupSafe==1.1.1
-psycopg2-binary==2.8.3
+psycopg2-binary==2.8.4
 PyYAML==5.1.2
 six==1.12.0
 tenacity==5.1.1

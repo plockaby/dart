@@ -491,6 +491,16 @@ def insert_process_state_monitor(process_name, process_environment, contact, sev
             """, (process_name, process_environment, contact, severity))
 
 
+def delete_process_state_monitor(process_name, process_environment):
+    with db_client.conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                DELETE FROM dart.process_state_monitor
+                WHERE process_name = %s
+                  AND process_environment = %s
+            """, (process_name, process_environment))
+
+
 def insert_process_daemon_monitor(process_name, process_environment, contact, severity):
     with db_client.conn() as conn:
         with conn.cursor() as cur:
@@ -503,6 +513,16 @@ def insert_process_daemon_monitor(process_name, process_environment, contact, se
             """, (process_name, process_environment, contact, severity))
 
 
+def delete_process_daemon_monitor(process_name, process_environment):
+    with db_client.conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                DELETE FROM dart.process_daemon_monitor
+                WHERE process_name = %s
+                  AND process_environment = %s
+            """, (process_name, process_environment))
+
+
 def insert_process_keepalive_monitor(process_name, process_environment, timeout, contact, severity):
     with db_client.conn() as conn:
         with conn.cursor() as cur:
@@ -513,6 +533,16 @@ def insert_process_keepalive_monitor(process_name, process_environment, timeout,
                 SET contact = excluded.contact,
                     severity = excluded.severity
             """, (process_name, process_environment, timeout, contact, severity))
+
+
+def delete_process_keepalive_monitor(process_name, process_environment):
+    with db_client.conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                DELETE FROM dart.process_keepalive_monitor
+                WHERE process_name = %s
+                  AND process_environment = %s
+            """, (process_name, process_environment))
 
 
 def insert_process_log_monitor(process_name, process_environment, stream, sort_order, regex, stop, name, contact, severity):
@@ -528,3 +558,13 @@ def insert_process_log_monitor(process_name, process_environment, stream, sort_o
                     contact = excluded.contact,
                     severity = excluded.severity
             """, (process_name, process_environment, stream, sort_order, regex, stop, name, contact, severity))
+
+
+def delete_process_log_monitor(process_name, process_environment):
+    with db_client.conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                DELETE FROM dart.process_log_monitor
+                WHERE process_name = %s
+                  AND process_environment = %s
+            """, (process_name, process_environment))
