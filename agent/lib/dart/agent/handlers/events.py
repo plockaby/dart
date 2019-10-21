@@ -56,15 +56,7 @@ class EventHandler(BaseHandler):
                         data = self._validate(data)
                         self.events.put(data)
                     except EventValidationException as e:
-                        # if the event didn't validate then tell the caller why
-                        result = json.dumps({
-                            "accepted": False,
-                            "error": str(e),
-                        })
-                        subself.wfile.write((result + "\n").encode())
-                    else:
-                        # tell our caller that we accepted the event
-                        subself.wfile.write(('{"accepted": true}' + "\n").encode())
+                        pass
                 except BrokenPipeError:
                     self.logger.debug("{} handler broken TCP pipe from {}:{}".format(self.name, subself.client_address[0], subself.client_address[1]))
 
@@ -77,15 +69,7 @@ class EventHandler(BaseHandler):
                         data = self._validate(data)
                         self.events.put(data)
                     except EventValidationException as e:
-                        # if the event didn't validate then tell the caller why
-                        result = json.dumps({
-                            "accepted": False,
-                            "error": str(e),
-                        })
-                        subself.wfile.write((result + "\n").encode())
-                    else:
-                        # tell our caller that we accepted the event
-                        subself.wfile.write(('{"accepted": true}' + "\n").encode())
+                        pass
                 except BrokenPipeError:
                     self.logger.debug("{} handler broken pipe over Unix socket".format(self.name))
 
@@ -249,10 +233,10 @@ class EventHandler(BaseHandler):
                     event_data["host"]["name"] = self.fqdn
 
                 # send the event to the API
-                self.logger.debug("{} handler sending {} to CorkAPI".format(self.name, event_type))
+                self.logger.debug("{} handler sending {} to cork".format(self.name, event_type))
                 # TODO
             except requests.RequestException as e:
-                self.logger.warning("{} handler could not talk to CorkAPI -- skipping: {}".format(self.name, e))
+                self.logger.warning("{} handler could not talk to cork -- skipping: {}".format(self.name, e))
 
                 # if we have an exception we're going to try to put it on the
                 # queue later because maybe the CorkAPI will be working again.
