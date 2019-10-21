@@ -1,7 +1,7 @@
 # vi:syntax=python
 from pushlib.modules.python import *
 from pushlib.modules.jshint import *
-env.clone_path = "push/dart"
+env.clone_path = "push/projects-dart"
 env.virtualenv = "dart-portal"
 
 
