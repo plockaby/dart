@@ -55,7 +55,7 @@ class EventHandler(BaseHandler):
                     try:
                         data = self._validate(data)
                         self.events.put(data)
-                    except EventValidationException as e:
+                    except EventValidationException:
                         pass
                 except BrokenPipeError:
                     self.logger.debug("{} handler broken TCP pipe from {}:{}".format(self.name, subself.client_address[0], subself.client_address[1]))
@@ -68,7 +68,7 @@ class EventHandler(BaseHandler):
                     try:
                         data = self._validate(data)
                         self.events.put(data)
-                    except EventValidationException as e:
+                    except EventValidationException:
                         pass
                 except BrokenPipeError:
                     self.logger.debug("{} handler broken pipe over Unix socket".format(self.name))
