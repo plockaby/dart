@@ -1,7 +1,12 @@
 {% extends "master.html" %}
   
 {% block content %}
+    <link rel="stylesheet" href="{{ url_for('main.static', filename='vendor/bootstrap-table/1.15.5/bootstrap-table.min.css') }}">
+
 {% endblock %}
 
 {% block footer %}
+    <!-- include moment like this so that it works with flask -->
+    {{ moment.include_moment(local_js=url_for('main.static', filename='vendor/moment.js/2.24.0/moment.min.js')) }}
+    <script src="{{ url_for('main.static', filename='vendor/bootstrap-table/1.15.5/bootstrap-table.min.js') }}"></script>
 {% endblock %}

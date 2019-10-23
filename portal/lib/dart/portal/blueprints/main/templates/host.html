@@ -4,4 +4,8 @@
 {% endblock %}
 
 {% block footer %}
+    <!-- include moment like this so that it works with flask -->
+    {{ moment.include_moment(local_js=url_for('main.static', filename='vendor/moment.js/2.24.0/moment.min.js')) }}
+    <script src="{{ url_for('main.static', filename='vendor/bootstrap-table/1.15.5/bootstrap-table.min.js') }}"></script>
+    <script src="{{ url_for('main.static', filename='vendor/bootstrap-typeahead/fc2d5dc/bootstrap3-typeahead.min.js')) }}"></script>
 {% endblock %}
