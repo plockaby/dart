@@ -69,3 +69,8 @@ def process(name):
         process=process,
         ignore=dart.common.PROCESSES_TO_IGNORE,
     )
+
+
+@main.route("/register")
+def register():
+    pass

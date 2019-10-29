@@ -9,7 +9,7 @@ class SettingsManager:
         else:
             self.app = None
 
-    def init_app(self, app):
+    def init_app(self, app, key):
         # get the data out of the file
         data = pkg_resources.resource_string("dart", "settings/settings.yaml").decode("utf-8", "backslashreplace")
 
@@ -17,5 +17,5 @@ class SettingsManager:
         # this will definitely throw exceptions if the settings file is invalid
         settings = yaml.load(data, Loader=yaml.SafeLoader)
 
-        # now pull out the "agent" settings. our code should set good defaults.
-        self.settings = settings.get("api", {})
+        # now pull out the settings that we're looking for
+        self.settings = settings.get(key, {})

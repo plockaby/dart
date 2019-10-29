@@ -75,3 +75,14 @@ tool:
             url: https://localhost:274/dart
             ca: /usr/local/ssl/certs/local-ca.cert
             key: /usr/local/ssl/certs/local/dart.local.lockaby.org.pem
+
+portal:
+    # path where the portal will be mounted
+    prefix: /dart
+
+    api:
+        # configuration information for DartAPI
+        dart:
+            url: https://localhost:274/dart
+            ca: /usr/local/ssl/certs/local-ca.cert
+            key: /usr/local/ssl/certs/local/dart.local.lockaby.org.pem

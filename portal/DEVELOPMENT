@@ -13,7 +13,7 @@ after you've activated the virtual environment:
 
 If the requirements file still needs to be built then use this command:
 
-    pip install flask gunicorn gevent flask-moment requests
+    pip install flask gunicorn gevent flask-moment flask-caching requests pyyaml
 
 If you make changes to the requirements, you can save the new requirements:
 

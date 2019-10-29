@@ -3,7 +3,7 @@ import logging
 from flask import Flask
 from flask_login import LoginManager
 from dart.common.database import DatabaseClient
-from .settings import SettingsManager
+from dart.common.settings import SettingsManager
 from . import login, errors
 
 
@@ -35,7 +35,7 @@ def load():
         return r
 
     # initialize the settings
-    settings_manager.init_app(app)
+    settings_manager.init_app(app, "api")
 
     # connect to the database
     db_client.init_app(app, settings_manager.settings.get("database", {}).pop("name", "dart"), **settings_manager.settings.get("database", {}))
