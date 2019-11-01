@@ -1,8 +1,9 @@
+from collections.abc import Mapping
 import pkg_resources
 import yaml
 
 
-class SettingsManager:
+class SettingsManager(Mapping):
     def __init__(self, app=None, **kwargs):
         if (app is not None):
             self.init_app(app, **kwargs)
@@ -19,3 +20,12 @@ class SettingsManager:
 
         # now pull out the settings that we're looking for
         self.settings = settings.get(key, {})
+
+    def __getitem__(self, key):
+        return self.settings[key]
+
+    def __iter__(self):
+        return iter(self.settings)
+
+    def __len__(self):
+        return len(self.settings)

@@ -22,7 +22,7 @@ api_manager = APIManager()
 moment = Moment()
 
 # a basic cache
-cache = Cache(config={"CACHE_TYPE": "simple"})
+cache = Cache()
 
 
 def load():
@@ -33,11 +33,11 @@ def load():
     # tell the logs what version we are running
     logger.info("starting in {}".format(app.config.get("ENVIRONMENT", "development")))
 
-    # initialize the cache busting
-    cache_buster.init_app(app)
-
     # initialize the settings
     settings_manager.init_app(app, "portal")
+
+    # initialize the cache busting
+    cache_buster.init_app(app)
 
     # initialize the api manager
     api_manager.init_app(app)
@@ -54,19 +54,14 @@ def load():
     # different value for "url_prefix" but all blueprints SHOULD begin with the
     # same prefix defined in APPLICATION_ROOT.
     from .blueprints.main import main
-    prefix = settings_manager.settings.get("prefix", "")
+    prefix = app.config.get("APPLICATION_ROOT", "")
     logger.info("using application url prefix {}".format(prefix))
     app.register_blueprint(main, url_prefix=prefix)
 
     from .blueprints.api import api
-    api_prefix = "{}/api".format(settings_manager.settings.get("prefix", ""))
+    api_prefix = "{}/api".format(prefix)
     logger.info("using api url prefix {}".format(api_prefix))
     app.register_blueprint(api, url_prefix=api_prefix)
-
-    from .blueprints.autocomplete import autocomplete
-    api_prefix = "{}/autocomplete".format(settings_manager.settings.get("prefix", ""))
-    logger.info("using api url prefix {}".format(api_prefix))
-    app.register_blueprint(autocomplete, url_prefix=api_prefix)
 
     # tell ourselves what we've mapped.
     if (logger.isEnabledFor(logging.DEBUG)):

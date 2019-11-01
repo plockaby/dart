@@ -1,12 +1,109 @@
 {% extends "master.html" %}
+
+{% block header %}
+    <link rel="stylesheet" href="{{ url_for('main.static', filename='vendor/bootstrap-table/1.15.5/bootstrap-table.min.css') }}">
+{% endblock %}
   
 {% block content %}
-    <link rel="stylesheet" href="{{ url_for('main.static', filename='vendor/bootstrap-table/1.15.5/bootstrap-table.min.css') }}">
+    <h1>Hosts</h1>
+    <p>
+        This is a list of all hosts that Dart controls. This is intended to
+        show basic information to help control those hosts.
+    </p>
 
+    <table id="table"
+        data-url="{{ url_for('api.hosts') }}"
+        data-toggle="table"
+        data-classes="table table-hover table-striped table-sm"
+        data-id-field="fqdn"
+        data-unique-id-field="fqdn"
+        data-sort-name="fqdn"
+        data-sort-order="asc"
+        data-search="true"
+        data-show-columns="true"
+        data-show-refresh="true"
+        class="table table-hover table-striped table-sm">
+        <thead>
+            <tr>
+                <th data-valign="top" data-field="fqdn"     data-sortable="true"  data-formatter="dart.format_fqdn">FQDN</th>
+                <th data-valign="top" data-width="100" data-width-unit="px" data-field="total"    data-sortable="true"  data-searchable="false">Total</th>
+                <th data-valign="top" data-width="100" data-width-unit="px" data-field="pending"  data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Pending</th>
+                <th data-valign="top" data-width="100" data-width-unit="px" data-field="failed"   data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Failed</th>
+                <th data-valign="top" data-width="100" data-width-unit="px" data-field="disabled" data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Disabled</th>
+                <th data-valign="top" data-field="warnings" data-sortable="false" data-formatter="dart.format_warnings">Warnings</th>
+                <th data-valign="top" data-width="65" data-width-unit="px" data-formatter="dart.format_actions" data-events="dart.column_actions">Actions</th>
+            </tr>
+        </thead>
+    </table>
 {% endblock %}
 
 {% block footer %}
     <!-- include moment like this so that it works with flask -->
     {{ moment.include_moment(local_js=url_for('main.static', filename='vendor/moment.js/2.24.0/moment.min.js')) }}
     <script src="{{ url_for('main.static', filename='vendor/bootstrap-table/1.15.5/bootstrap-table.min.js') }}"></script>
+    <script src="{{ url_for('main.static', filename='common.js') }}"></script>
+    <script>
+        // wrap host names in links to the page for the fqdn
+        dart.format_fqdn = function (data, row) {
+            var url = {{ url_for('main.host', fqdn='###fqdn###')|tojson }};
+            return "<div class='text-nowrap'><a href='" + url.replace('%23%23%23fqdn%23%23%23', row.fqdn) + "'>" + data + "</a></div>";
+        };
+
+        // fill in the warnings column
+        dart.format_warnings = function (data, row) {
+            var warnings = new Array();
+            if (!row.polled) {
+                warnings.push("<div class='alert-danger' style='background-color: transparent; font-weight: bold;'>There is no data for this host.</div>");
+            } else {
+                var last_polled = moment(row.polled);
+                if (last_polled.isBefore(moment().subtract(4, "hours"))) {
+                    warnings.push("<div class='alert-danger' style='background-color: transparent; font-weight: bold;'>Last responded " + last_polled.format("M/D/YYYY h:mma") + ".</div>");
+                }
+            }
+            if (warnings.length) {
+                return warnings.join("");
+            }
+            return "-";
+        };
+
+        dart.format_actions = function (data, row) {
+            var actions = [
+                "<div class='dropdown'>",
+                    "<button class='btn btn-secondary btn-sm dropdown-toggle' type='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>Action</button>",
+                    "<div class='dropdown-menu dropdown-menu-right'>",
+                        "<a href='javascript:void(0);' class='dropdown-item reread'>Reread</a>",
+                        "<a href='javascript:void(0);' class='dropdown-item rewrite'>Rewrite</a>",
+                        "<div class='dropdown-divider'></div>",
+                        "<a href='javascript:void(0);' class='dropdown-item delete'>Delete</a>",
+                    "</div>",
+                "</div>",
+            ];
+            return "<div class='text-center text-nowrap'>" + actions.join("") + "</div>";
+        };
+
+        dart.column_actions = {
+            "click a.reread": function (e, value, row) {
+                dart.command_reread({{ url_for('api.action')|tojson }}, row.fqdn);
+            },
+            "click a.rewrite": function (e, value, row) {
+                dart.command_rewrite({{ url_for('api.action')|tojson }}, row.fqdn);
+            },
+            "click a.delete": function (e, value, row) {
+                if (confirm("Are you sure that you want to delete the host named " + row.fqdn + "?")) {
+                    var url = {{ url_for('api.delete_host', fqdn='###fqdn###')|tojson }};
+                    $.ajax({
+                        url: url.replace('%23%23%23fqdn%23%23%23', row.fqdn),
+                        method: "DELETE",
+                    }).done(function () {
+                        dart.message("Done", "Successfully deleted host.");
+                        $("#table").bootstrapTable("refresh", {silent: true});
+                    }).fail(function (jqXHR) {
+                        var error = jqXHR.responseJSON.message;
+                        if (!error) { error = "uknown error"; }
+                        dart.message("Error", error, "alert-danger");
+                    });
+                }
+            }
+        };
+    </script>
 {% endblock %}

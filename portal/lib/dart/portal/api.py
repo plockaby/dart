@@ -24,8 +24,8 @@ class APIManager:
             status_forcelist=(500, 502, 503, 504),
         )
 
-        # get the configuration from the 
-        configuration = settings_manager.settings.get("api", {})
+        # get the configuration from the settings file
+        configuration = settings_manager.get("api", {})
 
         # modify the number of retries that we will make. we will also block
         # until we get a connection to the remote server.

@@ -6,6 +6,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <title>{% block title %}Dart{% endblock %}</title>
         <link rel="stylesheet" href="{{ url_for('main.static', filename='vendor/bootstrap/4.3.1/css/bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('main.static', filename='vendor/fontawesome/5.11.2/css/all.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('main.static', filename='vendor/bootstrap-themes/fresca/theme.min.css') }}">
         <link rel="stylesheet" href="{{ url_for('main.static', filename='master.css') }}">
         {% block header %}{% endblock %}
     </head>
@@ -36,9 +38,10 @@
             </div>
         </div>
 
-        <script src="{{ url_for('main.static', filename='vendor/jquery/3.4.1/jquery.slim.min.js') }}"></script>
+        <script src="{{ url_for('main.static', filename='vendor/jquery/3.4.1/jquery.min.js') }}"></script>
+        <script src="{{ url_for('main.static', filename='vendor/popper/1.16.0/popper.min.js') }}"></script>
         <script src="{{ url_for('main.static', filename='vendor/bootstrap/4.3.1/js/bootstrap.min.js') }}"></script>
-        <script type="text/javascript" src="{{ url_for('main.static', filename='master.js') }}"></script>
+        <script src="{{ url_for('main.static', filename='master.js') }}"></script>
         {% block footer %}{% endblock %}
     </body>
 </html>

@@ -1,11 +1,175 @@
 {% extends "master.html" %}
+
+{% block header %}
+    <link rel="stylesheet" href="{{ url_for('main.static', filename='vendor/bootstrap-table/1.15.5/bootstrap-table.min.css') }}">
+{% endblock %}
   
 {% block content %}
+    <div class="col-md-12">
+        <h1>{{ name }}</h1>
+
+        {% if error %}
+            <div class="alert alert-danger" role="alert">{{ error }}</div>
+        {% else %}
+            <ul class="nav nav-tabs" id="tab-list" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="details-tab" data-toggle="tab" href="#details-tab-content" role="tab" aria-controls="details" aria-selected="true">Details</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="active-tab" data-toggle="tab" href="#active-tab-content" role="tab" aria-controls="active" aria-selected="false">
+                        Active (<span id="active-count">...</span>)
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="pending-tab" data-toggle="tab" href="#pending-tab-content" role="tab" aria-controls="pending" aria-selected="false">
+                        Pending (<span id="pending-count">...</span>)
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="assigned-tab" data-toggle="tab" href="#assigned-tab-content" role="tab" aria-controls="assigned" aria-selected="false">
+                        Assigned (<span id="assigned-count">...</span>)
+                    </a>
+                </li>
+              </ul>
+              <div class="tab-content" id="tab-list-content">
+                  <div class="tab-pane show active" id="details-tab-content" role="tabpanel" aria-labelledby="details-tab">
+                      {% include "process/details.html" %}
+                  </div>
+                  <div class="tab-pane" id="active-tab-content" role="tabpanel" aria-labelledby="active-tab">
+                      {% include "process/active.html" %}
+                  </div>
+                  <div class="tab-pane" id="pending-tab-content" role="tabpanel" aria-labelledby="pending-tab">
+                      {% include "process/pending.html" %}
+                  </div>
+                  <div class="tab-pane" id="assigned-tab-content" role="tabpanel" aria-labelledby="assigned-tab">
+                      {% include "process/assigned.html" %}
+                  </div>
+              </div>
+        {% endif %}
+    </div>
 {% endblock %}
 
 {% block footer %}
     <!-- include moment like this so that it works with flask -->
     {{ moment.include_moment(local_js=url_for('main.static', filename='vendor/moment.js/2.24.0/moment.min.js')) }}
     <script src="{{ url_for('main.static', filename='vendor/bootstrap-table/1.15.5/bootstrap-table.min.js') }}"></script>
-    <script src="{{ url_for('main.static', filename='vendor/bootstrap-typeahead/fc2d5dc/bootstrap3-typeahead.min.js')) }}"></script>
+    <script src="{{ url_for('main.static', filename='vendor/bootstrap-typeahead/fc2d5dc/bootstrap3-typeahead.min.js') }}"></script>
+    <script src="{{ url_for('main.static', filename='common.js') }}"></script>
+    <script>
+        // wrap host names in links to the page for the fqdn
+        dart.format_fqdn = function (data, row) {
+            var url = {{ url_for('main.host', fqdn='###fqdn###')|tojson }};
+            return "<div class='text-nowrap'><a href='" + url.replace('%23%23%23fqdn%23%23%23', row.fqdn) + "'>" + data + "</a></div>";
+        };
+
+        dart.process_name = {{ name|tojson }};
+        dart.ignore = {{ ignore|tojson }};
+        dart.action = {{ url_for('api.action')|tojson }};
+
+        $("button.assign-process-host").on("click", function (e) {
+            var button = $(e.currentTarget),
+                process_name = button.data("process"),
+                process_environment = button.data("environment"),
+                modal_html = [
+                "<div id='dialog' class='modal' tabindex='-1' role='dialog'>",
+                    "<div class='modal-dialog' role='document'>",
+                        "<div class='modal-content'>",
+                            "<div class='modal-header'>",
+                                "<h5 class='modal-title'>Assign Process to Host</h5>",
+                                "<button type='button' class='close' data-dismiss='modal' aria-label='Close'>",
+                                    "<span aria-hidden='true'>&times;</span>",
+                                "</button>",
+                            "</div>",
+                            "<div class='modal-body'>",
+                                "<div class='alert alert-success' role='alert' style='display: none;'></div>",
+                                "<div class='alert alert-danger' role='alert' style='display: none;'></div>",
+
+                                "<p>",
+                                    "Choose the host on which " + process_name + " will be assigned:",
+                                    "<form id='autocomplete'>",
+                                        "<input type='text' required='required' class='form-control' name='fqdn' placeholder='Host' value='' autocomplete='off'/>",
+                                    "</form>",
+                                "</p>",
+
+                            "</div>",
+                            "<div class='modal-footer'>",
+                                "<button type='button' class='btn btn-secondary' data-dismiss='modal'>Close</button>",
+                                "<button class='btn btn-primary assign' aria-hidden='true'>Assign</button>",
+                            "</div>",
+                        "</div>",
+                    "</div>",
+                "</div>",
+            ].join("");
+            $("#dialog").remove();
+            $("body").append(modal_html);
+
+            // enable autocomplete
+            $("#autocomplete input").typeahead({
+                minLength: 1,
+                fitToElement: true,
+                items: "all",
+                autoSelect: true,
+                delay: 1,
+                source: function (request, response) {
+                    $.ajax({
+                        url: {{ url_for('api.autocomplete_host')|tojson }},
+                        dataType: "json",
+                        data: {
+                            q: request
+                        }
+                    }).done(function (data) {
+                        response(data.results);
+                    }).fail(function (jqXHR, textStatus, errorThrown) {
+                        console.log(textStatus);
+                        console.log(errorThrown);
+                        response([]);
+                    });
+                }
+            });
+
+            // make it so that the box's assign button does something
+            $("#dialog button.assign").click(function () {
+                var fqdn = $("#autocomplete input").val();
+                if (!fqdn) {
+                    $("#dialog div.alert-danger").html("Please choose a host on which " + process_name + " will be assigned.").show();
+                    return;
+                }
+
+                // ajax call that thing and then update the form when we have a response
+                $.ajax({
+                    url: dart.action,
+                    method: "POST",
+                    data: {
+                        action: "assign",
+                        fqdn: fqdn,
+                        process_name: process_name,
+                        process_environment: process_environment
+                    }
+                }).done(function () {
+                    $("#dialog div.alert-danger").hide();
+                    $("#dialog div.alert-success").html("The process " + process_name + " " + process_environment + " has been assigned to " + fqdn + ". The process must now be updated on the host to activate it.").show();
+                }).fail(function (jqXHR) {
+                    var error = jqXHR.responseJSON.message;
+                    if (!error) { error = "uknown error"; }
+                    $("#dialog div.alert-success").hide();
+                    $("#dialog div.alert-danger").html("Problem encountered while trying to add " + process_name + " " + process_environment + " to " + fqdn + ". " + error).show();
+                });
+
+                // focus on the box again
+                $("#autocomplete input").focus();
+            });
+
+            // disable automatic submission on the form
+            $("#autocomplete").on("submit", function() {
+                $("#dialog button.assign").click();
+                return false;
+            });
+
+            // now show the box
+            $("#dialog").modal("show");
+
+            // focus on the input box
+            $("#autocomplete input").focus();
+        });
+    </script>
 {% endblock %}

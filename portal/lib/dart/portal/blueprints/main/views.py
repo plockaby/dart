@@ -1,5 +1,6 @@
+from ...app import cache
+from ... import requests as r
 from . import main
-from . import queries as q
 from flask import render_template
 from datetime import datetime
 import dart.common
@@ -8,8 +9,8 @@ import dart.common.html
 
 @main.route("/")
 def index():
-    hosts = q.select_hosts()
-    processes = q.select_processes()
+    hosts = r.select_hosts()
+    processes = r.select_processes()
     now = datetime.now()
 
     return render_template(
@@ -26,9 +27,12 @@ def hosts():
     return render_template("hosts.html")
 
 
-@main.route("/host/<fqdn>")
+@main.route("/host/<string:fqdn>")
 def host(fqdn):
-    host = q.select_host(fqdn)  # returns None if no host
+    @cache.cached(timeout=1, key_prefix="api/host/{}".format(fqdn))
+    def select():
+        return r.select_host(fqdn)  # returns None if no host
+    host = select()
 
     if (host is None or host["polled"] is None):
         return render_template(
@@ -51,9 +55,12 @@ def processes():
     return render_template("processes.html", ignore=dart.common.PROCESSES_TO_IGNORE)
 
 
-@main.route("/process/<name>")
+@main.route("/process/<string:name>")
 def process(name):
-    process = q.select_process(name)  # returns None if no process
+    @cache.cached(timeout=1, key_prefix="api/process/{}".format(name))
+    def select():
+        return r.select_process(name)  # returns None if no process
+    process = select()
 
     if (process is None):
         return render_template(
@@ -73,4 +80,4 @@ def process(name):
 
 @main.route("/register")
 def register():
-    pass
+    return render_template("register.html")

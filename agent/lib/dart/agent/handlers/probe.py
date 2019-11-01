@@ -178,7 +178,7 @@ class ProbeHandler(BaseHandler):
                     # if this process is being state monitored and it returned
                     # an error when it exited then raise an error.
                     elif (state["spawnerr"]):
-                        self.logger.debug("{} handler raising state event for {} because it exited with an error".format(self.name, process))
+                        self.logger.debug("{} handler raising state event for {} on {} because it exited with an error".format(self.name, process, self.fqdn))
                         self.events.put({
                             "data": {
                                 "contact": configuration["contact"],
@@ -192,7 +192,7 @@ class ProbeHandler(BaseHandler):
             configuration = self.configurations.configuration("daemon", process)
             if (configuration is not None):
                 if (state["statename"] == "RUNNING"):
-                    self.logger.debug("{} handler clearing state event for {} because it is now RUNNING".format(self.name, process))
+                    self.logger.debug("{} handler clearing state event for {} on {} because it is now RUNNING".format(self.name, process, self.fqdn))
                     # if the process is successfully running then clear any
                     # daemon alerts for it.
                     self.events.put({
@@ -204,7 +204,7 @@ class ProbeHandler(BaseHandler):
                         }
                     })
                 else:
-                    self.logger.debug("{} handler raising daemon event for {} because it is in state {} when it is supposed to be in state RUNNING".format(self.name, process, state["statename"]))
+                    self.logger.debug("{} handler raising daemon event for {} on {} because it is in state {} when it is supposed to be in state RUNNING".format(self.name, process, self.fqdn, state["statename"]))
                     self.events.put({
                         "data": {
                             "contact": configuration["contact"],

@@ -1,0 +1,45 @@
+<div class="container">
+    <br/>
+    <div class="row">
+        <div class="col-sm-11">
+            These details are updated periodically by polling the host itself.
+        </div>
+        <div class="col-sm-1">
+            <button type="button" class="btn btn-secondary assign-host-process" data-fqdn="{{ fqdn }}">Assign</button>
+        </div>
+    </div>
+
+    <br/>
+    <div class="row">
+        <div class="col-sm-12">
+            <dl class="row">
+                <dt class="col-sm-2">Host</dt>
+                <dd class="col-sm-10">{{ fqdn }}</dd>
+                <dt class="col-sm-2">Probed</dt>
+                <dd class="col-sm-10">
+                    {% if host.polled %}
+                        {{ moment(host.polled).format("LLL") }}
+                    {% else %}
+                        unknown
+                    {% endif %}
+                </dd>
+                <dt class="col-sm-2">Booted</dt>
+                <dd class="col-sm-10">
+                    {% if host.booted %}
+                        {{ moment(host.booted).format("LLL") }}
+                    {% else %}
+                        unknown
+                    {% endif %}
+                </dd>
+                <dt class="col-sm-2">Kernel</dt>
+                <dd class="col-sm-10">
+                    {% if host.kernel %}
+                        {{ host.kernel }}
+                    {% else %}
+                        unknown
+                    {% endif %}
+                </dd>
+            </dl>
+        </div>
+    </div>
+</div>

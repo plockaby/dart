@@ -1,0 +1,152 @@
+<div class="container">
+    <br/>
+    <div class="row">
+        <div class="col-sm-12">
+            These details are updated periodically by receiving updates from each
+            host about the processes that are running on it. Below are the
+            <a href="http://supervisord.org/">Supervisor</a> configurations for
+            this process. The
+            <a href="http://supervisord.org/configuration.html#program-x-section-settings">documentation for Supervisor</a>
+            can explain what all of the available options are.
+        </div>
+    </div>
+
+    <br/>
+    <div class="row">
+        <div class="col-md-1"></div>
+        <div class="col-md-10">
+            {% for environment in process.environments %}
+                <div class="card">
+                    <div class="card-header">
+                        <big><big><big><strong>{{ environment.name }}</strong></big></big></big>
+                        <div class="float-right">
+                            <button type="button" class="btn btn-secondary assign-process-host" data-process="{{ name }}" data-environment="{{ environment.name }}">Assign</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    {% if environment.configuration %}
+                                        <div class="card"><div class="card-body"><pre>{{ environment.configuration }}</pre></div></div>
+                                    {% else %}
+                                        No configuration.
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <br/>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <dl class="row">
+                                        <dt class="col-sm-2">Type</dt>
+                                        <dd class="col-sm-10">
+                                            {{ environment.type or "program" }}
+                                        </dd>
+                                        <dt class="col-sm-2">Schedule</dt>
+                                        <dd class="col-sm-10">
+                                            {% if environment.schedule %}
+                                                <tt>{{ environment.schedule }}</tt>
+                                            {% else %}
+                                                No schedule defined.
+                                            {% endif %}
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </div>
+
+                            <br/>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <dl>
+                                        <dt>State Monitoring</dt>
+                                        <dd>
+                                            {% if process.monitoring[environment.name].state %}
+                                                {% set monitor = process.monitoring[environment.name].state %}
+                                                <div>State monitoring is
+                                                    <span class="alert-success" style="background-color: transparent; font-weight: bold;">ENABLED</span>
+                                                    at severity {{ monitor.severity }}.</div>
+                                                    {% if monitor.contact %}<div>Events will contact {{ monitor.contact }}.</div>{% endif %}
+                                            {% else %}
+                                                <span class="alert-danger" style="background-color: transparent; font-weight: bold;">
+                                                    No state monitoring configuration exists for {{ name }} in {{ environment.name }}.
+                                                </span>
+                                            {% endif %}
+                                        </dd>
+                                        <dt>Daemon Monitoring</dt>
+                                        <dd>
+                                            {% if process.monitoring[environment.name].daemon %}
+                                                {% set monitor = process.monitoring[environment.name].daemon %}
+                                                <div>Daemon monitoring is
+                                                    <span class="alert-success" style="background-color: transparent; font-weight: bold;">ENABLED</span>
+                                                    at severity {{ monitor.severity }}.</div>
+                                                    {% if monitor.contact %}<div>Events will contact {{ monitor.contact }}.</div>{% endif %}
+                                            {% else %}
+                                                <span class="alert-danger" style="background-color: transparent; font-weight: bold;">
+                                                    No daemon monitoring configuration exists for {{ name }} in {{ environment.name }}.
+                                                </span>
+                                            {% endif %}
+                                        </dd>
+                                        <dt>Keepalive Monitoring</dt>
+                                        <dd>
+                                            {% if process.monitoring[environment.name].keepalive %}
+                                                {% set monitor = process.monitoring[environment.name].keepalive %}
+                                                <div>Keepalive monitoring is
+                                                    <span class="alert-success" style="background-color: transparent; font-weight: bold;">ENABLED</span>
+                                                    with timeout {{ monitor.timeout }}min at severity {{ monitor.severity }}.</div>
+                                                    {% if monitor.contact %}<div>Events will contact {{ monitor.contact }}.</div>{% endif %}
+                                            {% else %}
+                                                <span class="alert-danger" style="background-color: transparent; font-weight: bold;">
+                                                    No keepalive monitoring configuration exists for {{ name }} in {{ environment.name }}.
+                                                </span>
+                                            {% endif %}
+                                        </dd>
+                                        <dt>Log Monitoring</dt>
+                                        <dd>
+                                            {% if process.monitoring[environment.name].log %}
+                                                {% set monitors = process.monitoring[environment.name].log %}
+                                                <div>Log monitoring is matched in the order presented below.</div>
+                                                <div class="container">
+                                                    {% for stream in monitors.keys() %}
+                                                        {% for monitor in monitors[stream] %}
+                                                            <div class="row">
+                                                                <div class="col-md-1">
+                                                                    <strong>{{ monitor.id }}</strong>
+                                                                </div>
+                                                                <div class="col-md-11">
+                                                                    <div>{{ monitor.stream }} matching '<tt>{{ monitor.regex }}</tt>'</div>
+                                                                    <div>severity {{ monitor.severity }}</div>
+                                                                    {% if monitor.contact %}<div>contact {{ monitor.contact }}</div>{% endif %}
+                                                                    {% if monitor.name %}<div>events will be created with the name '{{ monitor.name }}'</div>{% endif %}
+                                                                    {% if monitor.stop %}<div>matches to this regex will <strong>stop</strong> anymore matches</div>{% endif %}
+                                                                </div>
+                                                            </div>
+                                                        {% endfor %}
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                <span class="alert-danger" style="background-color: transparent; font-weight: bold;">
+                                                    No log monitoring configuration exists for {{ name }} in {{ environment.name }}.
+                                                </span>
+                                            {% endif %}
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br/>
+            {% else %}
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <p>No environments have been defined for this process.</p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="col-md-1"></div>
+    </div>
+</div>

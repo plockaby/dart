@@ -1,0 +1,49 @@
+{% extends "master.html" %}
+
+{% block content %}
+    <h1>Register Configuration</h1>
+    <p>
+        Enter a YAML configuration to register with the Dart system. The
+        configuration should contain one or more process definitions. All
+        registered configurations will become immediately available.
+    </p>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <form id="register">
+                    <div class="alert alert-success" role="alert" style="display: none;"></div>
+                    <div class="alert alert-danger" role="alert" style="display: none;"></div>
+                    <div class="form-group">
+                        <textarea class="form-control" id="registration" required="required" placeholder="YAML configuration" rows="5"></textarea>
+                    </div>
+                    <button class="btn btn-primary" type="submit">Register</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block footer %}
+    <script>
+        $("#register").submit(function () {
+            var data = $("#registration").val();
+            $.ajax({
+                url: {{ url_for('api.register')|tojson }},
+                method: "PUT",
+                dataType: "json",
+                processData: false,
+                contentType: false,
+                data: data,
+            }).done(function (data) {
+                $("#register div.alert-danger").hide();
+                $("#register div.alert-success").html("Configurations successfully registered.").show();
+            }).fail(function (jqXHR, textStatus, errorThrown) {
+                var error = jqXHR.responseJSON.message;
+                if (!error) { error = "uknown error"; }
+                $("#register div.alert-success").hide();
+                $("#register div.alert-danger").html("Problem encountered while trying to register configurations. " + error).show();
+            });
+            return false;
+        });
+    </script>
+{% endblock %}

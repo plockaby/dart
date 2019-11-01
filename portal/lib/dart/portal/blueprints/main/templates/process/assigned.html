@@ -1,0 +1,22 @@
+<table id="assigned-table"
+    data-url="{{ url_for('api.process_assigned', name=name) }}"
+    data-toggle="table"
+    data-classes="table table-hover table-striped table-sm"
+    data-id-field="fqdn"
+    data-unique-id-field="fqdn"
+    data-sort-name="fqdn"
+    data-sort-order="asc"
+    data-search="true"
+    data-show-columns="true"
+    data-show-refresh="true"
+    class="table table-hover table-striped table-sm">
+    <thead>
+        <tr>
+            <th data-valign="top"                                       data-field="fqdn"        data-sortable="true" data-formatter="dart.format_fqdn">FQDN</th>
+            <th data-valign="top"                                       data-field="environment" data-sortable="true">Environment</th>
+            <th data-valign="top"                                       data-field="schedule"    data-sortable="true" data-formatter="dart.format_assigned_schedule">Schedule</th>
+            <th data-valign="top" data-width="120" data-width-unit="px" data-field="disabled"    data-sortable="true" data-formatter="dart.format_disabled">Enabled</th>
+            <th data-valign="top" data-width="65"  data-width-unit="px" data-formatter="dart.format_assigned_actions" data-events="dart.column_assigned_actions">Actions</th>
+        </tr>
+    </thead>
+</table>

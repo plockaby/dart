@@ -61,7 +61,7 @@ def send_command(fqdn, action, process=None):
     ctx.verify_mode = ssl.CERT_REQUIRED
     ctx.check_hostname = True
 
-    settings = settings_manager.settings.get("coordination", {})
+    settings = settings_manager.get("coordination", {})
     ca = settings.get("ca")
     key = settings.get("key")
     name = settings.get("name")

@@ -3,11 +3,155 @@
 {% block title %}Dart - Home{% endblock %}
   
 {% block content %}
-    The home page.
+    <div class="container">
+        <div class="row" id="search">
+            <div class="col-md-6">
+                <p><strong>Search Hosts</strong></p>
+                <form id="autocomplete-hosts">
+                    <div class="input-group">
+                        <input type="text" required="required" class="form-control" name="search" placeholder="Host" value="" autocomplete="off"/>
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="submit"><span class="fas fa-search" aria-hidden="true"></span></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Search Processes</strong></p>
+                <form id="autocomplete-processes">
+                    <div class="input-group">
+                        <input type="text" required="required" class="form-control" name="search" placeholder="Process" value="" autocomplete="off"/>
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="submit"><span class="fas fa-search" aria-hidden="true"></span></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1>Offline Hosts</h1>
+                <p>
+                    The following hosts have not recently sent a heartbeat and may
+                    no longer be online.
+                    <ul>
+                        {% for host in hosts if (host.polled and host.polled.timestamp() < (now.timestamp() - (60 * 60 * 4))) %}
+                            <li><a href="{{ url_for('main.host', fqdn=host.fqdn) }}">{{ host.fqdn }}</a> last sent a heartbeat {{ moment(host.polled).fromNow() }}</a></li>
+                        {% else %}
+                            <li>All hosts have sent a heartbeat within the last four hours.</li>
+                        {% endfor %}
+                    </ul>
+                </p>
+
+                <h1>Disabled Processes</h1>
+                <p>
+                    The following processes are disabled on assigned hosts:
+                    <ul>
+                        {% for process in processes if process.disabled %}
+                            {% for fqdn in process.disabled_hosts %}
+                                <li>
+                                    <a href="{{ url_for('main.process', name=process.name) }}">{{ process.name }}</a> is disabled on <a href="{{ url_for('main.host', fqdn=fqdn) }}">{{ fqdn }}</a>
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            <li>No processes are disabled.</li>
+                        {% endfor %}
+                    </ul>
+                </p>
+
+                <hr />
+
+                <p>
+                    Dart is currently managing
+                        <a href="{{ url_for('main.hosts') }}">{{ hosts|count }} {% if hosts|count == 1 %}host{% else %}hosts{% endif %}</a>
+                        and
+                        <a href="{{ url_for('main.processes') }}">{{ processes|count }} {% if processes|count == 1 %}process{% else %}processes{% endif %}</a>.
+                </p>
+
+                <p>
+                    Dart is a system for managing process configurations across
+                    many hosts, for controlling those processes once assigned to
+                    hosts, and for monitoring those processes as they run. Dart is
+                    a monitoring system but not an event management system. You
+                    should use your event management system to view, triage, and
+                    manage events that may come from hosts and processes controlled
+                    by Dart.
+                </p>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block footer %}
     <!-- include moment like this so that it works with flask -->
     {{ moment.include_moment(local_js=url_for('main.static', filename='vendor/moment.js/2.24.0/moment.min.js')) }}
-    <script src="{{ url_for('main.static', filename='vendor/bootstrap-typeahead/fc2d5dc/bootstrap3-typeahead.min.js')) }}"></script>
+    <script src="{{ url_for('main.static', filename='vendor/bootstrap-typeahead/fc2d5dc/bootstrap3-typeahead.min.js') }}"></script>
+    <script>
+        $("#autocomplete-hosts").submit(function (e) {
+            var url = {{ url_for('main.host', fqdn='###fqdn###')|tojson }},
+                input = $(this).find("input"),
+                fqdn = input.typeahead("getActive");
+
+            // change the form so that it submits to the host page
+            $(this).attr("action", url.replace('%23%23%23fqdn%23%23%23', fqdn));
+        });
+
+        $("#autocomplete-processes").submit(function (e) {
+            var url = {{ url_for('main.process', name='###name###')|tojson }},
+                input = $(this).find("input"),
+                process = input.typeahead("getActive");
+
+            // change the form so that it submits to the process page
+            $(this).attr("action", url.replace('%23%23%23name%23%23%23', process));
+        });
+
+        $("#autocomplete-hosts input").typeahead({
+            minLength: 1,
+            fitToElement: true,
+            items: "all",
+            autoSelect: true,
+            delay: 1,
+            source: function (request, response) {
+                $.ajax({
+                    url: {{ url_for('api.autocomplete_host')|tojson }},
+                    dataType: "json",
+                    data: {
+                        q: request
+                    }
+                }).done(function (data) {
+                    response(data.results);
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                    console.log(textStatus);
+                    console.log(errorThrown);
+                    response([]);
+                });
+            }
+        });
+
+        $("#autocomplete-processes input").typeahead({
+            minLength: 1,
+            fitToElement: true,
+            items: "all",
+            autoSelect: true,
+            delay: 1,
+            source: function (request, response) {
+                $.ajax({
+                    url: {{ url_for('api.autocomplete_process', name)|tojson }},
+                    dataType: "json",
+                    data: {
+                        q: request
+                    }
+                }).done(function (data) {
+                    response(data.results);
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                    console.log(textStatus);
+                    console.log(errorThrown);
+                    response([]);
+                });
+            }
+        });
+    </script>
 {% endblock %}

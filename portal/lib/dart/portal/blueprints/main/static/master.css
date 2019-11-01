@@ -33,18 +33,34 @@ body > img {
     display: block;
 }
 
+
 h1, h2, h3, h4, h5, h6 {
     font-family: sans-serif;
     font-weight: 800;
     line-height: 1.3;
+    margin-top: 5px;
+    margin-bottom: 10px;
 }
 
-h1, h2, h3 {
-    margin-top: 29px;
-    margin-bottom: 14px;
+pre {
+    margin: 0;
 }
 
-/* content adjustments */
+#maincontent {
+    margin-bottom: 4em;
+}
+
+/* app specific stuff */
+
 #navigation {
     margin-top: 2px;
+}
+
+#search {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+#search p {
+    margin: 0;
 }
