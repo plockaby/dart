@@ -14,11 +14,10 @@ is to be controlled by dart. It starts and stops program on schedules and on
 demand. It monitors the programs running on the host. It reports back to the
 dart on the state of supervisord on every host.
 
-## registrar
+## tool
 
-This program reads a `.dartrc` file and sends it to the API to register a new
-program with the dart system. This is a helper program to demonstrate how to
-use the API.
+This is a command line tool to control the Dart system. It can be used to view,
+control, and modify the data in the Dart system.
 
 ## api
 
@@ -47,17 +46,17 @@ in `agent/lib/dart/settings/settings.yaml.example`.
 
 ## Running Each Component
 
-The `agent` and `registrar` programs are just Python modules that can be called
-by writing a shell script that looks roughly like this:
+The `agent` and `tool` programs are just Python modules that can be called by
+writing a shell script that looks roughly like this:
 
 ```
 #!/bin/sh
 exec python3 -m dart.agent.cli "$@"
 ```
 
-Obviously `agent` can be replaced with `registrar`. It was decided to not
-include these shell scripts with the repository to leave it up to the user how
-to call Python and with what arguments.
+Obviously `agent` can be replaced with `tool`. It was decided to not include
+these shell scripts with the repository to leave it up to the user how to call
+Python and with what arguments.
 
 For the `api` and `portal` applications a virtual environment is necessary to
 include all of the components. Then you can write a shell script that looks
