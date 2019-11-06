@@ -139,7 +139,7 @@
             delay: 1,
             source: function (request, response) {
                 $.ajax({
-                    url: {{ url_for('api.autocomplete_process', name)|tojson }},
+                    url: {{ url_for('api.autocomplete_process')|tojson }},
                     dataType: "json",
                     data: {
                         q: request
