@@ -13,7 +13,7 @@ after you've activated the virtual environment:
 
 If the requirements file still needs to be built then use this command:
 
-    pip install flask gunicorn gevent flask-login psycopg2-binary tenacity pyyaml crontab
+    pip install flask "gunicorn<20" gevent flask-login psycopg2-binary tenacity pyyaml crontab
 
 If you make changes to the requirements, you can save the new requirements:
 
