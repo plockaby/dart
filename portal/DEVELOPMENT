@@ -21,7 +21,7 @@ If you make changes to the requirements, you can save the new requirements:
 
 You can run a development instance of your application like this:
 
-    PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=lib:$PYTHONPATH FLASK_ENV=development FLASK_CONFIG=configurations/development.cfg venv/bin/python3 venv/bin/gunicorn dart.portal.loader:app -b unix:/srv/run/dart/dart-portal.sock --log-config=lib/dart/portal/configurations/logging/development.conf --worker-class=gevent
+    PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=../common/lib:lib:$PYTHONPATH FLASK_ENV=development FLASK_CONFIG=configurations/development.cfg venv/bin/python3 venv/bin/gunicorn dart.portal.loader:app -b unix:/srv/run/dart/dart-portal.sock --log-config=lib/dart/portal/configurations/logging/development.conf --worker-class=gevent
 
 When you're done, you can deactivate it:
 
