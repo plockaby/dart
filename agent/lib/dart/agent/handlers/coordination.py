@@ -7,7 +7,7 @@ certificate.
 """
 
 from . import BaseHandler
-from ..settings import SettingsManager
+from dart.common.settings import SettingsManager
 from dart.common.exceptions import CommandValidationException
 from dart.common.supervisor import SupervisorClient
 from threading import Thread
@@ -22,16 +22,17 @@ class CoordinationHandler(BaseHandler):
     def __init__(self, reread_trigger, rewrite_trigger, supervisor_server_url, **kwargs):
         super().__init__(**kwargs)
 
-        # configure settings
-        self.settings = SettingsManager().get("coordination", {})
-        self.settings["address"] = self.settings.get("address", "0.0.0.0")
-        self.settings["port"] = int(self.settings.get("port", 3728))
-        self.settings["ca"] = self.settings.get("ca")
-        self.settings["key"] = self.settings.get("key")
-        self.settings["name"] = self.settings.get("name")
+        # configure settings by settingn some defaults
+        self.settings = SettingsManager()
+        self.settings["agent.coordination.address"] = self.settings.get("agent.coordination.address", "0.0.0.0")
+        self.settings["agent.coordination.port"] = int(self.settings.get("agent.coordination.port", 3728))
 
         # where are we listening
-        self.logger.info("{} handler listening for coordination events on {}:{}".format(self.name, self.settings["address"], self.settings["port"]))
+        self.logger.info("{} handler listening for coordination events on {}:{}".format(
+            self.name,
+            self.settings["agent.coordination.address"],
+            self.settings["agent.coordination.port"],
+        ))
 
         # used by the actions
         self.reread_trigger = reread_trigger
@@ -56,8 +57,8 @@ class CoordinationHandler(BaseHandler):
                 # validate the client's certificate against the given ca.
                 ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
                 ctx.verify_mode = ssl.CERT_REQUIRED
-                ctx.load_verify_locations(self.settings["ca"])
-                ctx.load_cert_chain(self.settings["key"])
+                ctx.load_verify_locations(self.settings["agent.coordination.ca"])
+                ctx.load_cert_chain(self.settings["agent.coordination.key"])
 
                 # replace the socket with an ssl version of itself
                 subself.socket = ctx.wrap_socket(subself.socket, server_side=True)
@@ -73,7 +74,7 @@ class CoordinationHandler(BaseHandler):
 
                 try:
                     common_name = subself._get_certificate_common_name(subself.request.getpeercert())
-                    if (common_name is None or common_name != self.settings["name"]):
+                    if (common_name is None or common_name != self.settings["agent.coordination.name"]):
                         self.logger.warning("{} handler rejecting connection from {}".format(self.name, common_name))
                         return
 
@@ -220,7 +221,7 @@ class CoordinationHandler(BaseHandler):
         # this is the server. it handles the sockets. it passes requests to the
         # listener (the second argument). the server will run in its own thread
         # so that we can kill it when we need to
-        self.server = RequestServer((self.settings["address"], self.settings["port"]), RequestHandler)
+        self.server = RequestServer((self.settings["agent.coordination.address"], self.settings["agent.coordination.port"]), RequestHandler)
 
     @property
     def name(self):

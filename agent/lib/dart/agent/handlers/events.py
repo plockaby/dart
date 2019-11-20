@@ -4,7 +4,7 @@ agent sending us events. We will forward those events to the CorkAPI.
 """
 
 from . import BaseHandler
-from ..settings import SettingsManager
+from dart.common.settings import SettingsManager
 from dart.common.exceptions import EventValidationException
 from threading import Thread
 import socketserver
@@ -19,13 +19,13 @@ class EventHandler(BaseHandler):
         super().__init__(**kwargs)
 
         # configure settings
-        self.settings = SettingsManager().get("events", {})
-        self.settings["port"] = int(self.settings.get("port", 1337))
-        self.settings["path"] = self.settings.get("path", "/run/events.sock")
+        self.settings = SettingsManager()
+        self.settings["agent.events.port"] = int(self.settings.get("agent.events.port", 1337))
+        self.settings["agent.events.path"] = self.settings.get("agent.events.path", "/run/events.sock")
 
         # where we are listening
-        self.logger.info("{} handler listening for events on port {}".format(self.name, self.settings["port"]))
-        self.logger.info("{} handler listening for events at path {}".format(self.name, self.settings["path"]))
+        self.logger.info("{} handler listening for events on port {}".format(self.name, self.settings["agent.events.port"]))
+        self.logger.info("{} handler listening for events at path {}".format(self.name, self.settings["agent.events.path"]))
 
         class TCPRequestServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
             # faster re-binding
@@ -76,19 +76,19 @@ class EventHandler(BaseHandler):
         # this is the server. it handles the sockets. it passes requests to the
         # listener (the second argument). the server will run in its own thread
         # so that we can kill it when we need to
-        self.tcp_server = TCPRequestServer(("127.0.0.1", self.settings["port"]), TCPRequestHandler)
+        self.tcp_server = TCPRequestServer(("127.0.0.1", self.settings["agent.events.port"]), TCPRequestHandler)
 
         # note that we're just removing whatever socket is already there. this
         # can be dangerous if something is still using the old socket. but it
         # is worse if our new process doesn't start.
         try:
-            os.unlink(self.settings["path"])
+            os.unlink(self.settings["agent.events.path"])
         except FileNotFoundError as e:
-            self.logger.debug("{} handler could not remove {}: {}".format(self.name, self.settings["path"], e))
+            self.logger.debug("{} handler could not remove {}: {}".format(self.name, self.settings["agent.events.path"], e))
 
         # then create the unix socket server and fix the permissions
-        self.unix_server = UnixStreamRequestServer(self.settings["path"], UnixStreamRequestHandler)
-        os.chmod(self.settings["path"], 0o777)
+        self.unix_server = UnixStreamRequestServer(self.settings["agent.events.path"], UnixStreamRequestHandler)
+        os.chmod(self.settings["agent.events.path"], 0o777)
 
     @property
     def name(self):
@@ -123,11 +123,11 @@ class EventHandler(BaseHandler):
 
         # try to clean up our unix socket
         try:
-            os.remove(self.settings["path"])
+            os.remove(self.settings["agent.events.path"])
         except FileNotFoundError as e:
-            self.logger.warning("{} handler could not remove {}: {}".format(self.name, self.settings["path"], e))
+            self.logger.warning("{} handler could not remove {}: {}".format(self.name, self.settings["agent.events.path"], e))
         except Exception as e:
-            self.logger.error("{} handler could not remove {}: {}".format(self.name, self.settings["path"], e))
+            self.logger.error("{} handler could not remove {}: {}".format(self.name, self.settings["agent.events.path"], e))
 
     def can_handle(self, event_type):
         # this handler wants nothing from supervisor

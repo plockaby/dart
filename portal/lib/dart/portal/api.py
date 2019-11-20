@@ -24,13 +24,10 @@ class APIManager:
             status_forcelist=(500, 502, 503, 504),
         )
 
-        # get the configuration from the settings file
-        configuration = settings_manager.get("api", {})
-
         # modify the number of retries that we will make. we will also block
         # until we get a connection to the remote server.
         self.dart_api = requests.Session()
-        self.dart_api.cert = configuration.get("dart", {}).get("key")
-        self.dart_api.verify = configuration.get("dart", {}).get("ca")
+        self.dart_api.cert = settings_manager.get("portal.api.dart.key")
+        self.dart_api.verify = settings_manager.get("portal.api.dart.ca")
         self.dart_api.mount("https://", HTTPAdapter(pool_block=True, max_retries=retry))
-        self.dart_api_url = configuration.get("dart", {}).get("url")
+        self.dart_api_url = settings_manager.get("portal.api.dart.url")

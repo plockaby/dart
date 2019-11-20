@@ -4,11 +4,10 @@ supervisord and posts to the DartAPI.
 """
 
 from . import BaseHandler
-from ..settings import SettingsManager
 from ..configurations import ConfigurationsManager
-import dart.agent.api
 from dart.common.supervisor import SupervisorClient
 from dart.common.killer import GracefulEventKiller
+import dart.agent.api
 from threading import Thread
 import xmlrpc.client
 import urllib.parse
@@ -22,7 +21,6 @@ class ProbeHandler(BaseHandler):
         super().__init__(**kwargs)
 
         # get program settings into ourselves
-        self.settings = SettingsManager().get("monitor", {})
         self.configurations = ConfigurationsManager()
 
         # keep track of where to find the supervisor socket

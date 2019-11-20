@@ -1,7 +1,7 @@
 import logging
 from dart.common.singleton import Singleton
+from dart.common.settings import SettingsManager
 import dart.agent.api
-from .settings import SettingsManager
 from threading import RLock
 from copy import deepcopy
 import urllib.parse
@@ -22,10 +22,10 @@ class ConfigurationsWriter(metaclass=Singleton):
         self.fqdn = socket.getfqdn()
 
         # load settings from the settings manager
-        self.settings = SettingsManager().get("configuration", {})
+        self.settings = SettingsManager()
 
         # this is where we will keep configurations
-        configuration_path = self.settings.get("path", "/run/dart")
+        configuration_path = self.settings.get("agent.configuration.path", "/run/dart")
         self.logger.debug("writing configuration files to {}".format(configuration_path))
 
         # these are the actual configuration files for the tools. these should
@@ -63,8 +63,8 @@ class ConfigurationsWriter(metaclass=Singleton):
         # figure out where we are and where we are going
         starting_user = pwd.getpwuid(starting_uid)[0]
         starting_group = grp.getgrgid(starting_gid)[0]
-        desired_user = self.settings.get("user")
-        desired_group = self.settings.get("group")
+        desired_user = self.settings.get("agent.configuration.user")
+        desired_group = self.settings.get("agent.configuration.group")
 
         # try dropping group
         if (desired_group is not None):

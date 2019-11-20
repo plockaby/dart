@@ -1,25 +1,48 @@
+import logging
 from collections.abc import Mapping
+from dart.common.singleton import Singleton
 import pkg_resources
 import yaml
 
 
-class SettingsManager(Mapping):
-    def __init__(self, app=None, **kwargs):
-        if (app is not None):
-            self.init_app(app, **kwargs)
-        else:
-            self.app = None
+class SettingsManager(Mapping, metaclass=Singleton):
+    def __init__(self, lazy=False):
+        self.logger = logging.getLogger(__name__)
 
-    def init_app(self, app, key):
-        # get the data out of the file
-        data = pkg_resources.resource_string("dart", "settings/settings.yaml").decode("utf-8", "backslashreplace")
+        if (not lazy):
+            self.init_app(None)
 
-        # convert the settings data from yaml to a python data structure
-        # this will definitely throw exceptions if the settings file is invalid
-        settings = yaml.load(data, Loader=yaml.SafeLoader)
+    # this is used by flask
+    def init_app(self, app):
+        try:
+            # get the data out of the file
+            data = pkg_resources.resource_string("dart", "settings/settings.yaml").decode("utf-8", "backslashreplace")
 
-        # now pull out the settings that we're looking for
-        self.settings = settings.get(key, {})
+            # convert the settings data from yaml to a python data structure
+            # this will definitely throw exceptions if the settings file is invalid
+            settings = yaml.load(data, Loader=yaml.SafeLoader)
+
+            # flatten the settings for easier access
+            self.settings = self.flatten(settings)
+        except (OSError, UnicodeDecodeError, yaml.YAMLError) as e:
+            self.logger.error("could not load settings: {}".format(e))
+            raise
+        except Exception as e:
+            self.logger.error("could not load settings: {}".format(e))
+            raise
+
+    def flatten(self, settings):
+        result = {}
+
+        def recurse(t, parent_key=""):
+            if isinstance(t, dict):
+                for k, v in t.items():
+                    recurse(v, "{}.{}".format(parent_key, k) if parent_key else k)
+            else:
+                result[parent_key] = t
+
+        recurse(settings)
+        return result
 
     def __getitem__(self, key):
         return self.settings[key]

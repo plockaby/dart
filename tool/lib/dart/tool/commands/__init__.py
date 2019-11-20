@@ -3,40 +3,15 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import urllib.parse
-import pkg_resources
-import yaml
+from dart.common.settings import SettingsManager
 
 
 class BaseCommand(object):
     def __init__(self, **kwargs):
         self.logger = logging.getLogger(__name__)
 
-        # try to load settings
-        try:
-            # get the data out of the file
-            data = pkg_resources.resource_string("dart", "settings/settings.yaml").decode("utf-8", "backslashreplace")
-
-            # convert the settings data from yaml to a python data structure
-            # this will definitely throw exceptions if the settings file is invalid
-            settings = yaml.load(data, Loader=yaml.SafeLoader)
-
-            # now pull out the "tool" settings. our code should set good defaults.
-            self.settings = settings.get("tool", {})
-        except (OSError, UnicodeDecodeError, yaml.YAMLError) as e:
-            self.logger.error("could not load settings: {}".format(e))
-            raise
-        except Exception as e:
-            self.logger.error("could not load settings: {}".format(e))
-            raise
-
-        # make sure that we have any api configuration
-        configuration = self.settings.get("api", {}).get("dart")
-        if (configuration is None):
-            raise RuntimeError("found no configuration to connect to the API")
-        if (not isinstance(configuration, dict)):
-            raise RuntimeError("found invalid API configuration")
-        if (not configuration.get("url")):
-            raise RuntimeError("found invalid API configuration")
+        # settings are only needed here, to connect to the api
+        settings_manager = SettingsManager()
 
         # this sets a custom retry policy. we will retry a few times in case we
         # hit a server that is transitioning into offline state.
@@ -52,10 +27,10 @@ class BaseCommand(object):
         # modify the number of retries that we will make. we will also block
         # until we get a connection to the remote server.
         self.dart_api = requests.Session()
-        self.dart_api.cert = configuration.get("key")
-        self.dart_api.verify = configuration.get("ca")
+        self.dart_api.cert = settings_manager.get("tool.api.dart.key")
+        self.dart_api.verify = settings_manager.get("tool.api.dart.ca")
         self.dart_api.mount("https://", HTTPAdapter(pool_block=True, max_retries=retry))
-        self.dart_api_url = configuration.get("url")
+        self.dart_api_url = settings_manager.get("tool.api.dart.url")
 
     def run(self, **kwargs):
         raise NotImplementedError("must be implemented in base class")

@@ -5,11 +5,10 @@ update the central data store.
 """
 
 from . import BaseHandler
-from ..settings import SettingsManager
 from ..configurations import ConfigurationsManager
-import dart.agent.api
 from dart.common.supervisor import SupervisorClient
 from dart.common.killer import GracefulEventKiller
+import dart.agent.api
 from threading import Thread
 from queue import Queue
 import xmlrpc.client
@@ -24,7 +23,6 @@ class StateHandler(BaseHandler):
         super().__init__(**kwargs)
 
         # get program settings into ourselves
-        self.settings = SettingsManager().get("monitor", {})
         self.configurations = ConfigurationsManager()
 
         # this is how we connect to supervisor

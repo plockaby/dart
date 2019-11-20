@@ -13,7 +13,7 @@ logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
 
 # get global settings
-settings_manager = SettingsManager()
+settings_manager = SettingsManager(lazy=True)
 
 # configure access to the api with retries and whatnot
 api_manager = APIManager()
@@ -33,8 +33,8 @@ def load():
     # tell the logs what version we are running
     logger.info("starting in {}".format(app.config.get("ENVIRONMENT", "development")))
 
-    # initialize the settings
-    settings_manager.init_app(app, "portal")
+    # initialize settings
+    settings_manager.init_app(app)
 
     # initialize the cache busting
     cache_buster.init_app(app)

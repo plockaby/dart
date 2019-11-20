@@ -4,7 +4,6 @@ configuration creates an event.
 """
 
 from . import BaseHandler
-from ..settings import SettingsManager
 from ..configurations import ConfigurationsManager
 from dart.common.killer import GracefulEventKiller
 from threading import Thread
@@ -18,7 +17,6 @@ class LogHandler(BaseHandler):
         super().__init__(**kwargs)
 
         # get program settings into ourselves
-        self.settings = SettingsManager().get("monitor", {})
         self.configurations = ConfigurationsManager()
 
         # used to trigger configuration file rewrites

@@ -47,8 +47,8 @@ class DartAgent(object):
         self.handlers = []
 
     def run(self, *args, **kwargs):
-        # initialize the settings manager
-        from .settings import SettingsManager
+        # initialize the settings manager singleton
+        from dart.common.settings import SettingsManager
         self.settings = SettingsManager()
 
         # load configurations immediately on start (onto disk, into memory)

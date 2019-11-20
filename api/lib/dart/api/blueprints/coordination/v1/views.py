@@ -61,11 +61,10 @@ def send_command(fqdn, action, process=None):
     ctx.verify_mode = ssl.CERT_REQUIRED
     ctx.check_hostname = True
 
-    settings = settings_manager.get("coordination", {})
-    ca = settings.get("ca")
-    key = settings.get("key")
-    name = settings.get("name")
-    port = settings.get("port")
+    ca = settings_manager.get("api.coordination.ca")
+    key = settings_manager.get("api.coordination.key")
+    name = settings_manager.get("api.coordination.name")
+    port = settings_manager.get("api.coordination.port")
     logger.debug("connecting to {}:{} as {} using {} verified against {}".format(fqdn, port, name, key, ca))
 
     # we must validate the remote side against the UWCA

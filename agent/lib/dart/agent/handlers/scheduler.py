@@ -4,10 +4,9 @@ as necessary.
 """
 
 from . import BaseHandler
-from ..settings import SettingsManager
 from ..configurations import ConfigurationsManager
-import xmlrpc.client
 from dart.common.supervisor import SupervisorClient
+import xmlrpc.client
 from crontab import CronTab
 from datetime import datetime
 import traceback
@@ -18,7 +17,6 @@ class SchedulerHandler(BaseHandler):
         super().__init__(**kwargs)
 
         # get program settings into ourselves
-        self.settings = SettingsManager().get("monitor", {})
         self.configurations = ConfigurationsManager()
 
         # we can set these to force a reread or a rewrite

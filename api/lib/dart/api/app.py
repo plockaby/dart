@@ -3,7 +3,7 @@ import logging
 from flask import Flask
 from flask_login import LoginManager
 from dart.common.settings import SettingsManager
-from dart.common.database import DatabaseClient
+from .database import DatabaseClient
 from . import login
 from . import errors
 
@@ -13,7 +13,7 @@ logging.captureWarnings(True)
 logger = logging.getLogger(__name__)
 
 # get global settings
-settings_manager = SettingsManager()
+settings_manager = SettingsManager(lazy=True)
 
 # create a login manager
 login_manager = LoginManager()
@@ -27,6 +27,9 @@ def load():
     if ("FLASK_CONFIG" in os.environ):
         app.config.from_envvar("FLASK_CONFIG")
 
+    # tell the logs what version we are running
+    logger.info("starting in {}".format(app.config.get("ENVIRONMENT", "development")))
+
     # let the api be accessible from wherever
     @app.after_request
     def add_header(r):
@@ -35,11 +38,16 @@ def load():
         r.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type"
         return r
 
-    # initialize the settings
-    settings_manager.init_app(app, "api")
+    # initialize settings
+    settings_manager.init_app(app)
 
     # connect to the database
-    db_client.init_app(app, settings_manager.get("database", {}).pop("name", "dart"), **settings_manager.get("database", {}))
+    db_client.init_app(
+        app,
+        settings_manager.get("api.database.name", "dart"),
+        # get all database configuration values and remove the leading parts
+        **({k.split(".")[-1]: v for k, v in settings_manager.items() if (k.startswith("api.database") and k != "api.database.name")})
+    )
 
     # initialize global error handlers
     errors.register_error_handler(app)

@@ -1,11 +1,11 @@
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
-from .settings import SettingsManager
+from dart.common.settings import SettingsManager
 
 
 # this is a collection of settings for accessing apis
-__settings = SettingsManager().get("api", {})
+__settings = SettingsManager()
 
 # this sets a custom retry policy. we will retry a few times in case we
 # hit a server that is transitioning into offline state. with 6 retries
@@ -24,19 +24,19 @@ __retry = Retry(
 __adapter = HTTPAdapter(pool_block=True, max_retries=__retry)
 
 # where can we get the DartAPI
-DART_API_URL = __settings.get("dart", {}).get("url")
+DART_API_URL = __settings.get("agent.api.dart.url")
 
 # the urls for the CorkAPI
-CORK_API_URL = __settings.get("cork", {}).get("url")
+CORK_API_URL = __settings.get("agent.api.cork.url")
 
 # connection pool for the DartAPI
 dart = requests.Session()
-dart.cert = __settings.get("dart", {}).get("key")
-dart.verify = __settings.get("dart", {}).get("ca")
+dart.cert = __settings.get("agent.api.dart.key")
+dart.verify = __settings.get("agent.api.dart.ca")
 dart.mount("https://", __adapter)
 
 # connection pool for the CorkAPI
 cork = requests.Session()
-cork.cert = __settings.get("cork", {}).get("key")
-cork.verify = __settings.get("cork", {}).get("ca")
+cork.cert = __settings.get("agent.api.cork.key")
+cork.verify = __settings.get("agent.api.cork.ca")
 cork.mount("https://", __adapter)

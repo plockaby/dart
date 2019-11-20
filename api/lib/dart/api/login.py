@@ -41,7 +41,7 @@ def register_login_handler(app):
             cn = cn.strip()
             logger.info("received connection from {} with certificate '{}'".format(ip_address, cn))
 
-            if (cn in settings_manager.get("authorized", [])):
+            if (cn in settings_manager.get("api.authorized", [])):
                 logger.info("allowing access via SSL from {}".format(cn))
 
                 # record the cn that got the user in
