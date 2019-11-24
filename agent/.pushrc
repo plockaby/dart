@@ -3,6 +3,14 @@ from pushlib.modules.python import *
 env.clone_path = "push/common"
 
 
+class ArchiveTask(ArchiveTask):
+    def before(self, c):
+        super().before(c)
+
+        # remove this generated file because we will use our own
+        c.run("rm -rf {}/bin".format(env.release_dir))
+
+
 class DeployTask(DeployTask):
     def before(self):
         super().before()

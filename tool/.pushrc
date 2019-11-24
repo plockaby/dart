@@ -7,8 +7,8 @@ class ArchiveTask(ArchiveTask):
     def before(self, c):
         super().before(c)
 
-        # need to remove one specific file so that we don't end up with conflicts
-        c.run("rm -f {}/lib/python/dart/__init__.py".format(env.release_dir))
+        # remove this generated file because we will use our own
+        c.run("rm -rf {}/bin".format(env.release_dir))
 
 
 class DeployTask(DeployTask):

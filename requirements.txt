@@ -1,0 +1,5 @@
+PyYAML
+requests
+termcolor
+-r api/requirements.txt
+-r portal/requirements.txt

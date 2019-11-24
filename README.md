@@ -46,34 +46,31 @@ in `agent/lib/dart/settings/settings.yaml.example`.
 
 ## Running Each Component
 
-The `agent` and `tool` programs are just Python modules that can be called by
-writing a shell script that looks roughly like this:
+Each component requires the `dart-common` library. However, since no parts of
+this application are on PyPi the dependency system will not automatically
+include `dart-common` when you run `python setup.py install` so be sure to
+install the `dart-common` package first.
+
+The `agent` and `tool` components will each create their own binaries called
+`dart-agent` and `dart`, respectively. Those are the entry points for those
+applications.
+
+However, for the `api` and `portal` applications you will need either a large
+pile of dependencies installed or you will need a virtual environment. Either
+way you can start them like this:
 
 ```
-#!/bin/sh
-exec python3 -m dart.agent.cli "$@"
+gunicorn dart.api.loader:app --worker-class=gevent -b 8001
+gunicorn dart.portal.loader:app --worker-class=gevent -b 8002
 ```
 
-Obviously `agent` can be replaced with `tool`. It was decided to not include
-these shell scripts with the repository to leave it up to the user how to call
-Python and with what arguments.
+You should change the arguments to match your preferences. Things that you
+might want to change include: the port number and the logging configuration.
 
-For the `api` and `portal` applications a virtual environment is necessary to
-include all of the components. Then you can write a shell script that looks
-roughly like this:
-
-```
-#!/bin/bash
-
-# don't create .pyc files
-export PYTHONDONTWRITEBYTECODE=1
-
-# select the virtual environment
-export VIRTUALENV=/srv/www/venv/dart-api
-export PATH=$VIRTUALENV/bin:$PATH
-
-exec $VIRTUALENV/bin/python3 $VIRTUALENV/bin/gunicorn dart.api.loader:app "$@"
-```
+It's worth noting that at this time the `eventlet` worker class is not
+supported. There is a bug in `eventlet` that prevents it from correctly using
+client certificates on SSL connections. It is recommended that you use gevent
+instead.
 
 # CREDITS
 
