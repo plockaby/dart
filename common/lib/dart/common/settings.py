@@ -1,7 +1,7 @@
 import logging
 from collections.abc import Mapping
 from dart.common.singleton import Singleton
-import pkg_resources
+import importlib.resources
 import yaml
 
 
@@ -16,7 +16,7 @@ class SettingsManager(Mapping, metaclass=Singleton):
     def init_app(self, app):
         try:
             # get the data out of the file
-            data = pkg_resources.resource_string("dart", "settings/settings.yaml").decode("utf-8", "backslashreplace")
+            data = importlib.resources.open_text("dart.settings", "settings.yaml")
 
             # convert the settings data from yaml to a python data structure
             # this will definitely throw exceptions if the settings file is invalid
