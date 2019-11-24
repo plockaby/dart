@@ -20,12 +20,12 @@ class EventHandler(BaseHandler):
 
         # configure settings
         self.settings = SettingsManager()
-        self.settings["agent.events.port"] = int(self.settings.get("agent.events.port", 1337))
-        self.settings["agent.events.path"] = self.settings.get("agent.events.path", "/run/events.sock")
+        self.listen_port = int(self.settings.get("agent.events.port", 1337))
+        self.listen_path = self.settings.get("agent.events.path", "/run/events.sock")
 
         # where we are listening
-        self.logger.info("{} handler listening for events on port {}".format(self.name, self.settings["agent.events.port"]))
-        self.logger.info("{} handler listening for events at path {}".format(self.name, self.settings["agent.events.path"]))
+        self.logger.info("{} handler listening for events on port {}".format(self.name, self.listen_port))
+        self.logger.info("{} handler listening for events at path {}".format(self.name, self.listen_path))
 
         class TCPRequestServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
             # faster re-binding
@@ -76,19 +76,19 @@ class EventHandler(BaseHandler):
         # this is the server. it handles the sockets. it passes requests to the
         # listener (the second argument). the server will run in its own thread
         # so that we can kill it when we need to
-        self.tcp_server = TCPRequestServer(("127.0.0.1", self.settings["agent.events.port"]), TCPRequestHandler)
+        self.tcp_server = TCPRequestServer(("127.0.0.1", self.listen_port), TCPRequestHandler)
 
         # note that we're just removing whatever socket is already there. this
         # can be dangerous if something is still using the old socket. but it
         # is worse if our new process doesn't start.
         try:
-            os.unlink(self.settings["agent.events.path"])
+            os.unlink(self.listen_path)
         except FileNotFoundError as e:
-            self.logger.debug("{} handler could not remove {}: {}".format(self.name, self.settings["agent.events.path"], e))
+            self.logger.debug("{} handler could not remove {}: {}".format(self.name, self.listen_path, e))
 
         # then create the unix socket server and fix the permissions
-        self.unix_server = UnixStreamRequestServer(self.settings["agent.events.path"], UnixStreamRequestHandler)
-        os.chmod(self.settings["agent.events.path"], 0o777)
+        self.unix_server = UnixStreamRequestServer(self.listen_path, UnixStreamRequestHandler)
+        os.chmod(self.listen_path, 0o777)
 
     @property
     def name(self):
@@ -123,11 +123,11 @@ class EventHandler(BaseHandler):
 
         # try to clean up our unix socket
         try:
-            os.remove(self.settings["agent.events.path"])
+            os.remove(self.listen_path)
         except FileNotFoundError as e:
-            self.logger.warning("{} handler could not remove {}: {}".format(self.name, self.settings["agent.events.path"], e))
+            self.logger.warning("{} handler could not remove {}: {}".format(self.name, self.listen_path, e))
         except Exception as e:
-            self.logger.error("{} handler could not remove {}: {}".format(self.name, self.settings["agent.events.path"], e))
+            self.logger.error("{} handler could not remove {}: {}".format(self.name, self.listen_path, e))
 
     def can_handle(self, event_type):
         # this handler wants nothing from supervisor

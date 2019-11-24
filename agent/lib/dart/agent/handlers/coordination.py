@@ -24,14 +24,14 @@ class CoordinationHandler(BaseHandler):
 
         # configure settings by settingn some defaults
         self.settings = SettingsManager()
-        self.settings["agent.coordination.address"] = self.settings.get("agent.coordination.address", "0.0.0.0")
-        self.settings["agent.coordination.port"] = int(self.settings.get("agent.coordination.port", 3728))
+        self.listen_address = self.settings.get("agent.coordination.address", "0.0.0.0")
+        self.listen_port = int(self.settings.get("agent.coordination.port", 3728))
 
         # where are we listening
         self.logger.info("{} handler listening for coordination events on {}:{}".format(
             self.name,
-            self.settings["agent.coordination.address"],
-            self.settings["agent.coordination.port"],
+            self.listen_address,
+            self.listen_port,
         ))
 
         # used by the actions
@@ -221,7 +221,7 @@ class CoordinationHandler(BaseHandler):
         # this is the server. it handles the sockets. it passes requests to the
         # listener (the second argument). the server will run in its own thread
         # so that we can kill it when we need to
-        self.server = RequestServer((self.settings["agent.coordination.address"], self.settings["agent.coordination.port"]), RequestHandler)
+        self.server = RequestServer((self.listen_address, self.listen_port), RequestHandler)
 
     @property
     def name(self):
