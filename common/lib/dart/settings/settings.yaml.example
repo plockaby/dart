@@ -6,13 +6,13 @@ agent:
         dart:
             url: https://localhost:274/dart
             ca: /usr/local/ssl/certs/local-ca.cert
-            key: /usr/local/ssl/certs/local/dart.local.lockaby.org.pem
+            key: /usr/local/ssl/certs/local/dart.localhost.localdomain.pem
 
         # configuration information for CorkAPI
         cork:
             url: https://localhost:274/cork
             ca: /usr/local/ssl/certs/local-ca.cert
-            key: /usr/local/ssl/certs/local/cork.local.lockaby.org.pem
+            key: /usr/local/ssl/certs/local/cork.localhost.localdomain.pem
 
     configuration:
         # directory where configurations are stored. supervisord will need to
@@ -35,8 +35,8 @@ agent:
     coordination:
         # what CA will we use to validate certs and what common name is allowed
         ca: /usr/local/ssl/certs/local-ca.cert
-        key: /usr/local/ssl/certs/local/dart.local.lockaby.org.pem
-        name: dart.local.lockaby.org
+        key: /usr/local/ssl/certs/local/dart.localhost.localdomain.pem
+        name: dart.localhost.localdomain.org
 
         # what port will our coordinator listen on
         port: 3278
@@ -54,13 +54,13 @@ api:
 
     # a list of authorized certificate cns for accessing the api
     authorized:
-        - dart.local.lockaby.org
+        - dart.localhost.localdomain.org
 
     coordination:
         # what CA will we use to validate certs and what common name is allowed
         ca: /usr/local/ssl/certs/local-ca.cert
-        key: /usr/local/ssl/certs/local/dart.local.lockaby.org.pem
-        name: dart.local.lockaby.org
+        key: /usr/local/ssl/certs/local/dart.localhost.localdomain.pem
+        name: dart.localhost.localdomain.org
 
         # what port will our coordinator listen on
         port: 3278
@@ -71,7 +71,7 @@ tool:
         dart:
             url: https://localhost:274/dart
             ca: /usr/local/ssl/certs/local-ca.cert
-            key: /usr/local/ssl/certs/local/dart.local.lockaby.org.pem
+            key: /usr/local/ssl/certs/local/dart.localhost.localdomain.pem
 
 portal:
     api:
@@ -79,4 +79,4 @@ portal:
         dart:
             url: https://localhost:274/dart
             ca: /usr/local/ssl/certs/local-ca.cert
-            key: /usr/local/ssl/certs/local/dart.local.lockaby.org.pem
+            key: /usr/local/ssl/certs/local/dart.localhost.localdomain.pem
