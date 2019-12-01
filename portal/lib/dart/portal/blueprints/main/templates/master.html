@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <title>{% block title %}Dart{% endblock %}</title>
-        <link rel="stylesheet" href="{{ url_for('main.static', filename='vendor/bootstrap/4.3.1/css/bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('main.static', filename='vendor/bootstrap/4.4.1/css/bootstrap.min.css') }}">
         <link rel="stylesheet" href="{{ url_for('main.static', filename='vendor/fontawesome/5.11.2/css/all.min.css') }}">
         <link rel="stylesheet" href="{{ url_for('main.static', filename='vendor/bootstrap-themes/fresca/theme.min.css') }}">
         <link rel="stylesheet" href="{{ url_for('main.static', filename='master.css') }}">
@@ -39,8 +39,7 @@
         </div>
 
         <script src="{{ url_for('main.static', filename='vendor/jquery/3.4.1/jquery.min.js') }}"></script>
-        <script src="{{ url_for('main.static', filename='vendor/popper/1.16.0/popper.min.js') }}"></script>
-        <script src="{{ url_for('main.static', filename='vendor/bootstrap/4.3.1/js/bootstrap.min.js') }}"></script>
+        <script src="{{ url_for('main.static', filename='vendor/bootstrap/4.4.1/js/bootstrap.bundle.min.js') }}"></script>
         <script src="{{ url_for('main.static', filename='master.js') }}"></script>
         {% block footer %}{% endblock %}
     </body>
