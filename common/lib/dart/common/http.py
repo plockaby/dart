@@ -32,14 +32,3 @@ def get_ip_address(request):
         return request.remote_addr
 
     return ip_address
-
-
-# this depends on apache config sticking the identity in somewhere
-def get_user_name(request):
-    user_name = request.headers.get("X-Forwarded-User")
-
-    if (not user_name):
-        logger.warning("missing X-Forwarded-User header")
-        return
-
-    return user_name
