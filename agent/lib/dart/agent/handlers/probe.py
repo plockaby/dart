@@ -152,7 +152,7 @@ class ProbeHandler(BaseHandler):
                     self.logger.debug("{} handler clearing state event for {} on {} because it is now RUNNING".format(self.name, process, self.fqdn))
                     self.events.put({
                         "data": {
-                            "contact": configuration["contact"],
+                            "ci": configuration["ci"],
                             "component": {"name": "monitor:state:{}".format(process)},
                             "severity": "OK",
                             "message": "clear",
@@ -165,7 +165,7 @@ class ProbeHandler(BaseHandler):
                         self.logger.debug("{} handler raising state event for {} on {} because it has gone into state {}".format(self.name, process, self.fqdn, state["statename"]))
                         self.events.put({
                             "data": {
-                                "contact": configuration["contact"],
+                                "ci": configuration["ci"],
                                 "component": {"name": "monitor:state:{}".format(process)},
                                 "severity": configuration["severity"],
                                 "title": "{} on {} entered the state {}".format(process, self.fqdn, state["statename"]),
@@ -179,7 +179,7 @@ class ProbeHandler(BaseHandler):
                         self.logger.debug("{} handler raising state event for {} on {} because it exited with an error".format(self.name, process, self.fqdn))
                         self.events.put({
                             "data": {
-                                "contact": configuration["contact"],
+                                "ci": configuration["ci"],
                                 "component": {"name": "monitor:state:{}".format(process)},
                                 "severity": configuration["severity"],
                                 "title": "{} on {} exited with an error".format(process, self.fqdn),
@@ -195,7 +195,7 @@ class ProbeHandler(BaseHandler):
                     # daemon alerts for it.
                     self.events.put({
                         "data": {
-                            "contact": configuration["contact"],
+                            "ci": configuration["ci"],
                             "component": {"name": "monitor:daemon:{}".format(process)},
                             "severity": "OK",
                             "message": "clear",
@@ -205,7 +205,7 @@ class ProbeHandler(BaseHandler):
                     self.logger.debug("{} handler raising daemon event for {} on {} because it is in state {} when it is supposed to be in state RUNNING".format(self.name, process, self.fqdn, state["statename"]))
                     self.events.put({
                         "data": {
-                            "contact": configuration["contact"],
+                            "ci": configuration["ci"],
                             "component": {"name": "monitor:daemon:{}".format(process)},
                             "severity": configuration["severity"],
                             "message": "{} on {} is in state {} when it is supposed to be in state RUNNING".format(process, self.fqdn, state["statename"]),

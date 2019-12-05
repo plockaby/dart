@@ -1,4 +1,5 @@
 from ....app import db_client
+import json
 
 
 def get_assigned_processes(fqdn):
@@ -19,41 +20,56 @@ def get_assigned_processes(fqdn):
                 # state monitor information
                 with conn.cursor() as subcur:
                     subcur.execute("""
-                        SELECT contact, severity
+                        SELECT ci, severity
                         FROM dart.process_state_monitor
                         WHERE process_name = %s
                           AND process_environment = %s
                     """, (row["name"], row["environment"]))
-                    row["monitors"]["state"] = subcur.fetchone()
+                    subrow = subcur.fetchone()
+                    try:
+                        subrow["ci"] = json.loads(subrow["ci"])
+                        row["monitors"]["state"] = subrow
+                    except (json.JSONDecodeError, TypeError):
+                        row["monitors"]["state"] = None
 
                 # daemon monitor information
                 with conn.cursor() as subcur:
                     subcur = conn.cursor()
                     subcur.execute("""
-                        SELECT contact, severity
+                        SELECT ci, severity
                         FROM dart.process_daemon_monitor
                         WHERE process_name = %s
                           AND process_environment = %s
                     """, (row["name"], row["environment"]))
-                    row["monitors"]["daemon"] = subcur.fetchone()
+                    subrow = subcur.fetchone()
+                    try:
+                        subrow["ci"] = json.loads(subrow["ci"])
+                        row["monitors"]["daemon"] = subrow
+                    except (json.JSONDecodeError, TypeError):
+                        row["monitors"]["daemon"] = None
 
                 # keepalive monitor information
                 with conn.cursor() as subcur:
                     subcur = conn.cursor()
                     subcur.execute("""
-                        SELECT timeout, contact, severity
+                        SELECT timeout, ci, severity
                         FROM dart.process_keepalive_monitor
                         WHERE process_name = %s
                           AND process_environment = %s
                     """, (row["name"], row["environment"]))
-                    row["monitors"]["keepalive"] = subcur.fetchone()
+                    subrow = subcur.fetchone()
+                    try:
+                        subrow["ci"] = json.loads(subrow["ci"])
+                        row["monitors"]["keepalive"] = subrow
+                    except (json.JSONDecodeError, TypeError):
+                        row["monitors"]["keepalive"] = None
 
                 # log monitor information
                 with conn.cursor() as subcur:
                     row["monitors"]["log"] = {"stdout": [], "stderr": []}
                     subcur = conn.cursor()
                     subcur.execute("""
-                        SELECT stream, regex, stop, name, contact, severity
+                        SELECT stream, regex, stop, name, ci, severity
                         FROM dart.process_log_monitor
                         WHERE process_name = %s
                           AND process_environment = %s
@@ -61,7 +77,11 @@ def get_assigned_processes(fqdn):
                     """, (row["name"], row["environment"]))
                     for subrow in subcur:
                         stream = subrow.pop("stream")
-                        row["monitors"]["log"][stream].append(subrow)
+                        try:
+                            subrow["ci"] = json.loads(subrow["ci"])
+                            row["monitors"]["log"][stream].append(subrow)
+                        except (json.JSONDecodeError, TypeError):
+                            pass
 
                 # return the rows as we get them
                 yield row

@@ -26,6 +26,11 @@ agent:
         group: nogroup
 
     events:
+        # set this to false to disable events. if events are disabled then you
+        # do not need to set any other settings for events or cork. by default
+        # events are NOT enabled.
+        enabled: true
+
         # path to unix socket
         path: /run/dart/events.sock
 

@@ -455,7 +455,7 @@ def register_process(data, sort_order):
     q.insert_process(process_name, process_environment, process_type, supervisor, schedule)
 
     monitors = data.get("monitoring", dict())
-    default_contact = monitors.get("contact")
+    default_ci = monitors.get("ci")
     state_monitor = monitors.get("state")
     daemon_monitor = monitors.get("daemon")
     keepalive_monitor = monitors.get("keepalive")
@@ -463,9 +463,9 @@ def register_process(data, sort_order):
 
     if (state_monitor is not None):
         try:
-            contact = validate_contact(state_monitor.get("contact", default_contact))
+            ci = validate_ci(state_monitor.get("ci", default_ci))
             severity = validate_severity(state_monitor.get("severity"))
-            q.insert_process_state_monitor(process_name, process_environment, contact, severity)
+            q.insert_process_state_monitor(process_name, process_environment, ci, severity)
         except BadRequest as e:
             raise BadRequest("The state monitoring configuration for '{}' in '{}' is not valid: {}.".format(process_name, process_environment, e))
     else:
@@ -473,9 +473,9 @@ def register_process(data, sort_order):
 
     if (daemon_monitor is not None):
         try:
-            contact = validate_contact(daemon_monitor.get("contact", default_contact))
+            ci = validate_ci(daemon_monitor.get("ci", default_ci))
             severity = validate_severity(daemon_monitor.get("severity"))
-            q.insert_process_daemon_monitor(process_name, process_environment, contact, severity)
+            q.insert_process_daemon_monitor(process_name, process_environment, ci, severity)
         except BadRequest as e:
             raise BadRequest("The daemon monitoring configuration for '{}' in '{}' is not valid: {}.".format(process_name, process_environment, e))
     else:
@@ -483,7 +483,7 @@ def register_process(data, sort_order):
 
     if (keepalive_monitor is not None):
         try:
-            contact = validate_contact(keepalive_monitor.get("contact", default_contact))
+            ci = validate_ci(keepalive_monitor.get("ci", default_ci))
             severity = validate_severity(keepalive_monitor.get("severity"))
 
             timeout = keepalive_monitor.get("timeout")
@@ -496,7 +496,7 @@ def register_process(data, sort_order):
             if (timeout < 1 or timeout > 10080):
                 raise BadRequest("timeout must be at least one minute and no longer than one week")
 
-            q.insert_process_keepalive_monitor(process_name, process_environment, timeout, contact, severity)
+            q.insert_process_keepalive_monitor(process_name, process_environment, timeout, ci, severity)
         except BadRequest as e:
             raise BadRequest("The keepalive monitoring configuration for '{}' in '{}' is not valid: {}.".format(process_name, process_environment, e))
     else:
@@ -513,7 +513,7 @@ def register_process(data, sort_order):
                     name = config.get("name")  # optional
                     stop = config.get("stop")  # optional
                     severity = config.get("severity")  # optional
-                    contact = validate_contact(config.get("contact", default_contact))
+                    ci = validate_ci(config.get("ci", default_ci))
 
                     # validate the regex
                     if (regex is None):
@@ -531,17 +531,21 @@ def register_process(data, sort_order):
                     # missing or set to anything else then false
                     stop = (stop is not None and str(stop).lower() in ["yes", "true", "on", "1"])
 
-                    q.insert_process_log_monitor(process_name, process_environment, stream, index, regex, stop, name, contact, severity)
+                    q.insert_process_log_monitor(process_name, process_environment, stream, index, regex, stop, name, ci, severity)
         except BadRequest as e:
             raise BadRequest("The log monitoring configuration for '{}' in '{}' is not valid: {}.".format(process_name, process_environment, e))
     else:
         q.delete_process_log_monitor(process_name, process_environment)
 
 
-def validate_contact(contact):
-    if (contact is None):
-        raise BadRequest("missing contact")
-    return contact
+def validate_ci(ci):
+    if (ci is None):
+        raise BadRequest("missing configuration item")
+    if (not isinstance(ci, dict)):
+        raise BadRequest("invalid ci")
+    if (not ("uuid" in ci or "name" in ci)):
+        raise BadRequest("ci must have either a uuid or a name")
+    return ci
 
 
 def validate_severity(severity):

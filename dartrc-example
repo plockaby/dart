@@ -36,15 +36,18 @@ processes:
       monitoring:
           state:
               severity: 3
-              contact: me@example.com
+              ci:
+                  name: Some Configuration Item
 
           daemon:
               severity: 3
-              contact: me@example.com
+              ci:
+                  name: Some Configuration Item
 
           keepalive:
               severity: 3
-              contact: me@example.com
+              ci:
+                  name: Some Configuration Item
 
               # the keepalive will timeout after ten minutes. ensure that this
               # timeout is LONGER than the normal schedule above or else there
@@ -76,15 +79,17 @@ processes:
                     # compared.
                     stop: true
 
-                    # who to contact -- this is required
-                    contact: me@example.com
+                    # what ci to use. this is required.
+                    ci:
+                        name: Some Configuration Item
 
               # all of the same options apply to stderr as to stdout
               stderr:
                   - regex: .*
                     severity: 4
 
-                    # rather than write one contact over and over again you
-                    # can put "contact" just under "monitoring" and dart will
-                    # use the same contact for all monitors.
-                    contact: me@example.com
+                    # rather than write one configuration item over and over
+                    # again you can put "ci" just under "monitoring" and dart
+                    # will use the same configuration item for all monitors.
+                    ci:
+                        name: Some Configuration Item

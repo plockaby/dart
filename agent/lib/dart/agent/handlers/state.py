@@ -170,7 +170,7 @@ class StateHandler(BaseHandler):
                     self.logger.debug("{} handler clearing state event for {} because it is now RUNNING".format(self.name, process))
                     self.events.put({
                         "data": {
-                            "contact": configuration["contact"],
+                            "ci": configuration["ci"],
                             "component": {"name": "monitor:state:{}".format(process)},
                             "severity": "OK",
                             "message": "clear",
@@ -183,7 +183,7 @@ class StateHandler(BaseHandler):
                         self.logger.debug("{} handler raising state event for {} because it has gone into state {}".format(self.name, process, state["statename"]))
                         self.events.put({
                             "data": {
-                                "contact": configuration["contact"],
+                                "ci": configuration["ci"],
                                 "component": {"name": "monitor:state:{}".format(process)},
                                 "severity": configuration["severity"],
                                 "message": "{} on {} entered the state {}\n\n{}".format(process, self.fqdn, state["statename"], state["spawnerr"]),
@@ -196,7 +196,7 @@ class StateHandler(BaseHandler):
                         self.logger.debug("{} handler raising state event for {} because it exited with an error".format(self.name, process))
                         self.events.put({
                             "data": {
-                                "contact": configuration["contact"],
+                                "ci": configuration["ci"],
                                 "component": {"name": "monitor:state:{}".format(process)},
                                 "severity": configuration["severity"],
                                 "message": "{} on {} exited with an error\n\n{}".format(process, self.fqdn, state["spawnerr"]),
@@ -211,7 +211,7 @@ class StateHandler(BaseHandler):
                     self.logger.debug("{} handler clearing daemon event for {} because it is now RUNNING".format(self.name, process))
                     self.events.put({
                         "data": {
-                            "contact": configuration["contact"],
+                            "ci": configuration["ci"],
                             "component": {"name": "monitor:daemon:{}".format(process)},
                             "severity": "OK",
                             "message": "clear",
@@ -222,7 +222,7 @@ class StateHandler(BaseHandler):
                     self.logger.debug("{} handler raising daemon event for {} because it is in state {} when it is supposed to be in state RUNNING".format(self.name, process, state["statename"]))
                     self.events.put({
                         "data": {
-                            "contact": configuration["contact"],
+                            "ci": configuration["ci"],
                             "component": {"name": "monitor:daemon:{}".format(process)},
                             "severity": configuration["severity"],
                             "message": "{} on {} is in state {} when it is supposed to be in state RUNNING".format(process, self.fqdn, state["statename"]),
@@ -239,7 +239,7 @@ class StateHandler(BaseHandler):
                     self.events.put({
                         "type": "keepalive",
                         "data": {
-                            "contact": configuration["contact"],
+                            "ci": configuration["ci"],
                             "component": {"name": "monitor:keepalive:{}".format(process)},
                             "severity": configuration["severity"],
                             "timeout": configuration["timeout"],

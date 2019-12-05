@@ -145,7 +145,7 @@ class LogHandler(BaseHandler):
                             if (monitor["severity"]):
                                 self.events.put({
                                     "data": {
-                                        "contact": monitor["contact"],
+                                        "ci": monitor["ci"],
                                         "component": {"name": component},
                                         "severity": monitor["severity"],
                                         "message": "{}\n\n{}".format(line, data),

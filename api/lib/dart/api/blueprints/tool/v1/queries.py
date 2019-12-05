@@ -1,6 +1,7 @@
 from ....app import db_client
 from datetime import datetime, timedelta
 from crontab import CronTab
+import json
 
 
 def is_valid_host(fqdn):
@@ -107,7 +108,7 @@ def select_host(fqdn):
                     p.type,
                     p.schedule,
                     a.disabled,
-                    (pdm.contact IS NOT NULL) AS daemon
+                    (pdm.ci IS NOT NULL) AS daemon
                 FROM dart.assignment a
                 INNER JOIN dart.process p                       ON p.name = a.process_name AND p.environment = a.process_environment
                 LEFT OUTER JOIN dart.process_daemon_monitor pdm ON pdm.process_name = a.process_name AND pdm.process_environment = a.process_environment
@@ -135,7 +136,7 @@ def select_host(fqdn):
                     ap.error,
                     a.disabled,
                     p.schedule,
-                    (pdm.contact IS NOT NULL) AS daemon
+                    (pdm.ci IS NOT NULL) AS daemon
                 FROM dart.active_process ap
                 LEFT OUTER JOIN dart.assignment a               ON a.process_name = ap.name AND a.fqdn = ap.fqdn
                 LEFT OUTER JOIN dart.process_daemon_monitor pdm ON pdm.process_name = a.process_name AND pdm.process_environment = a.process_environment
@@ -317,7 +318,7 @@ def select_process(name):
                     ap.error,
                     a.disabled,
                     p.schedule,
-                    (pdm.contact IS NOT NULL) AS daemon
+                    (pdm.ci IS NOT NULL) AS daemon
                 FROM dart.active_process ap
                 LEFT OUTER JOIN dart.assignment a               ON a.process_name = ap.name AND a.fqdn = ap.fqdn
                 LEFT OUTER JOIN dart.process_daemon_monitor pdm ON pdm.process_name = a.process_name AND pdm.process_environment = a.process_environment
@@ -359,7 +360,7 @@ def select_process(name):
             with conn.cursor() as cur:
                 cur.execute("""
                     SELECT
-                        contact,
+                        ci,
                         severity
                     FROM dart.process_state_monitor
                     WHERE process_name = %s
@@ -367,11 +368,17 @@ def select_process(name):
                 """, (name, environment["name"]))
                 monitors["state"] = cur.fetchone()
 
+                # decode the ci
+                try:
+                    monitors["state"]["ci"] = json.loads(monitors["state"]["ci"])
+                except (json.JSONDecodeError, TypeError, KeyError):
+                    monitors["state"] = None
+
             # daemon monitoring
             with conn.cursor() as cur:
                 cur.execute("""
                     SELECT
-                        contact,
+                        ci,
                         severity
                     FROM dart.process_daemon_monitor
                     WHERE process_name = %s
@@ -379,11 +386,17 @@ def select_process(name):
                 """, (name, environment["name"]))
                 monitors["daemon"] = cur.fetchone()
 
+                # decode the ci
+                try:
+                    monitors["daemon"]["ci"] = json.loads(monitors["daemon"]["ci"])
+                except (json.JSONDecodeError, TypeError, KeyError):
+                    monitors["daemon"] = None
+
             # keepalive monitoring
             with conn.cursor() as cur:
                 cur.execute("""
                     SELECT
-                        contact,
+                        ci,
                         severity,
                         timeout
                     FROM dart.process_keepalive_monitor
@@ -391,6 +404,12 @@ def select_process(name):
                       AND process_environment = %s
                 """, (name, environment["name"]))
                 monitors["keepalive"] = cur.fetchone()
+
+                # decode the ci
+                try:
+                    monitors["keepalive"]["ci"] = json.loads(monitors["keepalive"]["ci"])
+                except (json.JSONDecodeError, TypeError, KeyError):
+                    monitors["keepalive"] = None
 
             # log monitoring
             monitors["log"] = {"stdout": [], "stderr": []}
@@ -401,7 +420,7 @@ def select_process(name):
                         stream,
                         regex,
                         name,
-                        contact,
+                        ci,
                         severity,
                         stop
                     FROM dart.process_log_monitor
@@ -410,6 +429,14 @@ def select_process(name):
                     ORDER BY stream, sort_order
                 """, (name, environment["name"]))
                 for row in cur:
+                    try:
+                        # if the ci isn't valid then don't append. it's
+                        # probably# completely invalid if the ci doesn't decode
+                        row["ci"] = json.loads(row["ci"])
+                        monitors["log"][row["stream"]].append(row)
+                    except (json.JSONDecodeError, TypeError, KeyError):
+                        pass
+
                     monitors["log"][row["stream"]].append(row)
 
             results["monitoring"][environment["name"]] = monitors
@@ -479,16 +506,16 @@ def insert_process(process_name, process_environment, process_type, configuratio
             """, (process_name, process_environment, process_type, configuration, schedule))
 
 
-def insert_process_state_monitor(process_name, process_environment, contact, severity):
+def insert_process_state_monitor(process_name, process_environment, ci, severity):
     with db_client.conn() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                INSERT INTO dart.process_state_monitor (process_name, process_environment, contact, severity)
+                INSERT INTO dart.process_state_monitor (process_name, process_environment, ci, severity)
                 VALUES (%s, %s, %s, %s)
                 ON CONFLICT (process_name, process_environment) DO UPDATE
-                SET contact = excluded.contact,
+                SET ci = excluded.ci,
                     severity = excluded.severity
-            """, (process_name, process_environment, contact, severity))
+            """, (process_name, process_environment, json.dumps(ci), severity))
 
 
 def delete_process_state_monitor(process_name, process_environment):
@@ -501,16 +528,16 @@ def delete_process_state_monitor(process_name, process_environment):
             """, (process_name, process_environment))
 
 
-def insert_process_daemon_monitor(process_name, process_environment, contact, severity):
+def insert_process_daemon_monitor(process_name, process_environment, ci, severity):
     with db_client.conn() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                INSERT INTO dart.process_daemon_monitor (process_name, process_environment, contact, severity)
+                INSERT INTO dart.process_daemon_monitor (process_name, process_environment, ci, severity)
                 VALUES (%s, %s, %s, %s)
                 ON CONFLICT (process_name, process_environment) DO UPDATE
-                SET contact = excluded.contact,
+                SET ci = excluded.ci,
                     severity = excluded.severity
-            """, (process_name, process_environment, contact, severity))
+            """, (process_name, process_environment, json.dumps(ci), severity))
 
 
 def delete_process_daemon_monitor(process_name, process_environment):
@@ -523,16 +550,16 @@ def delete_process_daemon_monitor(process_name, process_environment):
             """, (process_name, process_environment))
 
 
-def insert_process_keepalive_monitor(process_name, process_environment, timeout, contact, severity):
+def insert_process_keepalive_monitor(process_name, process_environment, timeout, ci, severity):
     with db_client.conn() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                INSERT INTO dart.process_keepalive_monitor (process_name, process_environment, timeout, contact, severity)
+                INSERT INTO dart.process_keepalive_monitor (process_name, process_environment, timeout, ci, severity)
                 VALUES (%s, %s, %s, %s, %s)
                 ON CONFLICT (process_name, process_environment) DO UPDATE
-                SET contact = excluded.contact,
+                SET ci = excluded.ci,
                     severity = excluded.severity
-            """, (process_name, process_environment, timeout, contact, severity))
+            """, (process_name, process_environment, timeout, json.dumps(ci), severity))
 
 
 def delete_process_keepalive_monitor(process_name, process_environment):
@@ -545,19 +572,19 @@ def delete_process_keepalive_monitor(process_name, process_environment):
             """, (process_name, process_environment))
 
 
-def insert_process_log_monitor(process_name, process_environment, stream, sort_order, regex, stop, name, contact, severity):
+def insert_process_log_monitor(process_name, process_environment, stream, sort_order, regex, stop, name, ci, severity):
     with db_client.conn() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                INSERT INTO dart.process_log_monitor (process_name, process_environment, stream, sort_order, regex, stop, name, contact, severity)
+                INSERT INTO dart.process_log_monitor (process_name, process_environment, stream, sort_order, regex, stop, name, ci, severity)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (process_name, process_environment, stream, sort_order) DO UPDATE
                 SET regex = excluded.regex,
                     stop = excluded.stop,
                     name = excluded.name,
-                    contact = excluded.contact,
+                    ci = excluded.ci,
                     severity = excluded.severity
-            """, (process_name, process_environment, stream, sort_order, regex, stop, name, contact, severity))
+            """, (process_name, process_environment, stream, sort_order, regex, stop, name, json.dumps(ci), severity))
 
 
 def delete_process_log_monitor(process_name, process_environment):

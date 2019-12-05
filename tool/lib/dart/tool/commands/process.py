@@ -283,7 +283,17 @@ class ProcessCommand(BaseCommand):
                 if (environment["name"] in process["monitoring"] and process["monitoring"][environment["name"]]["state"] is not None):
                     monitor = process["monitoring"][environment["name"]]["state"]
                     print("   State monitoring is {} at severity {},".format(colored("ENABLED", "green", attrs=["bold"]), monitor["severity"]), end="")
-                    print(" contact {}".format(monitor["contact"]), end="")
+
+                    if (monitor.get("ci")):
+                        if ("uuid" in monitor["ci"]):
+                            print(" CI uuid {}".format(monitor["ci"]["uuid"]), end="")
+                        elif ("name" in monitor["ci"]):
+                            print(" CI '{}'".format(monitor["ci"]["name"]), end="")
+                        else:
+                            print(" {}".format(colored("invalid configuration item", "red", attrs=["bold"])), end="")
+                    else:
+                        print(" {}".format(colored("invalid configuration item", "red", attrs=["bold"])), end="")
+
                     print(".")
                 else:
                     print("   State monitoring is {} for '{}' in {}.".format(colored("DISABLED", "red", attrs=["bold"]), name, environment["name"]))
@@ -291,7 +301,17 @@ class ProcessCommand(BaseCommand):
                 if (environment["name"] in process["monitoring"] and process["monitoring"][environment["name"]]["daemon"] is not None):
                     monitor = process["monitoring"][environment["name"]]["daemon"]
                     print("   Daemon monitoring is {} at severity {},".format(colored("ENABLED", "green", attrs=["bold"]), monitor["severity"]), end="")
-                    print(" contact {}".format(monitor["contact"]), end="")
+
+                    if (monitor.get("ci")):
+                        if ("uuid" in monitor["ci"]):
+                            print(" CI uuid {}".format(monitor["ci"]["uuid"]), end="")
+                        elif ("name" in monitor["ci"]):
+                            print(" CI '{}'".format(monitor["ci"]["name"]), end="")
+                        else:
+                            print(" {}".format(colored("invalid configuration item", "red", attrs=["bold"])), end="")
+                    else:
+                        print(" {}".format(colored("invalid configuration item", "red", attrs=["bold"])), end="")
+
                     print(".")
                 else:
                     print("   Daemon monitoring is {} for '{}' in {}.".format(colored("DISABLED", "red", attrs=["bold"]), name, environment["name"]))
@@ -299,7 +319,17 @@ class ProcessCommand(BaseCommand):
                 if (environment["name"] in process["monitoring"] and process["monitoring"][environment["name"]]["keepalive"] is not None):
                     monitor = process["monitoring"][environment["name"]]["keepalive"]
                     print("   Keepalive monitoring is {} at severity {}, {} minute timeout,".format(colored("ENABLED", "green", attrs=["bold"]), monitor["severity"], monitor["timeout"]), end="")
-                    print(" contact {}".format(monitor["contact"]), end="")
+
+                    if (monitor.get("ci")):
+                        if ("uuid" in monitor["ci"]):
+                            print(" CI uuid {}".format(monitor["ci"]["uuid"]), end="")
+                        elif ("name" in monitor["ci"]):
+                            print(" CI '{}'".format(monitor["ci"]["name"]), end="")
+                        else:
+                            print(" {}".format(colored("invalid configuration item", "red", attrs=["bold"])), end="")
+                    else:
+                        print(" {}".format(colored("invalid configuration item", "red", attrs=["bold"])), end="")
+
                     print(".")
                 else:
                     print("   Keepalive monitoring is {} for '{}' in {}.".format(colored("DISABLED", "red", attrs=["bold"]), name, environment["name"]))
@@ -312,8 +342,15 @@ class ProcessCommand(BaseCommand):
                         for test in monitor:
                             print("   {}: {} matching '{}'".format(test["id"], test["stream"], test["regex"]))
                             print("      severity {}".format(test["severity"]))
-                            if (test["contact"]):
-                                print("      contact {}".format(test["contact"]))
+
+                            if (test["ci"]):
+                                if ("uuid" in test["ci"]):
+                                    print("      CI uuid {}".format(test["ci"]["uuid"]))
+                                elif ("name" in test["ci"]):
+                                    print("      CI '{}'".format(test["ci"]["name"]))
+                                else:
+                                    print("      {}".format(colored("invalid configuration item", "red", attrs=["bold"])))
+
                             if (test["name"]):
                                 print("      events created with name '{}'".format(test["name"]))
                             if (test["stop"]):

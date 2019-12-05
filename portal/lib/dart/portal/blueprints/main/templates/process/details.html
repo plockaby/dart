@@ -66,7 +66,17 @@
                                                 <div>State monitoring is
                                                     <span class="alert-success" style="background-color: transparent; font-weight: bold;">ENABLED</span>
                                                     at severity {{ monitor.severity }}.</div>
-                                                    {% if monitor.contact %}<div>Events will contact {{ monitor.contact }}.</div>{% endif %}
+                                                    {% if monitor.ci %}
+                                                        {% if "uuid" in monitor.ci %}
+                                                            <div>Events will be in CI with uuid {{ monitor.ci.uuid }}.</div>
+                                                        {% elif "name" in monitor.ci %}
+                                                            <div>Events will be in CI '{{ monitor.ci.name }}'.</div>
+                                                        {% else %}
+                                                            <div><span class="alert-danger" style="background-color: transparent; font-weight: bold;">Invalid configuration item.</span></div>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        <div><span class="alert-danger" style="background-color: transparent; font-weight: bold;">Invalid configuration item.</span></div>
+                                                    {% endif %}
                                             {% else %}
                                                 <span class="alert-danger" style="background-color: transparent; font-weight: bold;">
                                                     No state monitoring configuration exists for {{ name }} in {{ environment.name }}.
@@ -80,7 +90,17 @@
                                                 <div>Daemon monitoring is
                                                     <span class="alert-success" style="background-color: transparent; font-weight: bold;">ENABLED</span>
                                                     at severity {{ monitor.severity }}.</div>
-                                                    {% if monitor.contact %}<div>Events will contact {{ monitor.contact }}.</div>{% endif %}
+                                                    {% if monitor.ci %}
+                                                        {% if "uuid" in monitor.ci %}
+                                                            <div>Events will be in CI with uuid {{ monitor.ci.uuid }}.</div>
+                                                        {% elif "name" in monitor.ci %}
+                                                            <div>Events will be in CI '{{ monitor.ci.name }}'.</div>
+                                                        {% else %}
+                                                            <div><span class="alert-danger" style="background-color: transparent; font-weight: bold;">Invalid configuration item.</span></div>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        <div><span class="alert-danger" style="background-color: transparent; font-weight: bold;">Invalid configuration item.</span></div>
+                                                    {% endif %}
                                             {% else %}
                                                 <span class="alert-danger" style="background-color: transparent; font-weight: bold;">
                                                     No daemon monitoring configuration exists for {{ name }} in {{ environment.name }}.
@@ -94,7 +114,17 @@
                                                 <div>Keepalive monitoring is
                                                     <span class="alert-success" style="background-color: transparent; font-weight: bold;">ENABLED</span>
                                                     with timeout {{ monitor.timeout }}min at severity {{ monitor.severity }}.</div>
-                                                    {% if monitor.contact %}<div>Events will contact {{ monitor.contact }}.</div>{% endif %}
+                                                    {% if monitor.ci %}
+                                                        {% if "uuid" in monitor.ci %}
+                                                            <div>Events will be in CI with uuid {{ monitor.ci.uuid }}.</div>
+                                                        {% elif "name" in monitor.ci %}
+                                                            <div>Events will be in CI '{{ monitor.ci.name }}'.</div>
+                                                        {% else %}
+                                                            <div><span class="alert-danger" style="background-color: transparent; font-weight: bold;">Invalid configuration item.</span></div>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        <div><span class="alert-danger" style="background-color: transparent; font-weight: bold;">Invalid configuration item.</span></div>
+                                                    {% endif %}
                                             {% else %}
                                                 <span class="alert-danger" style="background-color: transparent; font-weight: bold;">
                                                     No keepalive monitoring configuration exists for {{ name }} in {{ environment.name }}.
@@ -116,7 +146,17 @@
                                                                 <div class="col-md-11">
                                                                     <div>{{ monitor.stream }} matching '<tt>{{ monitor.regex }}</tt>'</div>
                                                                     <div>severity {{ monitor.severity }}</div>
-                                                                    {% if monitor.contact %}<div>contact {{ monitor.contact }}</div>{% endif %}
+                                                                    {% if monitor.ci %}
+                                                                        {% if "uuid" in monitor.ci %}
+                                                                            <div>CI uuid {{ monitor.ci.uuid }}</div>
+                                                                        {% elif "name" in monitor.ci %}
+                                                                            <div>CI '{{ monitor.ci.name }}'</div>
+                                                                        {% else %}
+                                                                            <div><span class="alert-danger" style="background-color: transparent; font-weight: bold;">CI is invalid</span></div>
+                                                                        {% endif %}
+                                                                    {% else %}
+                                                                        <div><span class="alert-danger" style="background-color: transparent; font-weight: bold;">CI is invalid</span></div>
+                                                                    {% endif %}
                                                                     {% if monitor.name %}<div>events will be created with the name '{{ monitor.name }}'</div>{% endif %}
                                                                     {% if monitor.stop %}<div>matches to this regex will <strong>stop</strong> anymore matches</div>{% endif %}
                                                                 </div>
