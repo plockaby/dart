@@ -266,7 +266,7 @@ AS $$
 
         -- if the materialized view has a unique key then we can update concurrently
         test_concurrent = (
-            SELECT true FROM (
+            SELECT COUNT(*) > 0 FROM (
                 SELECT
                     u.usename       AS user_name,
                     ns.nspname      AS schema_name,
