@@ -186,3 +186,4 @@ def register(data):
     url = "{}/tool/v1/register".format(api_manager.dart_api_url)
     response = api_manager.dart_api.post(url, data=json.dumps(data), timeout=60)
     response.raise_for_status()
+    return response.json()

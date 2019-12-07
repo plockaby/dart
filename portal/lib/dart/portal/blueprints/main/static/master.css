@@ -64,3 +64,7 @@ pre {
 #search p {
     margin: 0;
 }
+
+div.alert ul {
+    margin-bottom: 0;
+}

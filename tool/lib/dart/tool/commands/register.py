@@ -26,6 +26,7 @@ class RegisterCommand(BaseCommand):
             return 1
 
         try:
+            print("Sending registration request using {}.".format(path))
             url = "{}/tool/v1/register".format(self.dart_api_url)
             response = self.dart_api.post(url, data=json.dumps(body), timeout=60)
             data = response.json()
@@ -38,8 +39,12 @@ class RegisterCommand(BaseCommand):
             # then raise the exception to abort the system
             response.raise_for_status()
 
+            # print what we just registered
+            for process in response.json()["registered"]:
+                print("* Registered {} named {} in {}.".format(process["type"], process["name"], process["environment"]))
+
             # success
-            print("{} Loaded {} into dart.".format(colored("SUCCESS!", "green", attrs=["bold"]), path))
+            print("{} Finished loading {} into dart.".format(colored("SUCCESS!", "green", attrs=["bold"]), path))
             return 0
         except Exception as e:
             print("{} Could not load {}: {}".format(colored("FAILURE!", "red", attrs=["bold"]), path, e))

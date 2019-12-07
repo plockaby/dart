@@ -35,8 +35,17 @@
                 contentType: false,
                 data: data,
             }).done(function (data) {
+                var results = []
+                $.each(data.registered, function(index, item) {
+                    results.push("<li>Registered " + item.type + " named " + item.name + " in " + item.environment + ".</li>");
+                });
+                if (results.length > 0) {
+                    results.unshift("<ul>");
+                    results.push("</ul>");
+                }
+
                 $("#register div.alert-danger").hide();
-                $("#register div.alert-success").html("Configurations successfully registered.").show();
+                $("#register div.alert-success").html("Configurations successfully registered.<br/>" + results.join("")).show();
             }).fail(function (jqXHR, textStatus, errorThrown) {
                 var error = jqXHR.responseJSON.message;
                 if (!error) { error = "uknown error"; }

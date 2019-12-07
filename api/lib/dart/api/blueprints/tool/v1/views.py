@@ -400,6 +400,7 @@ def register():
         conn = db_client.conn()
         conn.autocommit = False
 
+        registered = []
         processes = data.get("processes")
         if (processes is not None):
             if (not isinstance(processes, list)):
@@ -407,13 +408,13 @@ def register():
 
             # add all of the processes back
             for index, process in enumerate(processes):
-                register_process(process, index + 1)
+                registered += register_process(process, index + 1)
 
         # clean up the transaction
         conn.commit()
 
         # return only that we succeeded
-        return make_response(jsonify({}), 200)
+        return make_response(jsonify({"registered": registered}), 200)
     except Exception as e:
         try:
             conn.rollback()
@@ -428,6 +429,8 @@ def register():
 
 
 def register_process(data, sort_order):
+    registered = []
+
     # get the pieces that we need and validate some things as soon as possible
     process_name = data.get("name")
     if (process_name is None or not isinstance(process_name, str) or not process_name.strip()):
@@ -453,6 +456,11 @@ def register_process(data, sort_order):
 
     # update the database with the new process details
     q.insert_process(process_name, process_environment, process_type, supervisor, schedule)
+    registered.append({
+        "name": process_name,
+        "environment": process_environment,
+        "type": process_type,
+    })
 
     monitors = data.get("monitoring", dict())
     default_ci = monitors.get("ci")
@@ -536,6 +544,8 @@ def register_process(data, sort_order):
             raise BadRequest("The log monitoring configuration for '{}' in '{}' is not valid: {}.".format(process_name, process_environment, e))
     else:
         q.delete_process_log_monitor(process_name, process_environment)
+
+    return registered
 
 
 def validate_ci(ci):

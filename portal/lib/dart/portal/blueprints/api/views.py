@@ -345,8 +345,7 @@ def register():
         if (data is None):
             return make_response(jsonify({"code": 400, "message": "Could not process registration data. You have not provided valid YAML data."}), 400)
 
-        r.register(data)
-        return make_response(jsonify({}), 200)
+        return make_response(jsonify(r.register(data)), 200)
     except Exception as e:
         logger.error("internal server error: {}".format(str(e)))
         logger.error(traceback.format_exc())
