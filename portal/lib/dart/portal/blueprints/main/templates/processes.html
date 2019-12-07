@@ -25,14 +25,14 @@
         class="table table-hover table-striped table-sm">
         <thead>
             <tr>
-                <th data-valign="top" data-field="name"     data-sortable="true"  data-formatter="dart.format_process_name">Process</th>
-                <th data-valign="top" data-width="100" data-width-unit="px" data-field="assigned" data-sortable="true"  data-searchable="false">Assigned</th>
-                <th data-valign="top" data-width="100" data-width-unit="px" data-field="active"   data-sortable="true"  data-searchable="false">Active</th>
-                <th data-valign="top" data-width="100" data-width-unit="px" data-field="pending"  data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Pending</th>
-                <th data-valign="top" data-width="100" data-width-unit="px" data-field="failed"   data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Failed</th>
-                <th data-valign="top" data-width="100" data-width-unit="px" data-field="disabled" data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Disabled</th>
-                <th data-valign="top" data-field="warnings" data-sortable="false" data-formatter="dart.format_warnings">Warnings</th>
-                <th data-valign="top" data-width="65" data-width-unit="px" data-formatter="dart.format_actions" data-events="dart.column_actions">Actions</th>
+                <th data-field="name"     data-sortable="true"  data-formatter="dart.format_process_name">Process</th>
+                <th data-width="100" data-width-unit="px" data-field="assigned" data-sortable="true"  data-searchable="false">Assigned</th>
+                <th data-width="100" data-width-unit="px" data-field="active"   data-sortable="true"  data-searchable="false">Active</th>
+                <th data-width="100" data-width-unit="px" data-field="pending"  data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Pending</th>
+                <th data-width="100" data-width-unit="px" data-field="failed"   data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Failed</th>
+                <th data-width="100" data-width-unit="px" data-field="disabled" data-sortable="true"  data-searchable="false" data-formatter="dart.format_count_danger">Disabled</th>
+                <th data-field="warnings" data-sortable="false" data-formatter="dart.format_warnings">Warnings</th>
+                <th data-width="65" data-width-unit="px" data-formatter="dart.format_actions" data-events="dart.column_actions">Actions</th>
             </tr>
         </thead>
     </table>
@@ -83,7 +83,7 @@
         dart.format_actions = function (data, row) {
             var actions = [
                 "<div class='dropdown'>",
-                    "<button class='btn btn-secondary btn-sm dropdown-toggle' type='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>Action</button>",
+                    "<button class='btn btn-primary dropdown-toggle' type='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>Action</button>",
                     "<div class='dropdown-menu dropdown-menu-right'>",
                         "<a href='javascript:void(0);' class='dropdown-item delete'>Delete</a>",
                     "</div>",

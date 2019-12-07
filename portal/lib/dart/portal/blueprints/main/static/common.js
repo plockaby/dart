@@ -165,7 +165,7 @@
 
         actions = [
             "<div class='dropdown'>",
-                "<button class='btn btn-secondary btn-sm dropdown-toggle' type='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>Action</button>",
+                "<button class='btn btn-primary dropdown-toggle' type='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>Action</button>",
                 "<div class='dropdown-menu dropdown-menu-right'>",
                     "<a href='javascript:void(0);' class='dropdown-item start'>Start</a>",
                     "<a href='javascript:void(0);' class='dropdown-item stop'>Stop</a>",
@@ -182,7 +182,7 @@
     dart.format_pending_actions = function () {
         var actions = [
             "<div class='dropdown'>",
-                "<button class='btn btn-secondary btn-sm dropdown-toggle' type='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>Action</button>",
+                "<button class='btn btn-primary dropdown-toggle' type='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>Action</button>",
                 "<div class='dropdown-menu dropdown-menu-right'>",
                     "<a href='javascript:void(0);' class='dropdown-item update'>Update</a>",
                     "<div class='dropdown-divider'></div>",

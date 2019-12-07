@@ -7,7 +7,7 @@
         <title>{% block title %}Dart{% endblock %}</title>
         <link rel="stylesheet" href="{{ url_for('main.static', filename='vendor/bootstrap/4.4.1/css/bootstrap.min.css') }}">
         <link rel="stylesheet" href="{{ url_for('main.static', filename='vendor/fontawesome/5.11.2/css/all.min.css') }}">
-        <link rel="stylesheet" href="{{ url_for('main.static', filename='vendor/bootstrap-themes/fresca/theme.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('main.static', filename='vendor/bootstrap-themes/cosmo/bootstrap.min.css') }}">
         <link rel="stylesheet" href="{{ url_for('main.static', filename='master.css') }}">
         {% block header %}{% endblock %}
     </head>
@@ -15,7 +15,7 @@
         <div id="skiptocontent"><a href="#maincontent">Skip to main content</a></div>
 
         <div class="container" id="navigation">
-            <nav class="navbar navbar-expand-lg navbar-dark bg-dark rounded">
+            <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
                 <a class="navbar-brand" href="{{ url_for('main.index') }}">Dart</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
