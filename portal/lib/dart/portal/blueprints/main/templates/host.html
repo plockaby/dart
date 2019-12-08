@@ -1,5 +1,7 @@
 {% extends "master.html" %}
 
+{% block title %}Dart - Host - {{ fqdn }}{% endblock %}
+
 {% block header %}
     <link rel="stylesheet" href="{{ url_for('main.static', filename='vendor/bootstrap-table/1.15.5/bootstrap-table.min.css') }}">
 {% endblock %}
