@@ -15,11 +15,11 @@ logger = logging.getLogger(__name__)
 # get global settings
 settings_manager = SettingsManager(lazy=True)
 
-# create a login manager
-login_manager = LoginManager()
-
 # need a connection to the database
 db_client = DatabaseClient()
+
+# create a login manager
+login_manager = LoginManager()
 
 
 def load():
@@ -41,6 +41,9 @@ def load():
     # initialize settings
     settings_manager.init_app(app)
 
+    # initialize global error handlers
+    errors.register_error_handler(app)
+
     # connect to the database
     db_client.init_app(
         app,
@@ -48,9 +51,6 @@ def load():
         # get all database configuration values and remove the leading parts
         **({k.split(".")[-1]: v for k, v in settings_manager.items() if (k.startswith("api.database") and k != "api.database.name")})
     )
-
-    # initialize global error handlers
-    errors.register_error_handler(app)
 
     # initialize the login manager
     login_manager.init_app(app)

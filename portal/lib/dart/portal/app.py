@@ -1,10 +1,12 @@
 import os
 import logging
 from flask import Flask
+from flask_login import LoginManager
 from flask_moment import Moment
 from flask_caching import Cache
 from dart.common.settings import SettingsManager
 from .api import APIManager
+from . import login
 from . import cache_buster
 
 
@@ -17,6 +19,9 @@ settings_manager = SettingsManager(lazy=True)
 
 # configure access to the api with retries and whatnot
 api_manager = APIManager()
+
+# create a login manager
+login_manager = LoginManager()
 
 # used to format dates all pretty
 moment = Moment()
@@ -36,17 +41,21 @@ def load():
     # initialize settings
     settings_manager.init_app(app)
 
-    # initialize the cache busting
-    cache_buster.init_app(app)
-
     # initialize the api manager
     api_manager.init_app(app)
+
+    # initialize the login manager
+    login_manager.init_app(app)
+    login.register_login_handler(app)
 
     # initialize the date formatter
     moment.init_app(app)
 
     # initialize the cache
     cache.init_app(app)
+
+    # initialize the cache busting
+    cache_buster.init_app(app)
 
     # register the blueprint using the prefix defined in the configuration as
     # the application root. if APPLICATION_ROOT is defined incorrectly then

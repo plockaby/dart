@@ -32,3 +32,24 @@ def get_ip_address(request):
         return request.remote_addr
 
     return ip_address
+
+
+# this depends on apache config sticking the identity in somewhere
+def get_user_name(request):
+    # try the authorization header
+    authorization = request.headers.get("Authorization")
+    if (authorization):
+        import base64
+        authorization = authorization.replace("Basic", "", 1).strip()
+        try:
+            return base64.b64decode(authorization).decode("utf-8").split(":", 1)[0]
+        except (TypeError, UnicodeError):
+            pass
+
+    # then try the X-Forwarded-User header
+    user_name = request.headers.get("X-Forwarded-User")
+    if (user_name):
+        return user_name
+
+    logger.warning("no username found in headers")
+    return
