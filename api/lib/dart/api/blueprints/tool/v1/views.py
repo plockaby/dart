@@ -226,12 +226,12 @@ def change_host(fqdn):
         # we need all of these fields
         if ("op" not in data or "path" not in data or "value" not in data):
             logger.warning("could not change host {} because the patch data was missing fields".format(fqdn))
-            raise BadRequest("Invalid PATCH data. Must include fields 'op', 'patch', and 'value'.")
+            raise BadRequest("Invalid PATCH data. Must include fields 'op', 'path', and 'value'.")
 
         # make sure the fields look good
-        if (data["op"] is None or not isinstance(data["op"], str) or not data["op"].strip() or data["op"] not in ["add", "remove", "replace"]):
+        if (data["op"] is None or not isinstance(data["op"], str) or not data["op"].strip() or data["op"] not in ["add", "remove"]):
             logger.warning("could not change host {} because the operation value was invalid: {}".format(fqdn, data["op"]))
-            raise BadRequest("Invalid PATCH data. The 'op' field must be either 'add', 'remove', or 'replace'.")
+            raise BadRequest("Invalid PATCH data. The 'op' field must be either 'add' or 'remove'.")
         if (data["path"] is None or not isinstance(data["path"], str) or not data["path"].strip()):
             logger.warning("could not change host {} because the path was invalid: {}".format(fqdn, data["path"]))
             raise BadRequest("Invalid PATCH data. The 'path' field must contain a valid path to patch.")
@@ -320,12 +320,12 @@ def change_process(name):
         # we need all of these fields
         if ("op" not in data or "path" not in data or "value" not in data):
             logger.warning("could not change process {} because the patch data was missing fields".format(name))
-            raise BadRequest("Invalid PATCH data. Must include fields 'op', 'patch', and 'value'.")
+            raise BadRequest("Invalid PATCH data. Must include fields 'op', 'path', and 'value'.")
 
         # make sure the fields look good
-        if (data["op"] is None or not isinstance(data["op"], str) or not data["op"].strip() or data["op"] not in ["add", "remove", "replace"]):
+        if (data["op"] is None or not isinstance(data["op"], str) or not data["op"].strip() or data["op"] not in ["replace"]):
             logger.warning("could not change process {} because the operation value was invalid: {}".format(name, data["op"]))
-            raise BadRequest("Invalid PATCH data. The 'op' field must be either 'add', 'remove', or 'replace'.")
+            raise BadRequest("Invalid PATCH data. The 'op' field must be 'replace'.")
         if (data["path"] is None or not isinstance(data["path"], str) or not data["path"].strip()):
             logger.warning("could not change process {} because the path was invalid: {}".format(name, data["path"]))
             raise BadRequest("Invalid PATCH data. The 'path' field must contain a valid path to patch.")
