@@ -69,7 +69,7 @@
             results.push("<div class='text-nowrap'><tt>" + data + "</tt></div>");
             if (row.starts) {
                 var now = moment().unix(),
-                    starts_timestamp = moment(row.starts).unix(),
+                    starts_timestamp = moment.utc(row.starts).unix(),
                     delay = starts_timestamp - now;
                 results.push("<div class='text-nowrap'>starts in ");
                 if (delay > 86400) {
@@ -105,7 +105,7 @@
             results.push("<div class='text-nowrap'><tt>" + data + "</tt></div>");
             if (row.starts) {
                 var now = moment().unix(),
-                    starts_timestamp = moment(row.starts).unix(),
+                    starts_timestamp = moment.utc(row.starts).unix(),
                     delay = starts_timestamp - now;
                 results.push("<div class='text-nowrap'>starts in ");
                 if (delay > 86400) {

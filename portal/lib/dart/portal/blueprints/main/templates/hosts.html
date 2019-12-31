@@ -57,8 +57,8 @@
             if (!row.polled) {
                 warnings.push("<div class='alert-danger' style='background-color: transparent; font-weight: bold;'>There is no data for this host.</div>");
             } else {
-                var last_polled = moment(row.polled);
-                if (last_polled.isBefore(moment().subtract(4, "hours"))) {
+                var last_polled = moment.utc(row.polled);
+                if (last_polled.isBefore(moment.utc().subtract(4, "hours"))) {
                     warnings.push("<div class='alert-danger' style='background-color: transparent; font-weight: bold;'>Last responded " + last_polled.format("M/D/YYYY h:mma") + ".</div>");
                 }
             }

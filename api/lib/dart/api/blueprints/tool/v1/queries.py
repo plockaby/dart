@@ -120,7 +120,7 @@ def select_host(fqdn):
                     try:
                         crontab = CronTab(row["schedule"])
                         now = datetime.now()
-                        row["starts"] = (now + timedelta(seconds=(int(crontab.next(default_utc=False)) + 1))).strftime("%Y-%m-%d %H:%M:%S")
+                        row["starts"] = (now + timedelta(seconds=(int(crontab.next(default_utc=True)) + 1))).strftime("%Y-%m-%d %H:%M:%S")
                     except ValueError:
                         row["starts"] = None
                 result["assignments"].append(row)
@@ -149,7 +149,7 @@ def select_host(fqdn):
                     try:
                         crontab = CronTab(row["schedule"])
                         now = datetime.now()
-                        row["starts"] = (now + timedelta(seconds=(int(crontab.next(default_utc=False)) + 1))).strftime("%Y-%m-%d %H:%M:%S")
+                        row["starts"] = (now + timedelta(seconds=(int(crontab.next(default_utc=True)) + 1))).strftime("%Y-%m-%d %H:%M:%S")
                     except ValueError:
                         row["starts"] = None
                 result["active"].append(row)
@@ -265,7 +265,7 @@ def select_process(name):
                     try:
                         crontab = CronTab(row["schedule"])
                         now = datetime.now()
-                        row["starts"] = (now + timedelta(seconds=(int(crontab.next(default_utc=False)) + 1))).strftime("%Y-%m-%d %H:%M:%S")
+                        row["starts"] = (now + timedelta(seconds=(int(crontab.next(default_utc=True)) + 1))).strftime("%Y-%m-%d %H:%M:%S")
                     except ValueError:
                         row["starts"] = None
                 environments.append(row)
@@ -301,7 +301,7 @@ def select_process(name):
                     try:
                         crontab = CronTab(row["schedule"])
                         now = datetime.now()
-                        row["starts"] = (now + timedelta(seconds=(int(crontab.next(default_utc=False)) + 1))).strftime("%Y-%m-%d %H:%M:%S")
+                        row["starts"] = (now + timedelta(seconds=(int(crontab.next(default_utc=True)) + 1))).strftime("%Y-%m-%d %H:%M:%S")
                     except ValueError:
                         row["starts"] = None
                 results["assignments"].append(row)
@@ -331,7 +331,7 @@ def select_process(name):
                     try:
                         crontab = CronTab(row["schedule"])
                         now = datetime.now()
-                        row["starts"] = (now + timedelta(seconds=(int(crontab.next(default_utc=False)) + 1))).strftime("%Y-%m-%d %H:%M:%S")
+                        row["starts"] = (now + timedelta(seconds=(int(crontab.next(default_utc=True)) + 1))).strftime("%Y-%m-%d %H:%M:%S")
                     except ValueError:
                         row["starts"] = None
                 results["active"].append(row)
