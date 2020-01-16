@@ -1,0 +1,2 @@
+CREATE ROLE dart;
+ALTER ROLE dart WITH LOGIN;

@@ -316,9 +316,9 @@ class ProcessCommand(BaseCommand):
                 else:
                     print("   Daemon monitoring is {} for '{}' in {}.".format(colored("DISABLED", "red", attrs=["bold"]), name, environment["name"]))
 
-                if (environment["name"] in process["monitoring"] and process["monitoring"][environment["name"]]["keepalive"] is not None):
-                    monitor = process["monitoring"][environment["name"]]["keepalive"]
-                    print("   Keepalive monitoring is {} at severity {}, {} minute timeout,".format(colored("ENABLED", "green", attrs=["bold"]), monitor["severity"], monitor["timeout"]), end="")
+                if (environment["name"] in process["monitoring"] and process["monitoring"][environment["name"]]["heartbeat"] is not None):
+                    monitor = process["monitoring"][environment["name"]]["heartbeat"]
+                    print("   Heartbeat monitoring is {} at severity {}, {} minute timeout,".format(colored("ENABLED", "green", attrs=["bold"]), monitor["severity"], monitor["timeout"]), end="")
 
                     if (monitor.get("ci")):
                         if ("uuid" in monitor["ci"]):
@@ -332,7 +332,7 @@ class ProcessCommand(BaseCommand):
 
                     print(".")
                 else:
-                    print("   Keepalive monitoring is {} for '{}' in {}.".format(colored("DISABLED", "red", attrs=["bold"]), name, environment["name"]))
+                    print("   Heartbeat monitoring is {} for '{}' in {}.".format(colored("DISABLED", "red", attrs=["bold"]), name, environment["name"]))
 
                 if (environment["name"] in process["monitoring"] and process["monitoring"][environment["name"]]["log"] is not None and (len(process["monitoring"][environment["name"]]["log"]["stdout"]) or len(process["monitoring"][environment["name"]]["log"]["stderr"]))):
                     monitors = process["monitoring"][environment["name"]]["log"]

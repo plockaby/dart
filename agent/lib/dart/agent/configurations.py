@@ -108,7 +108,7 @@ class ConfigurationsWriter(metaclass=Singleton):
             "monitor": {
                 "state": {},
                 "daemon": {},
-                "keepalive": {},
+                "heartbeat": {},
                 "log": {"stdout": {}, "stderr": {}},
             }
         }
@@ -129,8 +129,8 @@ class ConfigurationsWriter(metaclass=Singleton):
                 data["monitor"]["state"][name] = monitors["state"]
             if (monitors.get("daemon") is not None):
                 data["monitor"]["daemon"][name] = monitors["daemon"]
-            if (monitors.get("keepalive") is not None):
-                data["monitor"]["keepalive"][name] = monitors["keepalive"]
+            if (monitors.get("heartbeat") is not None):
+                data["monitor"]["heartbeat"][name] = monitors["heartbeat"]
             if (monitors.get("log") is not None):
                 data["monitor"]["log"]["stdout"][name] = monitors["log"]["stdout"]
                 data["monitor"]["log"]["stderr"][name] = monitors["log"]["stderr"]
@@ -180,7 +180,7 @@ class ConfigurationsManager(metaclass=Singleton):
     def configuration(self, monitor, key):
         with self.lock:
             # returns a data structure with all monitoring details given the
-            # monitor type (state, deamon, keepalive, log) and the name of the
+            # monitor type (state, deamon, heartbeat, log) and the name of the
             # program that we're looking for details about.
             data = self.configurations["monitor"].get(monitor, {}).get(key)
             return deepcopy(data) if data is not None else None

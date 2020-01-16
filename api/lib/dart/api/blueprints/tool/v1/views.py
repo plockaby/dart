@@ -466,7 +466,7 @@ def register_process(data, sort_order):
     default_ci = monitors.get("ci")
     state_monitor = monitors.get("state")
     daemon_monitor = monitors.get("daemon")
-    keepalive_monitor = monitors.get("keepalive")
+    heartbeat_monitor = monitors.get("heartbeat")
     log_monitor = monitors.get("logs")
 
     if (state_monitor is not None):
@@ -489,12 +489,12 @@ def register_process(data, sort_order):
     else:
         q.delete_process_daemon_monitor(process_name, process_environment)
 
-    if (keepalive_monitor is not None):
+    if (heartbeat_monitor is not None):
         try:
-            ci = validate_ci(keepalive_monitor.get("ci", default_ci))
-            severity = validate_severity(keepalive_monitor.get("severity"))
+            ci = validate_ci(heartbeat_monitor.get("ci", default_ci))
+            severity = validate_severity(heartbeat_monitor.get("severity"))
 
-            timeout = keepalive_monitor.get("timeout")
+            timeout = heartbeat_monitor.get("timeout")
             if (timeout is None):
                 raise BadRequest("missing timeout")
             try:
@@ -504,11 +504,11 @@ def register_process(data, sort_order):
             if (timeout < 1 or timeout > 10080):
                 raise BadRequest("timeout must be at least one minute and no longer than one week")
 
-            q.insert_process_keepalive_monitor(process_name, process_environment, timeout, ci, severity)
+            q.insert_process_heartbeat_monitor(process_name, process_environment, timeout, ci, severity)
         except BadRequest as e:
-            raise BadRequest("The keepalive monitoring configuration for '{}' in '{}' is not valid: {}.".format(process_name, process_environment, e))
+            raise BadRequest("The heartbeat monitoring configuration for '{}' in '{}' is not valid: {}.".format(process_name, process_environment, e))
     else:
-        q.delete_process_keepalive_monitor(process_name, process_environment)
+        q.delete_process_heartbeat_monitor(process_name, process_environment)
 
     if (log_monitor is not None):
         try:

@@ -229,18 +229,18 @@ class StateHandler(BaseHandler):
                         }
                     })
 
-            configuration = self.configurations.configuration("keepalive", process)
+            configuration = self.configurations.configuration("heartbeat", process)
             if (configuration is not None):
                 # supervisor resets the "spawnerr" value when it enters the
-                # "running" state so only send the keepalive when the program
+                # "running" state so only send the heartbeat when the program
                 # exits without an error.
                 if (state["statename"] == "EXITED" and not state["spawnerr"]):
-                    self.logger.debug("{} handler sending keepalive event for {} because it EXITED without a spawn error".format(self.name, process))
+                    self.logger.debug("{} handler sending heartbeat event for {} because it EXITED without a spawn error".format(self.name, process))
                     self.events.put({
-                        "type": "keepalive",
+                        "type": "heartbeat",
                         "data": {
                             "ci": configuration["ci"],
-                            "component": {"name": "monitor:keepalive:{}".format(process)},
+                            "component": {"name": "monitor:heartbeat:{}".format(process)},
                             "severity": configuration["severity"],
                             "timeout": configuration["timeout"],
                             "message": "{} has stopped responding on {}".format(process, self.fqdn),

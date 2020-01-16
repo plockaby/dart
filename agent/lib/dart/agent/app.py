@@ -305,9 +305,9 @@ class DartAgent(object):
             # changed.
             return True
 
-        # send a keepalive to dash
+        # send a heartbeat to cork
         self.events.put({
-            "type": "keepalive",
+            "type": "heartbeat",
             "data": {
                 "component": {"name": "agent"},
                 "severity": 1,  # highest severity

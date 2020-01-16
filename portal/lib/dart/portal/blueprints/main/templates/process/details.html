@@ -107,11 +107,11 @@
                                                 </span>
                                             {% endif %}
                                         </dd>
-                                        <dt>Keepalive Monitoring</dt>
+                                        <dt>Heartbeat Monitoring</dt>
                                         <dd>
-                                            {% if process.monitoring[environment.name].keepalive %}
-                                                {% set monitor = process.monitoring[environment.name].keepalive %}
-                                                <div>Keepalive monitoring is
+                                            {% if process.monitoring[environment.name].heartbeat %}
+                                                {% set monitor = process.monitoring[environment.name].heartbeat %}
+                                                <div>Heartbeat monitoring is
                                                     <span class="alert-success" style="background-color: transparent; font-weight: bold;">ENABLED</span>
                                                     with timeout {{ monitor.timeout }}min at severity {{ monitor.severity }}.</div>
                                                     {% if monitor.ci %}
@@ -127,7 +127,7 @@
                                                     {% endif %}
                                             {% else %}
                                                 <span class="alert-danger" style="background-color: transparent; font-weight: bold;">
-                                                    No keepalive monitoring configuration exists for {{ name }} in {{ environment.name }}.
+                                                    No heartbeat monitoring configuration exists for {{ name }} in {{ environment.name }}.
                                                 </span>
                                             {% endif %}
                                         </dd>

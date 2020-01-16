@@ -1,66 +1,76 @@
-BEGIN;
-
 CREATE SCHEMA IF NOT EXISTS standard;
-ALTER SCHEMA standard OWNER TO postgres;
 GRANT USAGE ON SCHEMA standard TO PUBLIC;
+
+
+CREATE OR REPLACE FUNCTION standard.prohibit_change() RETURNS trigger
+    LANGUAGE plpgsql
+AS $$
+/*
+    Function:     standard.prohibit_change()
+    Description:  Apply to any table as a BEFORE trigger when you don't want
+                  anything changed on the table. Useful for preventing updates
+                  and deletes and I guess maybe inserts if you want to lock a
+                  table from being modified in any way.
+    Affects:      Prevents a change
+    Arguments:    none
+    Returns:      trigger
+*/
+DECLARE
+BEGIN
+    -- returning NULL cancels whatever operation was happening on the row
+    RETURN NULL;
+END;
+$$;
 
 
 CREATE OR REPLACE FUNCTION standard.anchored_column() RETURNS trigger
     LANGUAGE plpgsql
 AS $$
-/*  Function:     standard.anchored_column(text)
-    Description:  Trigger function to be used with the example trigger below to
-                  prevent updates on a table from changing a particular column
-                  value.
+/*
+    Function:     standard.anchored_column(p_column_name)
+    Description:  Trigger function prevent a
+                  particular column value.
     Affects:      Raises an ERROR an an attempt to modify the specified column,
                   otherwise does not modify data.
     Arguments:    none
     Returns:      new (the updated row)
-
-CREATE TRIGGER t11_anchored_column
-    BEFORE UPDATE ON { schema.table}
-    FOR EACH ROW
-    EXECUTE PROCEDURE standard.anchored_column('name');
-
-COMMENT ON TRIGGER t11_anchored_column ON {schema.table} IS 'reject updates to column {column_name}';
 */
 DECLARE
-    column_name text := TG_ARGV[0];
-    old_value   text;
-    new_value   text;
-BEGIN
-    EXECUTE 'SELECT ('||quote_literal(OLD)||'::'||TG_RELID::regclass||').'||quote_ident(column_name) INTO old_value;
-    EXECUTE 'SELECT ('||quote_literal(NEW)||'::'||TG_RELID::regclass||').'||quote_ident(column_name) INTO new_value;
+    -- triggers cannot have declared arguments but we can get arguments from
+    -- the caller by using TG_ARGV
+    p_column_name TEXT := TG_ARGV[0];
 
-    IF quote_ident(old_value) != quote_ident(new_value) THEN
-        RAISE EXCEPTION 'column "%" may not be changed', column_name;
+    -- variables that we use
+    v_old TEXT;
+    v_new TEXT;
+BEGIN
+    EXECUTE 'SELECT ('||quote_literal(OLD)||'::'||TG_RELID::regclass||').'||quote_ident(p_column_name) INTO v_old;
+    EXECUTE 'SELECT ('||quote_literal(NEW)||'::'||TG_RELID::regclass||').'||quote_ident(p_column_name) INTO v_new;
+
+    IF quote_ident(v_old) != quote_ident(v_new) THEN
+        RAISE EXCEPTION 'column "%" may not be changed', p_column_name;
     END IF;
+
     RETURN NEW;
 END;
 $$;
-
-ALTER FUNCTION standard.anchored_column() OWNER TO postgres;
 
 
 CREATE OR REPLACE FUNCTION standard.distinct_update() RETURNS trigger
     LANGUAGE plpgsql
 AS $$
-/*  Function:     standard.distinct_update()
+/*
+    Function:     standard.distinct_update()
     Description:  Trigger function that will drop an update that does not
                   modify any column on the row. This will prevent the creation
-                  of additional history records. See the example trigger below.
+                  of additional history records. This should be applied as a
+                  BEFORE trigger after any other trigger that made a change has
+                  been applied.
     Affects:      makes no changes to data
     Arguments:    none
     Returns:      If there are no changes NULL is returned which ends the
                   processing of the update on that specific row. Otherwise NEW
                   is returned (the updated row).
-
-CREATE TRIGGER t30_distinct_update
-    BEFORE UPDATE ON {schema.table}
-    FOR EACH ROW
-    EXECUTE PROCEDURE standard.distinct_update();
-
-COMMENT ON TRIGGER t30_distinct_update ON {schema.table} IS 'ensure update is distinct';
 */
 DECLARE
 BEGIN
@@ -74,28 +84,20 @@ BEGIN
 END;
 $$;
 
-ALTER FUNCTION standard.distinct_update() OWNER TO postgres;
-
 
 CREATE OR REPLACE FUNCTION standard.distinct_update_modified() RETURNS trigger
     LANGUAGE plpgsql
 AS $$
-/*  Function:     standard.distinct_update_modified()
+/*
+    Function:     standard.distinct_update_modified()
     Description:  Trigger function that will drop an update that does not
                   modify any column on the row. This will prevent the creation
-                  of additional history records. See the example trigger below.
+                  of additional history records.
     Affects:      makes no changes to data
     Arguments:    none
     Returns:      If there are no changes NULL is returned which ends the
                   processing of the update on that specific row. Otherwise NEW
                   is returned (the updated row).
-
-CREATE TRIGGER t30_distinct_update
-    BEFORE UPDATE ON {schema.table}
-    FOR EACH ROW
-    EXECUTE PROCEDURE standard.distinct_update_modified();
-
-COMMENT ON TRIGGER t30_distinct_update ON {schema.table} IS 'ensure update is distinct';
 */
 DECLARE
 BEGIN
@@ -113,60 +115,58 @@ BEGIN
 END;
 $$;
 
-ALTER FUNCTION standard.distinct_update_modified() OWNER TO postgres;
 
-
-CREATE OR REPLACE FUNCTION standard.get_userid() RETURNS text
+CREATE OR REPLACE FUNCTION standard.get_user_id() RETURNS text
     LANGUAGE plpgsql
 AS $$
-/*  Function:     standard.get_userid()
+/*
+    Function:     standard.get_user_id()
     Description:  For retrieving the user identity performing the transaction.
                   Useful as the default value for modified_by or created_by
-                  columns. See code below for an example of the usage.
+                  columns. See code below example of the usage.
     Affects:      makes no changes to data
     Arguments:    none
-    Returns:      varchar with the identity of the current actor
+    Returns:      text with the identity of the current actor
+    Usage:
 
-BEGIN;
+        BEGIN;
+        SET LOCAL local.userid TO {value};
 
-SET LOCAL local.userid TO {value};
+        {SQL to run}
 
-{SQL to run}
-
-COMMIT;
+        COMMIT;
 */
 DECLARE
-    _userid      varchar;
+    v_user_id TEXT;
 BEGIN
-    _userid := current_setting('local.userid');
-    IF _userid IS NULL or _userid ~ E'^\\s*$' THEN
+    v_user_id := current_setting('local.userid');
+    IF v_user_id IS NULL or v_user_id ~ E'^\\s*$' THEN
         RETURN CURRENT_USER;
     END IF;
-    RETURN _userid;
+    RETURN v_user_id;
 EXCEPTION
     WHEN OTHERS THEN RETURN CURRENT_USER;
 END;
 $$;
 
-ALTER FUNCTION standard.get_userid() OWNER TO postgres;
-
 
 CREATE OR REPLACE FUNCTION standard.history_trigger() RETURNS trigger
     LANGUAGE plpgsql SECURITY DEFINER
 AS $$
-/*  Function:     standard.history_trigger()
+/*
+    Function:     standard.history_trigger()
     Description:  Standard history trigger function which will take the values
                   from an INSERT, UPDATE, DELETE, or TRUNCATE and insert into
                   the appropriate history table. This function requires:
 
                   1) the base table have the following columns:
-                    *) "modified_at  timestamptz"
+                    *) "modified_at  timestamp with time zone"
                     *) "modified_by  text"
                   2) the history table must
                     *) have the same name as the base table
                     *) be in the schema "{base table schema}_history"
                     *) have its first column be modified_action TEXT NOT NULL
-                    *) have its second column be txn_timestamp TIMESTAMPTZ
+                    *) have its second column be txn_timestamp TIMESTAMP WITH TIME ZONE
                     *) and then its remaining columns must be the same as the
                        base table in the same order.
                     *) only SELECT should be granted to all users
@@ -180,125 +180,115 @@ AS $$
     That row contains only the command, transaction time, and modified*.
 */
 DECLARE
-    _parent_table       text;
-    _history_table      text;
-    _modified_action    text;
-    _transaction_time   timestamptz;
+    v_parent_table     TEXT;
+    v_history_table    TEXT;
+    v_modified_action  TEXT;
+    v_transaction_time TIMESTAMP WITH TIME ZONE;
 BEGIN
-    _parent_table := TG_TABLE_SCHEMA||'.'||TG_TABLE_NAME;
-    _history_table := TG_TABLE_SCHEMA||'.'||TG_TABLE_NAME||'_history';
-    _modified_action := TG_OP;
-    _transaction_time := transaction_timestamp();
+    v_parent_table := TG_TABLE_SCHEMA||'.'||TG_TABLE_NAME;
+    v_history_table := TG_TABLE_SCHEMA||'.'||TG_TABLE_NAME||'_history';
+    v_modified_action := TG_OP;
+    v_transaction_time := transaction_timestamp();
 
     IF TG_OP = 'DELETE' THEN
         -- reset these to now instead of what was already in the deleted column
         OLD.modified_at := statement_timestamp();
-        OLD.modified_by := standard.get_userid();
-        EXECUTE 'INSERT INTO '|| _history_table ||' SELECT $1, $2, $3.*'
-            USING _modified_action, _transaction_time, OLD;
+        OLD.modified_by := standard.get_user_id();
+        EXECUTE 'INSERT INTO '||v_history_table||' SELECT $1, $2, $3.*'
+            USING v_modified_action, v_transaction_time, OLD;
         RETURN OLD;
 
     ELSIF TG_OP = 'TRUNCATE' THEN
         -- everything but these four columns is NULL
-        EXECUTE 'INSERT INTO '|| _history_table ||' (modified_action, txn_timestamp, modified_at, modified_by) VALUES ($1, $2, $3, $4)'
-            USING _modified_action, _transaction_time, statement_timestamp(), standard.get_userid();
+        EXECUTE 'INSERT INTO '||v_history_table||' (modified_action, txn_timestamp, modified_at, modified_by) VALUES ($1, $2, $3, $4)'
+            USING v_modified_action, v_transaction_time, statement_timestamp(), standard.get_user_id();
         RETURN NULL;
 
     ELSE
-        EXECUTE 'INSERT INTO '||_history_table||' SELECT $1, $2, $3.*'
-            USING _modified_action, _transaction_time, NEW;
+        EXECUTE 'INSERT INTO '||v_history_table||' SELECT $1, $2, $3.*'
+            USING v_modified_action, v_transaction_time, NEW;
         RETURN NEW;
     END IF;
 END;
 $$;
 
-ALTER FUNCTION standard.history_trigger() OWNER TO postgres;
 
 CREATE OR REPLACE FUNCTION standard.modified() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
-/*  Function:     standard.modified()
-    Description:  Trigger function for updates and inserts that sets the
-                  modified_at column to to statement_timestamp() and the
-                  modified_by column to standard.get_userid(). See the example
-                  trigger below for use.
+/*
+    Function:     standard.modified()
+    Description:  Trigger function for UPDATEs and INSERTs that sets the
+                  modified_at column to statement_timestamp() and the
+                  modified_by column to standard.get_user_id().
     Affects:      Modifies the NEW row as described above.
     Arguments:    none
     Returns:      The NEW row.
-
-CREATE TRIGGER t50_modified
-    BEFORE INSERT OR UPDATE ON {schema.table}
-    FOR EACH ROW
-    EXECUTE PROCEDURE standard.modified();
-
-COMMENT ON TRIGGER t50_modified ON {schema.table} IS 'ensure the modified_* columns are updated';
 */
 DECLARE
 BEGIN
     new.modified_at := statement_timestamp();
-    new.modified_by := standard.get_userid();
+    new.modified_by := standard.get_user_id();
     RETURN new;
 END;
 $$;
 
-ALTER FUNCTION standard.modified() OWNER TO postgres;
 
 
-CREATE OR REPLACE FUNCTION standard.refresh_materialized_view(_schemaname text, _matviewname text) RETURNS void
+CREATE OR REPLACE FUNCTION standard.refresh_materialized_view(v_schema_name text, v_view_name text) RETURNS void
     LANGUAGE plpgsql SECURITY DEFINER
 AS $$
-    DECLARE
-        test_ownership BOOLEAN;
-        test_concurrent BOOLEAN;
-    BEGIN
-        -- if we don't own the materialized view then we can't update it
-        test_ownership = (
-            SELECT true
-            FROM pg_catalog.pg_matviews
-            WHERE schemaname = _schemaname
-              AND matviewname = _matviewname
-              AND matviewowner = current_user
-        );
+DECLARE
+    v_test_ownership  BOOLEAN;
+    v_test_concurrent BOOLEAN;
+BEGIN
+    -- if we don't own the materialized view then we can't update it
+    v_test_ownership = (
+        SELECT true
+        FROM pg_catalog.pg_matviews
+        WHERE schemaname = v_schema_name
+          AND matviewname = v_view_name
+          AND matviewowner = current_user
+    );
 
-        IF (NOT test_ownership) THEN
-            RAISE EXCEPTION 'materialized view does not exist or is not updateable';
-        END IF;
+    IF (NOT v_test_ownership) THEN
+        RAISE EXCEPTION 'materialized view does not exist or is not updateable';
+    END IF;
 
-        -- if the materialized view has a unique key then we can update concurrently
-        test_concurrent = (
-            SELECT COUNT(*) > 0 FROM (
-                SELECT
-                    u.usename       AS user_name,
-                    ns.nspname      AS schema_name,
-                    t.relname       AS table_name,
-                    i.relname       AS index_name,
-                    idx.indisunique AS is_unique
-                FROM pg_index AS idx
-                INNER JOIN pg_class i      ON i.oid = idx.indexrelid
-                INNER JOIN pg_am am        ON i.relam = am.oid
-                INNER JOIN pg_namespace ns ON i.relnamespace = ns.oid
-                INNER JOIN pg_user u       ON i.relowner = u.usesysid
-                INNER JOIN pg_class t      ON t.oid = idx.indrelid
+    -- if the materialized view has a unique key then we can update concurrently
+    v_test_concurrent = (
+        SELECT COUNT(*) > 0 FROM (
+            SELECT
+                u.usename       AS user_name,
+                ns.nspname      AS schema_name,
+                t.relname       AS table_name,
+                i.relname       AS index_name,
+                idx.indisunique AS is_unique
+            FROM pg_index AS idx
+            INNER JOIN pg_class i      ON i.oid = idx.indexrelid
+            INNER JOIN pg_am am        ON i.relam = am.oid
+            INNER JOIN pg_namespace ns ON i.relnamespace = ns.oid
+            INNER JOIN pg_user u       ON i.relowner = u.usesysid
+            INNER JOIN pg_class t      ON t.oid = idx.indrelid
             ) x
-            WHERE x.user_name = current_user
-              AND x.schema_name = _schemaname
-              AND x.table_name = _matviewname
-              AND x.is_unique IS TRUE
-        );
+        WHERE x.user_name = current_user
+          AND x.schema_name = v_schema_name
+          AND x.table_name = v_view_name
+          AND x.is_unique IS TRUE
+    );
 
-        IF (test_concurrent) THEN
-            EXECUTE 'REFRESH MATERIALIZED VIEW CONCURRENTLY ' || quote_ident(_schemaname) || '.' || quote_ident(_matviewname);
-        ELSE
-            EXECUTE 'REFRESH MATERIALIZED VIEW ' || quote_ident(_schemaname) || '.' || quote_ident(_matviewname);
-        END IF;
+    IF (v_test_concurrent) THEN
+        EXECUTE 'REFRESH MATERIALIZED VIEW CONCURRENTLY ' || quote_ident(v_schema_name) || '.' || quote_ident(v_view_name);
+    ELSE
+        EXECUTE 'REFRESH MATERIALIZED VIEW ' || quote_ident(v_schema_name) || '.' || quote_ident(v_view_name);
+    END IF;
+
     RETURN;
 END;
 $$;
 
-ALTER FUNCTION standard.refresh_materialized_view(_schemaname text, _matviewname text) OWNER TO postgres;
 
-
-CREATE OR REPLACE FUNCTION standard.standardize_table_history_and_trigger(v_root_schema text, v_table text) RETURNS void
+CREATE OR REPLACE FUNCTION standard.standardize_table_history_and_trigger(v_schema_name text, v_table_name text) RETURNS void
     LANGUAGE plpgsql
 AS $$
 /*  Function:     standard.standardize_table_history_and_trigger(schema_name, table_name)
@@ -306,55 +296,53 @@ AS $$
                   given table.
     Affects:      Creates a new table in "schema_name" called
                   "table_name_history". Creates triggers on provided table.
-    Arguments:    text v_root_schema - name of schema the source table lives in
-                  text v_table       - name of source table
+    Arguments:    text v_schema_name - name of schema the source table lives in
+                  text v_table_name  - name of source table
     Returns:      void
 
     SELECT standard.standardize_table_history_and_trigger('the_schema', 'the_table');
 */
 DECLARE
-    _parent_schema      text;
-    _parent_table       text;   -- original table name without schema
-    _parent_full_table  text;   -- original table name with schema
-    _history_schema     text;
-    _history_table      text;   -- history table name with schema
-    _column             text;
+    v_parent_schema      TEXT;
+    v_parent_table       TEXT;   -- original table name without schema
+    v_parent_full_table  TEXT;   -- original table name with schema
+    v_history_schema     TEXT;
+    v_history_table      TEXT;   -- history table name with schema
+    v_column             TEXT;
 BEGIN
-    _parent_schema := quote_ident(v_root_schema);
-    _parent_table := quote_ident(v_table);
-    _parent_full_table := _parent_schema||'.'||_parent_table;
-    _history_schema := _parent_schema;
-    _history_table := _history_schema||'.'||_parent_table||'_history';
+    v_parent_schema := quote_ident(v_schema_name);
+    v_parent_table := quote_ident(v_table_name);
+    v_parent_full_table := v_parent_schema||'.'||v_parent_table;
+    v_history_schema := v_parent_schema;
+    v_history_table := v_history_schema||'.'||v_parent_table||'_history';
 
     -- add history table
-    EXECUTE 'CREATE TABLE '||_history_table||' ( modified_action VARCHAR NOT NULL, txn_timestamp TIMESTAMPTZ NOT NULL, LIKE '||_parent_full_table||');';
+    EXECUTE 'CREATE TABLE '||v_history_table||' (modified_action TEXT NOT NULL, txn_timestamp TIMESTAMP WITH TIME ZONE NOT NULL, LIKE '||v_parent_full_table||');';
 
     -- drop NOT NULL constraints on history table
-    FOR _column IN
+    FOR v_column IN
         SELECT column_name FROM information_schema.columns
-            WHERE table_schema = _history_schema
-                AND table_name = _parent_table
+            WHERE table_schema = v_history_schema
+                AND table_name = v_parent_table
                 AND column_name NOT IN ('modified_action', 'txn_timestamp')
                 AND is_nullable = 'NO' LOOP
 
-        EXECUTE 'ALTER TABLE '||_history_table||' ALTER COLUMN '||_column||' DROP NOT NULL';
+        EXECUTE 'ALTER TABLE '||v_history_table||' ALTER COLUMN '||v_column||' DROP NOT NULL';
 
-        IF _column = 'id' THEN
-            EXECUTE 'CREATE TRIGGER t10_anchored_column BEFORE UPDATE ON '||_parent_full_table||' FOR EACH ROW EXECUTE PROCEDURE standard.anchored_column(''id'')';
+        IF v_column = 'id' THEN
+            EXECUTE 'CREATE TRIGGER t10_anchored_column BEFORE UPDATE ON '||v_parent_full_table||' FOR EACH ROW EXECUTE PROCEDURE standard.anchored_column(''id'')';
         END IF;
     END LOOP;
 
-    EXECUTE 'GRANT SELECT ON '||_history_table||' to PUBLIC';
+    EXECUTE 'GRANT SELECT ON '||v_history_table||' to PUBLIC';
 
     -- create triggers
-    EXECUTE 'CREATE TRIGGER t30_distinct_update_modified BEFORE UPDATE ON '||_parent_full_table||' FOR EACH ROW EXECUTE PROCEDURE standard.distinct_update_modified()';
-    EXECUTE 'CREATE TRIGGER t50_modified BEFORE INSERT OR UPDATE ON '||_parent_full_table||' FOR EACH ROW EXECUTE PROCEDURE standard.modified()';
-    EXECUTE 'CREATE TRIGGER t90_history_saver AFTER INSERT OR UPDATE OR DELETE ON '||_parent_full_table||' FOR EACH ROW EXECUTE PROCEDURE standard.history_trigger()';
-    EXECUTE 'CREATE TRIGGER t90_history_saver_truncate AFTER TRUNCATE ON '||_parent_full_table||' FOR EACH STATEMENT EXECUTE PROCEDURE standard.history_trigger()';
+    EXECUTE 'CREATE TRIGGER t50_distinct_update_modified BEFORE UPDATE ON '||v_parent_full_table||' FOR EACH ROW EXECUTE PROCEDURE standard.distinct_update_modified()';
+    EXECUTE 'CREATE TRIGGER t60_modified BEFORE INSERT OR UPDATE ON '||v_parent_full_table||' FOR EACH ROW EXECUTE PROCEDURE standard.modified()';
+    EXECUTE 'CREATE TRIGGER t90_history_saver AFTER INSERT OR UPDATE OR DELETE ON '||v_parent_full_table||' FOR EACH ROW EXECUTE PROCEDURE standard.history_trigger()';
+    EXECUTE 'CREATE TRIGGER t90_history_saver_truncate AFTER TRUNCATE ON '||v_parent_full_table||' FOR EACH STATEMENT EXECUTE PROCEDURE standard.history_trigger()';
 END;
 $$;
-
-ALTER FUNCTION standard.standardize_table_history_and_trigger(v_root_schema text, v_table text) OWNER TO postgres;
 
 
 CREATE OR REPLACE VIEW standard.show_object_ownership AS
@@ -427,8 +415,6 @@ UNION ALL
     pg_get_userbyid(t.spcowner) AS owner,
     'tablespace'::text AS type
    FROM pg_tablespace t;
-
-ALTER TABLE standard.show_object_ownership OWNER TO postgres;
 
 
 CREATE OR REPLACE VIEW standard.show_object_privileges AS
@@ -550,16 +536,13 @@ CREATE OR REPLACE VIEW standard.show_object_privileges AS
                             regexp_split_to_table(array_to_string(t.spcacl, ','::text), ','::text) AS privileges
                            FROM pg_tablespace t) x) y) z;
 
-ALTER TABLE standard.show_object_privileges OWNER TO postgres;
 
-
+GRANT EXECUTE ON FUNCTION standard.prohibit_change() TO PUBLIC;
 GRANT EXECUTE ON FUNCTION standard.anchored_column() TO PUBLIC;
 GRANT EXECUTE ON FUNCTION standard.distinct_update() TO PUBLIC;
 GRANT EXECUTE ON FUNCTION standard.distinct_update_modified() TO PUBLIC;
-GRANT EXECUTE ON FUNCTION standard.get_userid() TO PUBLIC;
+GRANT EXECUTE ON FUNCTION standard.get_user_id() TO PUBLIC;
 GRANT EXECUTE ON FUNCTION standard.history_trigger() TO PUBLIC;
 GRANT EXECUTE ON FUNCTION standard.modified() TO PUBLIC;
-GRANT EXECUTE ON FUNCTION standard.refresh_materialized_view(_schemaname text, _matviewname text) TO PUBLIC;
-GRANT EXECUTE ON FUNCTION standard.standardize_table_history_and_trigger(v_root_schema text, v_table text) TO PUBLIC;
-
-COMMIT;
+GRANT EXECUTE ON FUNCTION standard.refresh_materialized_view(TEXT, TEXT) TO PUBLIC;
+GRANT EXECUTE ON FUNCTION standard.standardize_table_history_and_trigger(TEXT, TEXT) TO PUBLIC;

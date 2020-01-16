@@ -288,9 +288,9 @@ class EventHandler(BaseHandler):
             event_data = packet.get("data", {})
 
             # validate the event type
-            if (event_type.lower() not in ["event", "keepalive"]):
+            if (event_type.lower() not in ["event", "heartbeat"]):
                 self.logger.warning("{}: invalid value {} for type".format(self.name, event_type))
-                raise EventValidationException("You may only use the types 'event' and 'keepalive'.")
+                raise EventValidationException("You may only use the types 'event' and 'heartbeat'.")
 
             # if the event is not a dict then throw it out
             if (not isinstance(event_data, dict)):

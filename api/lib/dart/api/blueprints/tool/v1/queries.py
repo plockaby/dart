@@ -392,24 +392,24 @@ def select_process(name):
                 except (json.JSONDecodeError, TypeError, KeyError):
                     monitors["daemon"] = None
 
-            # keepalive monitoring
+            # heartbeat monitoring
             with conn.cursor() as cur:
                 cur.execute("""
                     SELECT
                         ci,
                         severity,
                         timeout
-                    FROM dart.process_keepalive_monitor
+                    FROM dart.process_heartbeat_monitor
                     WHERE process_name = %s
                       AND process_environment = %s
                 """, (name, environment["name"]))
-                monitors["keepalive"] = cur.fetchone()
+                monitors["heartbeat"] = cur.fetchone()
 
                 # decode the ci
                 try:
-                    monitors["keepalive"]["ci"] = json.loads(monitors["keepalive"]["ci"])
+                    monitors["heartbeat"]["ci"] = json.loads(monitors["heartbeat"]["ci"])
                 except (json.JSONDecodeError, TypeError, KeyError):
-                    monitors["keepalive"] = None
+                    monitors["heartbeat"] = None
 
             # log monitoring
             monitors["log"] = {"stdout": [], "stderr": []}
@@ -550,11 +550,11 @@ def delete_process_daemon_monitor(process_name, process_environment):
             """, (process_name, process_environment))
 
 
-def insert_process_keepalive_monitor(process_name, process_environment, timeout, ci, severity):
+def insert_process_heartbeat_monitor(process_name, process_environment, timeout, ci, severity):
     with db_client.conn() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                INSERT INTO dart.process_keepalive_monitor (process_name, process_environment, timeout, ci, severity)
+                INSERT INTO dart.process_heartbeat_monitor (process_name, process_environment, timeout, ci, severity)
                 VALUES (%s, %s, %s, %s, %s)
                 ON CONFLICT (process_name, process_environment) DO UPDATE
                 SET ci = excluded.ci,
@@ -562,11 +562,11 @@ def insert_process_keepalive_monitor(process_name, process_environment, timeout,
             """, (process_name, process_environment, timeout, json.dumps(ci), severity))
 
 
-def delete_process_keepalive_monitor(process_name, process_environment):
+def delete_process_heartbeat_monitor(process_name, process_environment):
     with db_client.conn() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                DELETE FROM dart.process_keepalive_monitor
+                DELETE FROM dart.process_heartbeat_monitor
                 WHERE process_name = %s
                   AND process_environment = %s
             """, (process_name, process_environment))

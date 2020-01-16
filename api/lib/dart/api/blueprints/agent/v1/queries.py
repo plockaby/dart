@@ -48,21 +48,21 @@ def get_assigned_processes(fqdn):
                     except (json.JSONDecodeError, TypeError):
                         row["monitors"]["daemon"] = None
 
-                # keepalive monitor information
+                # heartbeat monitor information
                 with conn.cursor() as subcur:
                     subcur = conn.cursor()
                     subcur.execute("""
                         SELECT timeout, ci, severity
-                        FROM dart.process_keepalive_monitor
+                        FROM dart.process_heartbeat_monitor
                         WHERE process_name = %s
                           AND process_environment = %s
                     """, (row["name"], row["environment"]))
                     subrow = subcur.fetchone()
                     try:
                         subrow["ci"] = json.loads(subrow["ci"])
-                        row["monitors"]["keepalive"] = subrow
+                        row["monitors"]["heartbeat"] = subrow
                     except (json.JSONDecodeError, TypeError):
-                        row["monitors"]["keepalive"] = None
+                        row["monitors"]["heartbeat"] = None
 
                 # log monitor information
                 with conn.cursor() as subcur:
