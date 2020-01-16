@@ -24,8 +24,8 @@ export PGUSER
 export PGHOST
 
 echo "creating dart user"
-psql -q -X -c "CREATE ROLE dart WITH LOGIN";
-psql -q -X -c "GRANT CONNECT ON DATABASE $PGDATABASE TO dart";
+psql -q -X -c "CREATE ROLE dart WITH LOGIN;"
+psql -q -X -c "GRANT CONNECT ON DATABASE $PGDATABASE TO dart;"
 
 echo "loading schema files: $SCHEMA_FILES"
 cat $SCHEMA_FILES | psql -q -X
