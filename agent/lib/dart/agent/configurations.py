@@ -76,7 +76,7 @@ class ConfigurationsWriter(metaclass=Singleton):
                 self.logger.error("could not find group {}: {}".format(desired_group, e))
                 raise
             except PermissionError as e:
-                self.logger.error("could not change to group {}:{}: {}".format(desired_group, e))
+                self.logger.error("could not change to group {}: {}".format(desired_group, e))
                 raise
 
         # then try dropping user
