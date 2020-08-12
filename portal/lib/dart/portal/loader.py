@@ -4,5 +4,5 @@ import dart.common.monkey
 dart.common.monkey.patch()
 
 # then load the program normally
-from .app import load  # noqa: F402
+from .app import load  # noqa: E402
 app = load()
