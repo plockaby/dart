@@ -6,7 +6,7 @@ gevent==20.6.2
 greenlet==0.4.16
 gunicorn==19.10.0
 itsdangerous==1.1.0
-Jinja2==2.11.2
+Jinja2==2.11.3
 MarkupSafe==1.1.1
 psycopg2-binary==2.8.5
 PyYAML==5.3.1
